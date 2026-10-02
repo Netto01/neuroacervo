@@ -2,14 +2,19 @@ import { createClient } from '@supabase/supabase-js';
 import { MaterialItem, CourseModule } from '@/types/neuro';
 import { INITIAL_MATERIALS, INITIAL_MODULES } from '@/data/neuroData';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://zvobmczvkbsugiiaehvz.supabase.co';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
-export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey && supabaseAnonKey.length > 20);
+export const isSupabaseConfigured = Boolean(
+  supabaseUrl && 
+  supabaseAnonKey && 
+  !supabaseUrl.includes('placeholder') && 
+  supabaseAnonKey.length > 20
+);
 
-// Client instance (uses dummy key if not set yet to avoid runtime instantiation crashes)
+// Client instance (usa valores seguros em fallback durante build ou quando ausente)
 export const supabase = createClient(
-  supabaseUrl,
+  supabaseUrl || 'https://placeholder.supabase.co',
   supabaseAnonKey || 'placeholder-anon-key'
 );
 
