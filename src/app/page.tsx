@@ -1,69 +1,432 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import React, { useEffect } from 'react';
+import Link from 'next/link';
+import './landing.css';
+
+const BRAND_LOGO_SRC = "/brand/isologo-preto.svg";
+
+export default function LandingPage() {
+  useEffect(() => {
+    // Headroom script: esconde a barra ao rolar para baixo, mostra ao subir
+    const nav = document.getElementById('nav');
+    let last = 0;
+
+    const handleScroll = () => {
+      const y = window.scrollY;
+      if (nav) {
+        nav.classList.toggle('hide', y > last && y > 240);
+      }
+      last = y;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <>
+      <a className="skip" href="#conteudo">Pular para o conteúdo</a>
+
+      <div className="side-rail left" aria-hidden="true">
+        <span className="rail-text">Avaliação · Interpretação · Anamnese · Laudo · Estudo</span>
+      </div>
+      <div className="side-rail right" aria-hidden="true">
+        <span className="rail-text">NeuroAcervo — Acervo clínico · Edição 2026 · Uso profissional</span>
+      </div>
+
+      <div className="topbar">
+        <div className="container topbar-inner">
+          <span><b>NA / 2026</b> · Acervo clínico Nº 01</span>
+          <span className="mid">
+            <span>Avaliação <b className="acc">neuropsicológica</b></span>
+            <span>Para psicólogos e neuropsicólogos</span>
+          </span>
+          <span className="right"><span className="pulse"></span>Acervo em atualização</span>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </div>
+
+      <header className="nav" id="nav">
+        <div className="container nav-inner">
+          <Link className="brand" href="/" aria-label="NeuroAcervo, início">
+            <img className="brand-mark" src={BRAND_LOGO_SRC} width="26" height="34" alt="NeuroAcervo" />
+            <span className="brand-name">NeuroAcervo</span>
+          </Link>
+          <nav aria-label="Seções">
+            <ul className="nav-links">
+              <li><a href="#acervo">O acervo</a></li>
+              <li><a href="#metodo">Como funciona</a></li>
+              <li><a href="#guia">Por dentro</a></li>
+              <li><a href="#duvidas">Dúvidas</a></li>
+            </ul>
+          </nav>
+          <div className="nav-side">
+            <a className="nav-cta ghost" href="#acesso">Quero acesso</a>
+            <Link className="nav-cta" href="/entrar">Entrar</Link>
+          </div>
         </div>
+      </header>
+
+      <main id="conteudo">
+
+        {/* hero */}
+        <section className="hero" aria-labelledby="h-hero">
+          <div className="container hero-grid">
+            <div className="hero-copy">
+              <a className="hero-pill" href="#acervo"><b>Acervo</b>Guias, laudos, anamnese e aulas</a>
+              <span className="label">Para psicólogos e neuropsicólogos</span>
+              <h1 className="display" id="h-hero">Avaliação neuropsicológica <em>com método</em>, num só <em>acervo</em><span className="dot">.</span></h1>
+              <p className="lead">Guias rápidos de aplicação e interpretação, modelos de laudo, roteiros de anamnese, compêndios de estudo e aulas, organizados para a rotina clínica e prontos para consulta.</p>
+              <div className="hero-actions">
+                <a className="btn btn-primary" href="#acesso">
+                  Quero acesso ao acervo 
+                  <span className="arrow">
+                    <svg viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg>
+                  </span>
+                </a>
+                <Link className="btn btn-ghost" href="/entrar">
+                  Já sou assinante 
+                  <span className="arrow">
+                    <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                  </span>
+                </Link>
+              </div>
+              <div className="hero-stats">
+                <div className="stat"><span className="ring acc">07</span><span className="stat-label"><b>Tipos de material</b>num só lugar</span></div>
+                <div className="stat"><span className="ring">PDF</span><span className="stat-label"><b>Modelos editáveis</b>prontos para adaptar</span></div>
+                <div className="stat"><span className="ring solid">24h</span><span className="stat-label"><b>Acesso com login</b>no computador e no celular</span></div>
+              </div>
+              <div className="hero-foot"><span>Material de apoio · uso profissional</span><span>Média 100 · DP 15</span></div>
+            </div>
+
+            <div className="hero-art" role="img" aria-label="Prancha ilustrativa: curva normal com faixas de desvio padrão, um índice de etapas e uma ficha de guia rápido">
+              <span className="corner tl"></span><span className="corner tr"></span><span className="corner bl"></span><span className="corner br"></span>
+              <span className="annot annot-tl"><b>Prancha 01</b><br />Distribuição normal</span>
+              <span className="annot annot-tr">Escore padrão<br /><b>M 100 · DP 15</b></span>
+              <span className="annot annot-bl">Fig. A — leitura por faixa</span>
+              <span className="annot annot-br">Pc 2 · 16 · 50 · 84 · 98</span>
+              <svg className="plate-svg" viewBox="0 0 600 300" aria-hidden="true">
+                <path className="area" d="M60,250 C150,250 205,52 300,52 C395,52 450,250 540,250 Z"/>
+                <path className="curve" d="M20,250 C150,250 205,52 300,52 C395,52 450,250 580,250"/>
+                <line className="base" x1="20" y1="250" x2="580" y2="250"/>
+                <line className="sd" x1="140" y1="60" x2="140" y2="250"/><line className="sd" x1="220" y1="60" x2="220" y2="250"/>
+                <line className="sd" x1="300" y1="30" x2="300" y2="250"/><line className="sd" x1="380" y1="60" x2="380" y2="250"/><line className="sd" x1="460" y1="60" x2="460" y2="250"/>
+                <text x="128" y="272">70</text>
+                <text x="208" y="272">85</text>
+                <text x="286" y="272">100</text>
+                <text x="366" y="272">115</text>
+                <text x="446" y="272">130</text>
+                <line className="pin" x1="196" y1="140" x2="196" y2="250"/><circle className="pin-dot" cx="196" cy="140" r="4"/>
+                <text className="pin-t" x="160" y="126">EP 82</text>
+              </svg>
+              <div className="index" aria-hidden="true">
+                <span><span className="n">01</span>Aplicar</span>
+                <span className="on"><span className="n">02</span>Interpretar</span>
+                <span><span className="n">03</span>Redigir</span>
+              </div>
+              <div className="sheet" aria-hidden="true">
+                <span className="tagline">Guia rápido</span>
+                <h4>Span de dígitos</h4>
+                <p>Aplicação, critérios de interrupção e leitura dos escores.</p>
+                <div className="bar"><i className="e"></i><i className="m"></i><i className="h"></i><i className="c"></i><i className="m"></i><i className="m"></i><i className="e"></i></div>
+                <div className="scale-t"><span>Pc 9–24</span><span>médio inferior</span></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* wire */}
+        <section className="wire" aria-label="Temas cobertos pelo acervo">
+          <div className="container wire-inner">
+            <div className="wire-left">
+              <span className="ring acc" aria-hidden="true">∞</span>
+              <span className="wire-title"><b>Temas do acervo</b>Funções · quadros · etapas</span>
+            </div>
+            <div className="wire-rows" aria-hidden="true">
+              <div className="wire-row"><div className="marquee-track">
+                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.01</span><span className="wire-name">Atenção</span></span>
+                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.02</span><span className="wire-name">Memória operacional</span></span>
+                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.03</span><span className="wire-name">Memória episódica</span></span>
+                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.04</span><span className="wire-name">Funções executivas</span></span>
+                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.05</span><span className="wire-name">Linguagem</span></span>
+                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.06</span><span className="wire-name">Velocidade de processamento</span></span>
+                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.07</span><span className="wire-name">Habilidades visuoespaciais</span></span>
+                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.08</span><span className="wire-name">Praxias e gnosias</span></span>
+                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.09</span><span className="wire-name">Cognição social</span></span>
+                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.01</span><span className="wire-name">Atenção</span></span>
+                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.02</span><span className="wire-name">Memória operacional</span></span>
+                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.03</span><span className="wire-name">Memória episódica</span></span>
+                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.04</span><span className="wire-name">Funções executivas</span></span>
+                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.05</span><span className="wire-name">Linguagem</span></span>
+                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.06</span><span className="wire-name">Velocidade de processamento</span></span>
+                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.07</span><span className="wire-name">Habilidades visuoespaciais</span></span>
+                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.08</span><span className="wire-name">Praxias e gnosias</span></span>
+                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.09</span><span className="wire-name">Cognição social</span></span>
+              </div></div>
+              <div className="wire-row reverse"><div className="marquee-track">
+                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">TDAH</span></span>
+                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Transtorno do espectro autista</span></span>
+                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Dislexia e transtornos de aprendizagem</span></span>
+                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Comprometimento cognitivo leve</span></span>
+                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Demências</span></span>
+                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Deficiência intelectual</span></span>
+                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Avaliação infantil</span></span>
+                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Avaliação do idoso</span></span>
+                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">TDAH</span></span>
+                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Transtorno do espectro autista</span></span>
+                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Dislexia e transtornos de aprendizagem</span></span>
+                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Comprometimento cognitivo leve</span></span>
+                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Demências</span></span>
+                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Deficiência intelectual</span></span>
+                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Avaliação infantil</span></span>
+                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Avaliação do idoso</span></span>
+              </div></div>
+            </div>
+          </div>
+        </section>
+
+        {/* I. acervo */}
+        <section className="block" id="acervo" aria-labelledby="h-acervo">
+          <div className="container">
+            <div className="sec-rule">
+              <span className="roman">I.</span>
+              <span className="meta-grp"><span>O acervo</span><span className="dot-mark">•</span><span>Sete tipos de material</span></span>
+              <span>001 / 005</span>
+            </div>
+            <div className="head-split">
+              <h2 className="display" id="h-acervo">Tudo o que a avaliação <em>pede</em>, do <em>primeiro contato</em> ao laudo<span className="dot">.</span></h2>
+              <div className="right">
+                <span className="plus" aria-hidden="true">+</span>
+                <p>Cada material mostra categoria, população, formato e tamanho antes de abrir. Você encontra o que precisa pela busca ou pelos filtros, e volta a ele quando quiser.</p>
+              </div>
+            </div>
+            <div className="cards">
+              <a className="card feature" href="#guia">
+                <div className="num">01<span className="tag">Destaque</span></div>
+                <svg className="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>
+                <h3>Guias rápidos <span>de aplicação e interpretação</span></h3>
+                <p>O passo a passo de cada teste em poucas páginas: material necessário, instruções, critérios de interrupção, correção e leitura das faixas de desempenho.</p>
+                <span className="arrow-mark" aria-hidden="true">→</span>
+              </a>
+              <a className="card" href="#acesso">
+                <div className="num">02<span className="tag">DOCX · PDF</span></div>
+                <svg className="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4"/><path d="M14 3v5h5v3M9 9h2M9 13h4"/><path d="m14 21 1-3 4.5-4.5a1.4 1.4 0 0 1 2 2L17 20z"/></svg>
+                <h3>Modelos <span>de laudo</span></h3>
+                <p>Estruturas editáveis por faixa etária e queixa, com exemplos de redação.</p>
+                <span className="arrow-mark" aria-hidden="true">→</span>
+              </a>
+              <a className="card" href="#acesso">
+                <div className="num">03<span className="tag">Entrevista</span></div>
+                <svg className="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h11a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H9l-4 3v-3H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/><path d="M19 9h1a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-1v3l-4-3h-3"/></svg>
+                <h3>Roteiros <span>de anamnese</span></h3>
+                <p>Entrevistas semiestruturadas para paciente, família e escola.</p>
+                <span className="arrow-mark" aria-hidden="true">→</span>
+              </a>
+              <a className="card" href="#acesso">
+                <div className="num">04<span className="tag">Estudo</span></div>
+                <svg className="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5.5C5.5 4 8.5 4 12 6c3.5-2 6.5-2 9-.5V19c-2.5-1.5-5.5-1.5-9 .5-3.5-2-6.5-2-9-.5z"/><path d="M12 6v13.5"/></svg>
+                <h3>Compêndios <span>de estudo</span></h3>
+                <p>Sínteses aprofundadas por função cognitiva e por quadro clínico.</p>
+                <span className="arrow-mark" aria-hidden="true">→</span>
+              </a>
+              <a className="card" href="#acesso">
+                <div className="num">05<span className="tag">Vídeo</span></div>
+                <svg className="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 8.5v7l6-3.5z"/></svg>
+                <h3>Aulas <span>em módulos</span></h3>
+                <p>Com progresso salvo, para assistir no seu ritmo.</p>
+                <span className="arrow-mark" aria-hidden="true">→</span>
+              </a>
+              <a className="card" href="#acesso">
+                <div className="num">06<span className="tag">Fichas</span></div>
+                <svg className="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 10h6M9 14h6M9 18h3"/></svg>
+                <h3>Instrumentos <span>e protocolos</span></h3>
+                <p>Folhas de registro e protocolos para o dia a dia.</p>
+                <span className="arrow-mark" aria-hidden="true">→</span>
+              </a>
+              <a className="card" href="#acesso">
+                <div className="num">07<span className="tag">Referência</span></div>
+                <svg className="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>
+                <h3>PDFs <span>e artigos</span></h3>
+                <p>Materiais de referência selecionados e organizados por tema.</p>
+                <span className="arrow-mark" aria-hidden="true">→</span>
+              </a>
+            </div>
+          </div>
+        </section>
+
+        {/* II. método */}
+        <section className="block" id="metodo" aria-labelledby="h-metodo">
+          <div className="container">
+            <div className="sec-rule">
+              <span className="roman">II.</span>
+              <span className="meta-grp"><span>Como funciona</span><span className="dot-mark">•</span><span>Quatro etapas</span></span>
+              <span>002 / 005</span>
+            </div>
+            <div className="head-split">
+              <h2 className="display" id="h-metodo">Do caso ao laudo, <em>com o material certo</em> em mãos<span className="dot">.</span></h2>
+              <div className="right">
+                <span className="plus" aria-hidden="true">+</span>
+                <p>O acervo acompanha a sequência real de uma avaliação, para você consultar exatamente o que a etapa pede.</p>
+              </div>
+            </div>
+            <div className="method-grid">
+              <div className="method-step"><span className="num">01</span><h4>Entrar <span className="arrow-r">→</span></h4><p>Acesso individual com login, no computador ou no celular, a qualquer hora.</p></div>
+              <div className="method-step"><span className="num">02</span><h4>Encontrar <span className="arrow-r">→</span></h4><p>Busque pelo teste, pela função cognitiva ou pelo tema e filtre por tipo de material.</p></div>
+              <div className="method-step"><span className="num">03</span><h4>Aplicar e interpretar <span className="arrow-r">→</span></h4><p>Consulte o guia durante a aplicação e use o roteiro na entrevista.</p></div>
+              <div className="method-step"><span className="num">04</span><h4>Redigir</h4><p>Adapte o modelo de laudo ao seu caso, com a estrutura e a linguagem já resolvidas.</p></div>
+            </div>
+            <div className="method-foot">
+              <span className="left"><span className="ring" aria-hidden="true"></span>Etapas da avaliação neuropsicológica</span>
+              <span>Anamnese → testagem → integração → devolutiva</span>
+            </div>
+          </div>
+        </section>
+
+        {/* III. ink panel */}
+        <section className="work" id="guia" aria-labelledby="h-guia">
+          <div className="work-rule"><span className="roman">III.</span><span>Por dentro do acervo • Amostras</span><span>003 / 005</span></div>
+          <div className="work-grid">
+            <div className="work-copy">
+              <h2 id="h-guia">Rigor técnico <em>em formato</em> de <em>consulta</em><span className="dot">.</span></h2>
+              <p>Cada guia cabe numa leitura rápida entre um atendimento e outro, sem perder a precisão.</p>
+              <ul className="work-list">
+                <li><b>01</b>Aplicação passo a passo, com critérios de início e interrupção.</li>
+                <li><b>02</b>Correção e conversão de escores explicadas sem rodeios.</li>
+                <li><b>03</b>Leitura das faixas de desempenho e cuidados na interpretação.</li>
+                <li><b>04</b>Fonte e edição do manual citadas em cada material.</li>
+              </ul>
+            </div>
+            <div className="work-card" role="img" aria-label="Amostra de guia rápido com régua de percentis">
+              <div className="label-row"><b>Guia rápido</b><span>Adulto e idoso · 6 p.</span></div>
+              <h3>Span <em>de dígitos</em></h3>
+              <p>Aplicação, critérios de interrupção e leitura dos escores por faixa etária.</p>
+              <div className="scale"><div className="bar"><i className="e"></i><i className="m"></i><i className="h"></i><i className="c"></i><i className="m"></i><i className="m"></i><i className="e"></i></div></div>
+              <div className="scale-rows">
+                <span>Baixo</span><span className="v">Pc 3–8</span>
+                <span className="hl">Médio inferior</span><span className="v hl">Pc 9–24</span>
+                <span>Médio</span><span className="v">Pc 25–74</span>
+              </div>
+              <div className="note">Material de apoio para profissionais habilitados. Não substitui o manual oficial do instrumento.</div>
+            </div>
+            <div className="work-card alt" role="img" aria-label="Amostra de modelo de laudo com seções">
+              <div className="label-row"><b>Modelo de laudo</b><span>DOCX · PDF</span></div>
+              <h3>Laudo <em>infantil</em></h3>
+              <div className="laudo-lines">
+                <div><span>I.</span><div>Identificação<i style={{ width: '70%' }}></i></div></div>
+                <div><span>II.</span><div>Demanda e anamnese<i style={{ width: '88%' }}></i></div></div>
+                <div><span>III.</span><div>Procedimentos<i style={{ width: '60%' }}></i></div></div>
+                <div><span>IV.</span><div>Resultados<i style={{ width: '92%' }}></i></div></div>
+                <div><span>V.</span><div>Conclusão<i style={{ width: '76%' }}></i></div></div>
+              </div>
+              <div className="meta-row"><span>Seções editáveis</span><span>Ex. de redação</span></div>
+            </div>
+          </div>
+        </section>
+
+        {/* IV. para quem */}
+        <section className="block" id="para-quem" aria-labelledby="h-quem">
+          <div className="container">
+            <div className="sec-rule">
+              <span className="roman">IV.</span>
+              <span className="meta-grp"><span>Para quem é</span><span className="dot-mark">•</span><span>Três momentos da carreira</span></span>
+              <span>004 / 005</span>
+            </div>
+            <div className="head-split">
+              <h2 className="display" id="h-quem">Feito para <em>quem avalia</em><span className="dot">.</span></h2>
+              <div className="right"><span className="plus" aria-hidden="true">+</span><p>Psicólogos e estudantes de psicologia em formação ou já na clínica.</p></div>
+            </div>
+            <div className="labs-grid">
+              <div className="lab">
+                <div className="lab-img"><span className="badge">Formação</span>
+                  <svg className="lab-art" viewBox="0 0 200 140" aria-hidden="true"><path className="f" d="M40 110 Q100 20 160 110 Z"/><path className="s" d="M20 110h160M40 110 Q100 20 160 110"/><path className="a" d="M70 110V72"/></svg>
+                </div>
+                <div className="num-row"><b>i.</b><span>Começando</span></div>
+                <h4>Quem está começando</h4>
+                <p>Um caminho organizado para aprender a aplicar, interpretar e redigir com segurança.</p>
+              </div>
+              <div className="lab">
+                <div className="lab-img"><span className="badge">Clínica</span>
+                  <svg className="lab-art" viewBox="0 0 200 140" aria-hidden="true"><rect className="f" x="56" y="22" width="88" height="104" rx="6"/><path className="s" d="M56 28a6 6 0 0 1 6-6h76a6 6 0 0 1 6 6v92a6 6 0 0 1-6 6H62a6 6 0 0 1-6-6zM72 50h56M72 66h56M72 82h36"/><path className="a" d="m110 104 8 8 16-18"/></svg>
+                </div>
+                <div className="num-row"><b>ii.</b><span>Atendendo</span></div>
+                <h4>Quem já atende</h4>
+                <p>Consulta rápida no consultório e modelos que economizam horas na escrita do laudo.</p>
+              </div>
+              <div className="lab">
+                <div className="lab-img"><span className="badge">Supervisão</span>
+                  <svg className="lab-art" viewBox="0 0 200 140" aria-hidden="true"><circle className="f" cx="100" cy="70" r="40"/><circle className="s" cx="76" cy="70" r="30"/><circle className="s" cx="124" cy="70" r="30"/><path className="a" d="M100 46v48"/></svg>
+                </div>
+                <div className="num-row"><b>iii.</b><span>Orientando</span></div>
+                <h4>Quem supervisiona</h4>
+                <p>Material padronizado para orientar estagiários e equipes.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* V. faq */}
+        <section className="block" id="duvidas" aria-labelledby="h-faq">
+          <div className="container">
+            <div className="sec-rule">
+              <span className="roman">V.</span>
+              <span className="meta-grp"><span>Dúvidas</span><span className="dot-mark">•</span><span>Perguntas frequentes</span></span>
+              <span>005 / 005</span>
+            </div>
+            <div className="faq-grid">
+              <div className="faq-head">
+                <h2 id="h-faq">Perguntas <em>antes</em> de <em>entrar</em><span className="dot">.</span></h2>
+                <p>Não encontrou o que procurava? Fale com o suporte pelo link no rodapé.</p>
+              </div>
+              <div className="faq-list">
+                <details className="faq-item"><summary><span className="faq-index">01</span><span className="faq-q">Quem pode acessar o acervo?</span><span className="faq-toggle" aria-hidden="true">+</span></summary><p className="faq-a">Psicólogos e estudantes de psicologia. Os guias são material de apoio e não substituem o manual oficial dos instrumentos, que segue necessário para a aplicação.</p></details>
+                <details className="faq-item"><summary><span className="faq-index">02</span><span className="faq-q">Posso editar os modelos de laudo?</span><span className="faq-toggle" aria-hidden="true">+</span></summary><p className="faq-a">Sim. Os modelos estão em formatos editáveis para você adaptar à sua prática e a cada caso.</p></details>
+                <details className="faq-item"><summary><span className="faq-index">03</span><span className="faq-q">Consigo acessar pelo celular?</span><span className="faq-toggle" aria-hidden="true">+</span></summary><p className="faq-a">Sim. A plataforma funciona no navegador do computador, do tablet e do celular, com o progresso das aulas salvo na sua conta.</p></details>
+                <details className="faq-item"><summary><span className="faq-index">04</span><span className="faq-q">O acervo recebe novos materiais?</span><span className="faq-toggle" aria-hidden="true">+</span></summary><p className="faq-a">Sim. Materiais novos e revisados aparecem com os selos &ldquo;Novo&rdquo; e &ldquo;Atualizado&rdquo; na biblioteca.</p></details>
+                <details className="faq-item"><summary><span className="faq-index">05</span><span className="faq-q">Esqueci minha senha. E agora?</span><span className="faq-toggle" aria-hidden="true">+</span></summary><p className="faq-a">Na tela de login, use &ldquo;Esqueci a senha&rdquo; para receber um link de redefinição no e-mail cadastrado.</p></details>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* cta */}
+        <section className="cta" id="acesso" aria-labelledby="h-cta">
+          <div className="container">
+            <span className="label">Comece hoje</span>
+            <h2 className="display" id="h-cta">Seu próximo laudo <em>começa</em> no <em>acervo</em><span className="dot">.</span></h2>
+            <p className="lead">Garanta seu acesso e tenha guias, modelos e aulas à mão em cada etapa da avaliação.</p>
+            <div className="cta-actions">
+              <Link className="btn btn-primary" href="/entrar">
+                Quero acesso 
+                <span className="arrow"><svg viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg></span>
+              </Link>
+              <Link className="btn btn-ghost" href="/entrar">
+                Entrar 
+                <span className="arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+              </Link>
+            </div>
+            <div className="cta-foot"><span className="stamp">NA · 2026</span><span>Acervo clínico Nº 01</span><span className="push">Uso profissional · Material de apoio</span></div>
+          </div>
+        </section>
+
       </main>
-    </div>
+
+      <footer>
+        <div className="container">
+          <div className="foot-grid">
+            <div className="foot-brand">
+              <Link className="brand" href="/"><img className="brand-mark" src={BRAND_LOGO_SRC} width="26" height="34" alt="NeuroAcervo" /><span className="brand-name">NeuroAcervo</span></Link>
+              <p>Acervo de avaliação neuropsicológica para a prática clínica. Materiais de apoio destinados a profissionais habilitados.</p>
+            </div>
+            <div className="foot-col"><h5>Acervo</h5><ul><li><a href="#acervo">Guias rápidos</a></li><li><a href="#acervo">Modelos de laudo</a></li><li><a href="#acervo">Anamnese</a></li><li><a href="#acervo">Aulas</a></li></ul></div>
+            <div className="foot-col"><h5>Conta</h5><ul><li><Link href="/entrar">Entrar</Link></li><li><a href="#acesso">Quero acesso</a></li><li><Link href="/entrar">Esqueci a senha</Link></li></ul></div>
+            <div className="foot-col"><h5>Ajuda</h5><ul><li><a href="#duvidas">Dúvidas</a></li><li><a href="#">Suporte</a></li><li><a href="#">Termos de uso</a></li><li><a href="#">Privacidade</a></li></ul></div>
+          </div>
+          <div className="foot-bottom"><span><span className="pulse"></span>Acervo em atualização</span><span>© 2026 NeuroAcervo</span></div>
+        </div>
+        <div className="foot-mega" aria-hidden="true"><div className="container"><div className="word">Neuro<span>Acervo</span>.</div></div></div>
+      </footer>
+    </>
   );
 }
