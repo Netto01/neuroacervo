@@ -40,11 +40,14 @@ export const AulasView: React.FC<AulasViewProps> = ({ onSelectMaterial }) => {
 
   // Load and save notes per lesson from localStorage
   useEffect(() => {
-    if (!currentLesson) return;
-    try {
-      const savedNotes = localStorage.getItem(`neuro_notes_${currentLesson.id}`);
-      setNotes(savedNotes || '');
-    } catch {}
+    if (!currentLesson?.id) return;
+    const timer = setTimeout(() => {
+      try {
+        const savedNotes = localStorage.getItem(`neuro_notes_${currentLesson.id}`);
+        setNotes(savedNotes || '');
+      } catch {}
+    }, 0);
+    return () => clearTimeout(timer);
   }, [currentLesson?.id]);
 
   const handleSaveNotes = () => {
