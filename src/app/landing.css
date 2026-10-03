@@ -503,48 +503,60 @@ footer { position:relative; z-index:1; margin-top:120px; border-top:1px solid va
   .cta-foot { flex-wrap:wrap; } 
   .cta-foot .push { margin-left:0; }
 
-  /* tabela de comparação móvel com coluna fixa */
-  .compare-hint-mobile { display:inline-flex; }
+  /* tabela de comparação 100% adequada à tela móvel (SEM slidebar) */
   .compare-wrap {
-    margin-top:40px;
-    overflow-x:auto;
-    -webkit-overflow-scrolling:touch;
-    padding-bottom:12px;
+    margin-top:36px;
+    overflow:visible;
+    width:100%;
+    padding:0;
   }
   .compare {
-    min-width:520px;
-    border-collapse:separate;
-    border-spacing:0;
-  }
-  .compare th, .compare td {
-    padding:12px 10px;
+    width:100%;
+    min-width:0 !important;
+    table-layout:fixed;
+    border-collapse:collapse;
   }
   .compare th.col-resource,
   .compare tbody th {
-    position:sticky;
-    left:0;
-    z-index:2;
-    background:var(--paper);
-    padding-left:8px;
-    padding-right:12px;
-    box-shadow:3px 0 6px -2px rgba(21, 20, 15, 0.14);
-    min-width:130px;
-    max-width:145px;
-    font-size:12.5px;
-    line-height:1.3;
+    width:42%;
+    font-size:12px;
+    line-height:1.25;
+    padding:10px 6px 10px 0;
     text-align:left;
+    position:static !important;
+    box-shadow:none !important;
+    word-break:normal;
+    hyphens:auto;
   }
   .compare thead th.col-resource {
-    z-index:3;
-    background:var(--paper);
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    vertical-align:bottom;
+    padding-bottom:12px;
   }
-  .compare thead th {
-    min-width:110px;
-    padding:10px 8px 14px;
+  .compare th.col-plan,
+  .compare td {
+    width:19.3%;
+    padding:10px 3px;
+    text-align:center;
+  }
+  .compare thead th.col-plan {
+    padding:8px 2px 12px;
     vertical-align:bottom;
   }
-  .th-title { font-size:13.5px; }
-  .btn-table-cta { height:28px; padding:0 10px; font-size:11px; margin-top:6px; }
+  .th-plan { gap:2px; }
+  .th-tag { font-size:7.5px; padding:2px 5px; letter-spacing:.04em; margin-bottom:1px; }
+  .th-title { font-size:12.5px; line-height:1.15; }
+  .th-price { font-size:11px; line-height:1.15; }
+  .th-period { display:none; }
+  .th-subtext { font-size:9px; }
+  .btn-table-cta { height:26px; padding:0 8px; font-size:10.5px; margin-top:5px; }
+  .compare .yes svg { width:16px; height:16px; }
+  .dash-icon { font-size:15px; }
+  .hide-mobile { display:none; }
+  .anual-highlight { font-size:10px; }
+  .anual-highlight em { font-size:8.5px; display:block; }
 }
 
 @media (max-width: 480px) {
@@ -562,6 +574,25 @@ footer { position:relative; z-index:1; margin-top:120px; border-top:1px solid va
   .billing { width:100%; display:flex; }
   .billing button { flex:1; justify-content:center; padding:8px 8px; font-size:12px; }
   .compare-wrap { margin-top:28px; }
+  .compare th.col-resource,
+  .compare tbody th {
+    width:39%;
+    font-size:11px;
+    padding:8px 3px 8px 0;
+  }
+  .compare th.col-plan,
+  .compare td {
+    width:20.3%;
+    padding:8px 1px;
+  }
+  .th-title { font-size:11.5px; }
+  .th-price { font-size:10px; }
+  .th-tag { font-size:7px; padding:1px 3px; }
+  .btn-table-cta { height:23px; padding:0 4px; font-size:9.5px; margin-top:3px; }
+  .compare .yes svg { width:14px; height:14px; }
+  .dash-icon { font-size:13px; }
+  .anual-highlight { font-size:9px; }
+  .anual-highlight em { font-size:8px; }
   .foot-mega .word { font-size:clamp(44px, 14vw, 80px); }
 }
 

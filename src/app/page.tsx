@@ -537,39 +537,34 @@ export default function LandingPage() {
             <div className="compare-wrap">
               <div className="compare-header-row">
                 <span className="compare-caption-text">Compare os recursos de cada plano</span>
-                <span className="compare-hint-mobile">
-                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><path d="m14 7-5 5 5 5"/></svg>
-                  Deslize para ver todos
-                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><path d="m10 7 5 5-5 5"/></svg>
-                </span>
               </div>
               <table className="compare">
                 <caption className="sr">Compare os planos do NeuroAcervo</caption>
                 <thead>
                   <tr>
                     <th scope="col" className="col-resource">O que está incluído</th>
-                    <th scope="col">
+                    <th scope="col" className="col-plan">
                       <div className="th-plan">
                         <span className="th-title">Acervo</span>
                         <small className="th-price">R$ 19,90<span className="th-period">/mês</span></small>
                         <Link href="/cadastro" className="btn-table-cta">Assinar</Link>
                       </div>
                     </th>
-                    <th scope="col">
+                    <th scope="col" className="col-plan">
                       <div className="th-plan">
-                        <span className="th-title">Acervo + Aulas</span>
+                        <span className="th-title"><span className="hide-mobile">Acervo </span>+ Aulas</span>
                         <small className="th-price">R$ 39,90<span className="th-period">/mês</span></small>
                         <Link href="/cadastro" className="btn-table-cta">Assinar</Link>
                       </div>
                     </th>
-                    <th scope="col" className="col-feat">
+                    <th scope="col" className="col-plan col-feat">
                       <div className="th-plan">
                         <span className="th-tag">Recomendado</span>
                         <span className="th-title">Completo</span>
                         {billingCycle === 'anual' ? (
                           <small className="th-price th-price-promo">
                             <span className="th-val">R$ 33,25</span><span className="th-period">/mês</span>
-                            <span className="th-subtext">R$ 399 faturado/ano</span>
+                            <span className="th-subtext">R$ 399/ano</span>
                           </small>
                         ) : (
                           <small className="th-price">R$ 49,90<span className="th-period">/mês</span></small>
