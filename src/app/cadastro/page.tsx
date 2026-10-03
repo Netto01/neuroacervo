@@ -209,8 +209,13 @@ export default function CadastroPage() {
         {/* ── Formulário Lateral ── */}
         <main className="cad-side">
           <div className="cad-side-top">
-            <span>NA / 2026 · Cadastro</span>
-            <Link className="cad-back" href="/entrar">Já tenho conta · Entrar</Link>
+            <Link className="cad-back" href="/">
+              ← Página inicial
+            </Link>
+            <div className="cad-top-right">
+              <span className="cad-top-tag">NA / 2026</span>
+              <Link className="cad-back" href="/entrar">Já tenho conta · Entrar</Link>
+            </div>
           </div>
 
           <div className="cad-form-wrap">
@@ -638,6 +643,7 @@ export default function CadastroPage() {
           <div className="cad-side-foot">
             <span>© 2026 NeuroAcervo · Uso profissional</span>
             <nav aria-label="Ajuda">
+              <Link href="/">Início</Link>
               <Link href="#">Suporte</Link>
               <Link href="#">Termos</Link>
               <Link href="#">Privacidade</Link>
