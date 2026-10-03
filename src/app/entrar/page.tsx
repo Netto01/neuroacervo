@@ -242,7 +242,7 @@ export default function LoginPage() {
               </button>
 
               <div className="divider">ou</div>
-              <p className="alt">Ainda não tem acesso? <Link className="link" href="/#acesso">Conheça o acervo</Link></p>
+              <p className="alt">Ainda não tem acesso? <Link className="link" href="/cadastro">Criar nova conta</Link></p>
             </form>
           </section>
 

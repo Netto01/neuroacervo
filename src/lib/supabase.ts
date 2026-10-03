@@ -19,6 +19,20 @@ export const supabase = createClient(
 );
 
 /* ── Autenticação ── */
+export async function signUp(email: string, password: string, metadata?: Record<string, unknown>) {
+  if (!isSupabaseConfigured) {
+    return { data: { user: { id: 'usr-new', email } }, error: null };
+  }
+  return await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: metadata,
+      emailRedirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/entrar?confirmed=true`
+    }
+  });
+}
+
 export async function signIn(email: string, password: string) {
   if (!isSupabaseConfigured) {
     // Modo simulação para demonstração local
