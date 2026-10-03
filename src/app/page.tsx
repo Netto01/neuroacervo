@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import './landing.css';
 
 const BRAND_LOGO_SRC = "/brand/isologo-preto.svg";
 
 export default function LandingPage() {
+  const [billingCycle, setBillingCycle] = useState<'mensal' | 'anual'>('mensal');
+
   useEffect(() => {
     // Headroom script: esconde a barra ao rolar para baixo, mostra ao subir
     const nav = document.getElementById('nav');
@@ -25,6 +27,8 @@ export default function LandingPage() {
       window.removeEventListener('scroll', handleScroll);
     };
   }, []);
+
+  const isAnual = billingCycle === 'anual';
 
   return (
     <>
@@ -59,11 +63,12 @@ export default function LandingPage() {
               <li><a href="#acervo">O acervo</a></li>
               <li><a href="#metodo">Como funciona</a></li>
               <li><a href="#guia">Por dentro</a></li>
+              <li><a href="#planos">Planos</a></li>
               <li><a href="#duvidas">Dúvidas</a></li>
             </ul>
           </nav>
           <div className="nav-side">
-            <a className="nav-cta ghost" href="#acesso">Quero acesso</a>
+            <a className="nav-cta ghost" href="#planos">Ver planos</a>
             <Link className="nav-cta" href="/entrar">Entrar</Link>
           </div>
         </div>
@@ -80,8 +85,8 @@ export default function LandingPage() {
               <h1 className="display" id="h-hero">Avaliação neuropsicológica <em>com método</em>, num só <em>acervo</em><span className="dot">.</span></h1>
               <p className="lead">Guias rápidos de aplicação e interpretação, modelos de laudo, roteiros de anamnese, compêndios de estudo e aulas, organizados para a rotina clínica e prontos para consulta.</p>
               <div className="hero-actions">
-                <a className="btn btn-primary" href="#acesso">
-                  Quero acesso ao acervo 
+                <a className="btn btn-primary" href="#planos">
+                  Ver os planos 
                   <span className="arrow">
                     <svg viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg>
                   </span>
@@ -108,17 +113,21 @@ export default function LandingPage() {
               <span className="annot annot-bl">Fig. A — leitura por faixa</span>
               <span className="annot annot-br">Pc 2 · 16 · 50 · 84 · 98</span>
               <svg className="plate-svg" viewBox="0 0 600 300" aria-hidden="true">
-                <path className="area" d="M60,250 C150,250 205,52 300,52 C395,52 450,250 540,250 Z"/>
-                <path className="curve" d="M20,250 C150,250 205,52 300,52 C395,52 450,250 580,250"/>
-                <line className="base" x1="20" y1="250" x2="580" y2="250"/>
-                <line className="sd" x1="140" y1="60" x2="140" y2="250"/><line className="sd" x1="220" y1="60" x2="220" y2="250"/>
-                <line className="sd" x1="300" y1="30" x2="300" y2="250"/><line className="sd" x1="380" y1="60" x2="380" y2="250"/><line className="sd" x1="460" y1="60" x2="460" y2="250"/>
+                <path className="area" d="M60,250 C150,250 205,52 300,52 C395,52 450,250 540,250 Z" />
+                <path className="curve" d="M20,250 C150,250 205,52 300,52 C395,52 450,250 580,250" />
+                <line className="base" x1="20" y1="250" x2="580" y2="250" />
+                <line className="sd" x1="140" y1="60" x2="140" y2="250" />
+                <line className="sd" x1="220" y1="60" x2="220" y2="250" />
+                <line className="sd" x1="300" y1="30" x2="300" y2="250" />
+                <line className="sd" x1="380" y1="60" x2="380" y2="250" />
+                <line className="sd" x1="460" y1="60" x2="460" y2="250" />
                 <text x="128" y="272">70</text>
                 <text x="208" y="272">85</text>
                 <text x="286" y="272">100</text>
                 <text x="366" y="272">115</text>
                 <text x="446" y="272">130</text>
-                <line className="pin" x1="196" y1="140" x2="196" y2="250"/><circle className="pin-dot" cx="196" cy="140" r="4"/>
+                <line className="pin" x1="196" y1="140" x2="196" y2="250" />
+                <circle className="pin-dot" cx="196" cy="140" r="4" />
                 <text className="pin-t" x="160" y="126">EP 82</text>
               </svg>
               <div className="index" aria-hidden="true">
@@ -145,44 +154,48 @@ export default function LandingPage() {
               <span className="wire-title"><b>Temas do acervo</b>Funções · quadros · etapas</span>
             </div>
             <div className="wire-rows" aria-hidden="true">
-              <div className="wire-row"><div className="marquee-track">
-                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.01</span><span className="wire-name">Atenção</span></span>
-                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.02</span><span className="wire-name">Memória operacional</span></span>
-                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.03</span><span className="wire-name">Memória episódica</span></span>
-                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.04</span><span className="wire-name">Funções executivas</span></span>
-                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.05</span><span className="wire-name">Linguagem</span></span>
-                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.06</span><span className="wire-name">Velocidade de processamento</span></span>
-                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.07</span><span className="wire-name">Habilidades visuoespaciais</span></span>
-                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.08</span><span className="wire-name">Praxias e gnosias</span></span>
-                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.09</span><span className="wire-name">Cognição social</span></span>
-                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.01</span><span className="wire-name">Atenção</span></span>
-                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.02</span><span className="wire-name">Memória operacional</span></span>
-                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.03</span><span className="wire-name">Memória episódica</span></span>
-                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.04</span><span className="wire-name">Funções executivas</span></span>
-                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.05</span><span className="wire-name">Linguagem</span></span>
-                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.06</span><span className="wire-name">Velocidade de processamento</span></span>
-                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.07</span><span className="wire-name">Habilidades visuoespaciais</span></span>
-                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.08</span><span className="wire-name">Praxias e gnosias</span></span>
-                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.09</span><span className="wire-name">Cognição social</span></span>
-              </div></div>
-              <div className="wire-row reverse"><div className="marquee-track">
-                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">TDAH</span></span>
-                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Transtorno do espectro autista</span></span>
-                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Dislexia e transtornos de aprendizagem</span></span>
-                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Comprometimento cognitivo leve</span></span>
-                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Demências</span></span>
-                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Deficiência intelectual</span></span>
-                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Avaliação infantil</span></span>
-                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Avaliação do idoso</span></span>
-                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">TDAH</span></span>
-                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Transtorno do espectro autista</span></span>
-                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Dislexia e transtornos de aprendizagem</span></span>
-                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Comprometimento cognitivo leve</span></span>
-                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Demências</span></span>
-                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Deficiência intelectual</span></span>
-                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Avaliação infantil</span></span>
-                <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Avaliação do idoso</span></span>
-              </div></div>
+              <div className="wire-row">
+                <div className="marquee-track">
+                  <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.01</span><span className="wire-name">Atenção</span></span>
+                  <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.02</span><span className="wire-name">Memória operacional</span></span>
+                  <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.03</span><span className="wire-name">Memória episódica</span></span>
+                  <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.04</span><span className="wire-name">Funções executivas</span></span>
+                  <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.05</span><span className="wire-name">Linguagem</span></span>
+                  <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.06</span><span className="wire-name">Velocidade de processamento</span></span>
+                  <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.07</span><span className="wire-name">Habilidades visuoespaciais</span></span>
+                  <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.08</span><span className="wire-name">Praxias e gnosias</span></span>
+                  <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.09</span><span className="wire-name">Cognição social</span></span>
+                  <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.01</span><span className="wire-name">Atenção</span></span>
+                  <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.02</span><span className="wire-name">Memória operacional</span></span>
+                  <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.03</span><span className="wire-name">Memória episódica</span></span>
+                  <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.04</span><span className="wire-name">Funções executivas</span></span>
+                  <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.05</span><span className="wire-name">Linguagem</span></span>
+                  <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.06</span><span className="wire-name">Velocidade de processamento</span></span>
+                  <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.07</span><span className="wire-name">Habilidades visuoespaciais</span></span>
+                  <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.08</span><span className="wire-name">Praxias e gnosias</span></span>
+                  <span className="wire-item"><span className="wire-dot">·</span><span className="wire-coord">F.09</span><span className="wire-name">Cognição social</span></span>
+                </div>
+              </div>
+              <div className="wire-row reverse">
+                <div className="marquee-track">
+                  <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">TDAH</span></span>
+                  <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Transtorno do espectro autista</span></span>
+                  <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Dislexia e transtornos de aprendizagem</span></span>
+                  <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Comprometimento cognitivo leve</span></span>
+                  <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Demências</span></span>
+                  <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Deficiência intelectual</span></span>
+                  <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Avaliação infantil</span></span>
+                  <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Avaliação do idoso</span></span>
+                  <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">TDAH</span></span>
+                  <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Transtorno do espectro autista</span></span>
+                  <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Dislexia e transtornos de aprendizagem</span></span>
+                  <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Comprometimento cognitivo leve</span></span>
+                  <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Demências</span></span>
+                  <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Deficiência intelectual</span></span>
+                  <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Avaliação infantil</span></span>
+                  <span className="wire-item"><span className="wire-dot">·</span><span className="wire-name">Avaliação do idoso</span></span>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -193,14 +206,11 @@ export default function LandingPage() {
             <div className="sec-rule">
               <span className="roman">I.</span>
               <span className="meta-grp"><span>O acervo</span><span className="dot-mark">•</span><span>Sete tipos de material</span></span>
-              <span>001 / 005</span>
+              <span>001 / 006</span>
             </div>
             <div className="head-split">
               <h2 className="display" id="h-acervo">Tudo o que a avaliação <em>pede</em>, do <em>primeiro contato</em> ao laudo<span className="dot">.</span></h2>
-              <div className="right">
-                <span className="plus" aria-hidden="true">+</span>
-                <p>Cada material mostra categoria, população, formato e tamanho antes de abrir. Você encontra o que precisa pela busca ou pelos filtros, e volta a ele quando quiser.</p>
-              </div>
+              <div className="right"><span className="plus" aria-hidden="true">+</span><p>Cada material mostra categoria, população, formato e tamanho antes de abrir. Você encontra o que precisa pela busca ou pelos filtros, e volta a ele quando quiser.</p></div>
             </div>
             <div className="cards">
               <a className="card feature" href="#guia">
@@ -210,42 +220,42 @@ export default function LandingPage() {
                 <p>O passo a passo de cada teste em poucas páginas: material necessário, instruções, critérios de interrupção, correção e leitura das faixas de desempenho.</p>
                 <span className="arrow-mark" aria-hidden="true">→</span>
               </a>
-              <a className="card" href="#acesso">
+              <a className="card" href="#planos">
                 <div className="num">02<span className="tag">DOCX · PDF</span></div>
                 <svg className="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4"/><path d="M14 3v5h5v3M9 9h2M9 13h4"/><path d="m14 21 1-3 4.5-4.5a1.4 1.4 0 0 1 2 2L17 20z"/></svg>
                 <h3>Modelos <span>de laudo</span></h3>
                 <p>Estruturas editáveis por faixa etária e queixa, com exemplos de redação.</p>
                 <span className="arrow-mark" aria-hidden="true">→</span>
               </a>
-              <a className="card" href="#acesso">
+              <a className="card" href="#planos">
                 <div className="num">03<span className="tag">Entrevista</span></div>
                 <svg className="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h11a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H9l-4 3v-3H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/><path d="M19 9h1a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-1v3l-4-3h-3"/></svg>
                 <h3>Roteiros <span>de anamnese</span></h3>
                 <p>Entrevistas semiestruturadas para paciente, família e escola.</p>
                 <span className="arrow-mark" aria-hidden="true">→</span>
               </a>
-              <a className="card" href="#acesso">
+              <a className="card" href="#planos">
                 <div className="num">04<span className="tag">Estudo</span></div>
                 <svg className="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5.5C5.5 4 8.5 4 12 6c3.5-2 6.5-2 9-.5V19c-2.5-1.5-5.5-1.5-9 .5-3.5-2-6.5-2-9-.5z"/><path d="M12 6v13.5"/></svg>
                 <h3>Compêndios <span>de estudo</span></h3>
                 <p>Sínteses aprofundadas por função cognitiva e por quadro clínico.</p>
                 <span className="arrow-mark" aria-hidden="true">→</span>
               </a>
-              <a className="card" href="#acesso">
+              <a className="card" href="#planos">
                 <div className="num">05<span className="tag">Vídeo</span></div>
                 <svg className="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 8.5v7l6-3.5z"/></svg>
                 <h3>Aulas <span>em módulos</span></h3>
                 <p>Com progresso salvo, para assistir no seu ritmo.</p>
                 <span className="arrow-mark" aria-hidden="true">→</span>
               </a>
-              <a className="card" href="#acesso">
+              <a className="card" href="#planos">
                 <div className="num">06<span className="tag">Fichas</span></div>
                 <svg className="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 10h6M9 14h6M9 18h3"/></svg>
                 <h3>Instrumentos <span>e protocolos</span></h3>
                 <p>Folhas de registro e protocolos para o dia a dia.</p>
                 <span className="arrow-mark" aria-hidden="true">→</span>
               </a>
-              <a className="card" href="#acesso">
+              <a className="card" href="#planos">
                 <div className="num">07<span className="tag">Referência</span></div>
                 <svg className="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>
                 <h3>PDFs <span>e artigos</span></h3>
@@ -262,14 +272,11 @@ export default function LandingPage() {
             <div className="sec-rule">
               <span className="roman">II.</span>
               <span className="meta-grp"><span>Como funciona</span><span className="dot-mark">•</span><span>Quatro etapas</span></span>
-              <span>002 / 005</span>
+              <span>002 / 006</span>
             </div>
             <div className="head-split">
               <h2 className="display" id="h-metodo">Do caso ao laudo, <em>com o material certo</em> em mãos<span className="dot">.</span></h2>
-              <div className="right">
-                <span className="plus" aria-hidden="true">+</span>
-                <p>O acervo acompanha a sequência real de uma avaliação, para você consultar exatamente o que a etapa pede.</p>
-              </div>
+              <div className="right"><span className="plus" aria-hidden="true">+</span><p>O acervo acompanha a sequência real de uma avaliação, para você consultar exatamente o que a etapa pede.</p></div>
             </div>
             <div className="method-grid">
               <div className="method-step"><span className="num">01</span><h4>Entrar <span className="arrow-r">→</span></h4><p>Acesso individual com login, no computador ou no celular, a qualquer hora.</p></div>
@@ -277,16 +284,17 @@ export default function LandingPage() {
               <div className="method-step"><span className="num">03</span><h4>Aplicar e interpretar <span className="arrow-r">→</span></h4><p>Consulte o guia durante a aplicação e use o roteiro na entrevista.</p></div>
               <div className="method-step"><span className="num">04</span><h4>Redigir</h4><p>Adapte o modelo de laudo ao seu caso, com a estrutura e a linguagem já resolvidas.</p></div>
             </div>
-            <div className="method-foot">
-              <span className="left"><span className="ring" aria-hidden="true"></span>Etapas da avaliação neuropsicológica</span>
-              <span>Anamnese → testagem → integração → devolutiva</span>
-            </div>
+            <div className="method-foot"><span className="left"><span className="ring" aria-hidden="true"></span>Etapas da avaliação neuropsicológica</span><span>Anamnese → testagem → integração → devolutiva</span></div>
           </div>
         </section>
 
         {/* III. ink panel */}
         <section className="work" id="guia" aria-labelledby="h-guia">
-          <div className="work-rule"><span className="roman">III.</span><span>Por dentro do acervo • Amostras</span><span>003 / 005</span></div>
+          <div className="work-rule">
+            <span className="roman">III.</span>
+            <span>Por dentro do acervo • Amostras</span>
+            <span>003 / 006</span>
+          </div>
           <div className="work-grid">
             <div className="work-copy">
               <h2 id="h-guia">Rigor técnico <em>em formato</em> de <em>consulta</em><span className="dot">.</span></h2>
@@ -331,7 +339,7 @@ export default function LandingPage() {
             <div className="sec-rule">
               <span className="roman">IV.</span>
               <span className="meta-grp"><span>Para quem é</span><span className="dot-mark">•</span><span>Três momentos da carreira</span></span>
-              <span>004 / 005</span>
+              <span>004 / 006</span>
             </div>
             <div className="head-split">
               <h2 className="display" id="h-quem">Feito para <em>quem avalia</em><span className="dot">.</span></h2>
@@ -366,13 +374,210 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* V. faq */}
-        <section className="block" id="duvidas" aria-labelledby="h-faq">
+        {/* ═══════════════ V. SEÇÃO DE PLANOS ═══════════════ */}
+        <section className="block" id="planos" aria-labelledby="h-planos">
           <div className="container">
             <div className="sec-rule">
               <span className="roman">V.</span>
+              <span className="meta-grp"><span>Planos</span><span className="dot-mark">•</span><span>Assinatura flexível</span></span>
+              <span>005 / 006</span>
+            </div>
+
+            <div className="plans-head">
+              <h2 className="display" id="h-planos">Escolha o <em>seu</em> acervo<span className="dot">.</span></h2>
+              <div className="right">
+                <p>Três planos, um acervo que cresce todo mês. Comece por onde fizer sentido e mude de plano quando quiser.</p>
+                <div className="billing" role="group" aria-label="Forma de cobrança do plano Completo">
+                  <button
+                    type="button"
+                    aria-pressed={!isAnual}
+                    onClick={() => setBillingCycle('mensal')}
+                  >
+                    Mensal
+                  </button>
+                  <button
+                    type="button"
+                    aria-pressed={isAnual}
+                    onClick={() => setBillingCycle('anual')}
+                  >
+                    Anual <b>−33%</b>
+                  </button>
+                </div>
+                <span className="billing-note">O pagamento anual está disponível no plano Completo.</span>
+              </div>
+            </div>
+
+            <div className="plans">
+              {/* Plano 01 */}
+              <article className="plan" aria-labelledby="p1">
+                <div className="num">01<span className="tag">Leitura</span></div>
+                <h3 id="p1">Acervo <span>PDFs</span></h3>
+                <p className="for">Para quem quer os materiais de consulta para baixar e usar.</p>
+                <div className="price">
+                  <span className="cur">R$</span>
+                  <span className="val">19<small>,90</small></span>
+                  <span className="per">/mês</span>
+                </div>
+                <div className="price-note">Cobrança mensal</div>
+                <ul className="feat">
+                  <li><svg viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></svg><span>Guias rápidos de aplicação e interpretação</span></li>
+                  <li><svg viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></svg><span>Modelos de laudo e roteiros de anamnese</span></li>
+                  <li><svg viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></svg><span>Compêndios de estudo e instrumentos</span></li>
+                  <li className="off"><svg viewBox="0 0 24 24"><path d="M6 12h12"/></svg><span>Aulas gravadas</span></li>
+                  <li className="off"><svg viewBox="0 0 24 24"><path d="M6 12h12"/></svg><span>Recursos interativos</span></li>
+                </ul>
+                <Link className="btn btn-ghost" href="/cadastro?plano=acervo&ciclo=mensal">
+                  <span>Assinar o Acervo</span>
+                  <span className="arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+                </Link>
+              </article>
+
+              {/* Plano 02 */}
+              <article className="plan" aria-labelledby="p2">
+                <div className="num">02<span className="tag">Estudo</span></div>
+                <h3 id="p2">Acervo <span>+ Aulas</span></h3>
+                <p className="for">Para quem quer os materiais e as aulas gravadas em módulos.</p>
+                <div className="price">
+                  <span className="cur">R$</span>
+                  <span className="val">39<small>,90</small></span>
+                  <span className="per">/mês</span>
+                </div>
+                <div className="price-note">Cobrança mensal</div>
+                <ul className="feat">
+                  <li><svg viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></svg><span>Todos os PDFs do plano Acervo</span></li>
+                  <li><svg viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></svg><span><b>Aulas gravadas</b> em módulos, com progresso salvo</span></li>
+                  <li className="off"><svg viewBox="0 0 24 24"><path d="M6 12h12"/></svg><span>Baralhos interativos</span></li>
+                  <li className="off"><svg viewBox="0 0 24 24"><path d="M6 12h12"/></svg><span>Histórias temáticas</span></li>
+                  <li className="off"><svg viewBox="0 0 24 24"><path d="M6 12h12"/></svg><span>Novos recursos interativos todo mês</span></li>
+                </ul>
+                <Link className="btn btn-ghost" href="/cadastro?plano=aulas&ciclo=mensal">
+                  <span>Assinar Acervo + Aulas</span>
+                  <span className="arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+                </Link>
+              </article>
+
+              {/* Plano 03 (destaque) */}
+              <article className="plan featured" aria-labelledby="p3">
+                <div className="num">03<span className="tag">Recomendado</span></div>
+                <h3 id="p3">Completo <span>tudo + prática</span></h3>
+                <p className="for">Para quem avalia e quer, além do estudo, ferramentas para usar na sessão.</p>
+                <div className="price">
+                  <span className="cur">R$</span>
+                  <span className="val">
+                    {isAnual ? '399' : <>49<small>,90</small></>}
+                  </span>
+                  <span className="per">{isAnual ? '/ano' : '/mês'}</span>
+                </div>
+                <div className="price-note">
+                  {isAnual ? 'Equivale a R$ 33,25 por mês' : 'Só R$ 10 a mais que o plano Aulas'}
+                </div>
+                <ul className="feat">
+                  <li><svg viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></svg><span>Todos os PDFs e todas as aulas</span></li>
+                  <li><svg viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></svg><span><b>Baralhos interativos</b> para usar online</span></li>
+                  <li><svg viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></svg><span><b>Histórias temáticas</b> e demais recursos online</span></li>
+                  <li><svg viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></svg><span>Novos recursos interativos todo mês</span></li>
+                  <li><svg viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></svg><span>Acesso antecipado a lançamentos</span></li>
+                </ul>
+                {isAnual && (
+                  <p className="upsell">
+                    No anual você paga R$ 399 de uma vez, o equivalente a R$ 33,25 por mês.
+                  </p>
+                )}
+                <Link
+                  className="btn btn-primary"
+                  href={`/cadastro?plano=completo&ciclo=${billingCycle}`}
+                >
+                  <span>Assinar o Completo</span>
+                  <span className="arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+                </Link>
+              </article>
+            </div>
+
+            <div className="compare-wrap">
+              <table className="compare">
+                <caption>Compare os planos</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">O que está incluído</th>
+                    <th scope="col">Acervo<small>R$ 19,90</small></th>
+                    <th scope="col">Acervo + Aulas<small>R$ 39,90</small></th>
+                    <th scope="col" className="col-feat">Completo<small>R$ 49,90</small></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th scope="row">Guias rápidos de aplicação e interpretação</th>
+                    <td className="yes"><svg viewBox="0 0 24 24" aria-label="Incluído"><path d="m5 12 4.5 4.5L19 7"/></svg></td>
+                    <td className="yes"><svg viewBox="0 0 24 24" aria-label="Incluído"><path d="m5 12 4.5 4.5L19 7"/></svg></td>
+                    <td className="yes col-feat"><svg viewBox="0 0 24 24" aria-label="Incluído"><path d="m5 12 4.5 4.5L19 7"/></svg></td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Modelos de laudo e roteiros de anamnese</th>
+                    <td className="yes"><svg viewBox="0 0 24 24" aria-label="Incluído"><path d="m5 12 4.5 4.5L19 7"/></svg></td>
+                    <td className="yes"><svg viewBox="0 0 24 24" aria-label="Incluído"><path d="m5 12 4.5 4.5L19 7"/></svg></td>
+                    <td className="yes col-feat"><svg viewBox="0 0 24 24" aria-label="Incluído"><path d="m5 12 4.5 4.5L19 7"/></svg></td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Compêndios de estudo e instrumentos</th>
+                    <td className="yes"><svg viewBox="0 0 24 24" aria-label="Incluído"><path d="m5 12 4.5 4.5L19 7"/></svg></td>
+                    <td className="yes"><svg viewBox="0 0 24 24" aria-label="Incluído"><path d="m5 12 4.5 4.5L19 7"/></svg></td>
+                    <td className="yes col-feat"><svg viewBox="0 0 24 24" aria-label="Incluído"><path d="m5 12 4.5 4.5L19 7"/></svg></td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Aulas gravadas em módulos</th>
+                    <td className="no">não incluído</td>
+                    <td className="yes"><svg viewBox="0 0 24 24" aria-label="Incluído"><path d="m5 12 4.5 4.5L19 7"/></svg></td>
+                    <td className="yes col-feat"><svg viewBox="0 0 24 24" aria-label="Incluído"><path d="m5 12 4.5 4.5L19 7"/></svg></td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Baralhos interativos online</th>
+                    <td className="no">não incluído</td>
+                    <td className="no">não incluído</td>
+                    <td className="yes col-feat"><svg viewBox="0 0 24 24" aria-label="Incluído"><path d="m5 12 4.5 4.5L19 7"/></svg></td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Histórias temáticas</th>
+                    <td className="no">não incluído</td>
+                    <td className="no">não incluído</td>
+                    <td className="yes col-feat"><svg viewBox="0 0 24 24" aria-label="Incluído"><path d="m5 12 4.5 4.5L19 7"/></svg></td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Novos recursos interativos todo mês</th>
+                    <td className="no">não incluído</td>
+                    <td className="no">não incluído</td>
+                    <td className="yes col-feat"><svg viewBox="0 0 24 24" aria-label="Incluído"><path d="m5 12 4.5 4.5L19 7"/></svg></td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Opção de pagamento anual</th>
+                    <td className="no">não</td>
+                    <td className="no">não</td>
+                    <td className="col-feat">R$ 399/ano</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div className="plans-foot">
+              <span>
+                <svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+                Pagamento seguro no cartão, processado pela Stripe
+              </span>
+              <span>
+                <svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.3-5.6M4 4v4h4"/></svg>
+                Troque de plano ou cancele quando quiser
+              </span>
+            </div>
+          </div>
+        </section>
+        {/* ═══════════════ /SEÇÃO DE PLANOS ═══════════════ */}
+
+        {/* VI. faq */}
+        <section className="block" id="duvidas" aria-labelledby="h-faq">
+          <div className="container">
+            <div className="sec-rule">
+              <span className="roman">VI.</span>
               <span className="meta-grp"><span>Dúvidas</span><span className="dot-mark">•</span><span>Perguntas frequentes</span></span>
-              <span>005 / 005</span>
+              <span>006 / 006</span>
             </div>
             <div className="faq-grid">
               <div className="faq-head">
@@ -385,6 +590,8 @@ export default function LandingPage() {
                 <details className="faq-item"><summary><span className="faq-index">03</span><span className="faq-q">Consigo acessar pelo celular?</span><span className="faq-toggle" aria-hidden="true">+</span></summary><p className="faq-a">Sim. A plataforma funciona no navegador do computador, do tablet e do celular, com o progresso das aulas salvo na sua conta.</p></details>
                 <details className="faq-item"><summary><span className="faq-index">04</span><span className="faq-q">O acervo recebe novos materiais?</span><span className="faq-toggle" aria-hidden="true">+</span></summary><p className="faq-a">Sim. Materiais novos e revisados aparecem com os selos &ldquo;Novo&rdquo; e &ldquo;Atualizado&rdquo; na biblioteca.</p></details>
                 <details className="faq-item"><summary><span className="faq-index">05</span><span className="faq-q">Esqueci minha senha. E agora?</span><span className="faq-toggle" aria-hidden="true">+</span></summary><p className="faq-a">Na tela de login, use &ldquo;Esqueci a senha&rdquo; para receber um link de redefinição no e-mail cadastrado.</p></details>
+                <details className="faq-item"><summary><span className="faq-index">06</span><span className="faq-q">Posso trocar de plano depois?</span><span className="faq-toggle" aria-hidden="true">+</span></summary><p className="faq-a">Sim. Você pode subir ou descer de plano a qualquer momento pela sua conta. A diferença de valor é ajustada automaticamente na próxima cobrança.</p></details>
+                <details className="faq-item"><summary><span className="faq-index">07</span><span className="faq-q">Como faço para cancelar?</span><span className="faq-toggle" aria-hidden="true">+</span></summary><p className="faq-a">Pela sua conta, em poucos cliques e sem multa. O acesso continua até o fim do período que você já pagou.</p></details>
               </div>
             </div>
           </div>
@@ -397,10 +604,10 @@ export default function LandingPage() {
             <h2 className="display" id="h-cta">Seu próximo laudo <em>começa</em> no <em>acervo</em><span className="dot">.</span></h2>
             <p className="lead">Garanta seu acesso e tenha guias, modelos e aulas à mão em cada etapa da avaliação.</p>
             <div className="cta-actions">
-              <Link className="btn btn-primary" href="/entrar">
-                Quero acesso 
+              <a className="btn btn-primary" href="#planos">
+                Escolher meu plano 
                 <span className="arrow"><svg viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg></span>
-              </Link>
+              </a>
               <Link className="btn btn-ghost" href="/entrar">
                 Entrar 
                 <span className="arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
@@ -420,7 +627,7 @@ export default function LandingPage() {
               <p>Acervo de avaliação neuropsicológica para a prática clínica. Materiais de apoio destinados a profissionais habilitados.</p>
             </div>
             <div className="foot-col"><h5>Acervo</h5><ul><li><a href="#acervo">Guias rápidos</a></li><li><a href="#acervo">Modelos de laudo</a></li><li><a href="#acervo">Anamnese</a></li><li><a href="#acervo">Aulas</a></li></ul></div>
-            <div className="foot-col"><h5>Conta</h5><ul><li><Link href="/entrar">Entrar</Link></li><li><a href="#acesso">Quero acesso</a></li><li><Link href="/entrar">Esqueci a senha</Link></li></ul></div>
+            <div className="foot-col"><h5>Conta</h5><ul><li><Link href="/entrar">Entrar</Link></li><li><a href="#planos">Planos</a></li><li><Link href="/cadastro">Criar conta</Link></li><li><Link href="/entrar">Esqueci a senha</Link></li></ul></div>
             <div className="foot-col"><h5>Ajuda</h5><ul><li><a href="#duvidas">Dúvidas</a></li><li><a href="#">Suporte</a></li><li><a href="#">Termos de uso</a></li><li><a href="#">Privacidade</a></li></ul></div>
           </div>
           <div className="foot-bottom"><span><span className="pulse"></span>Acervo em atualização</span><span>© 2026 NeuroAcervo</span></div>
