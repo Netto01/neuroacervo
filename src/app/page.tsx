@@ -535,14 +535,48 @@ export default function LandingPage() {
             </div>
 
             <div className="compare-wrap">
+              <div className="compare-header-row">
+                <span className="compare-caption-text">Compare os recursos de cada plano</span>
+                <span className="compare-hint-mobile">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><path d="m14 7-5 5 5 5"/></svg>
+                  Deslize para ver todos
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><path d="m10 7 5 5-5 5"/></svg>
+                </span>
+              </div>
               <table className="compare">
-                <caption>Compare os planos</caption>
+                <caption className="sr">Compare os planos do NeuroAcervo</caption>
                 <thead>
                   <tr>
-                    <th scope="col">O que está incluído</th>
-                    <th scope="col">Acervo<small>R$ 19,90</small></th>
-                    <th scope="col">Acervo + Aulas<small>R$ 39,90</small></th>
-                    <th scope="col" className="col-feat">Completo<small>R$ 49,90</small></th>
+                    <th scope="col" className="col-resource">O que está incluído</th>
+                    <th scope="col">
+                      <div className="th-plan">
+                        <span className="th-title">Acervo</span>
+                        <small className="th-price">R$ 19,90<span className="th-period">/mês</span></small>
+                        <Link href="/cadastro" className="btn-table-cta">Assinar</Link>
+                      </div>
+                    </th>
+                    <th scope="col">
+                      <div className="th-plan">
+                        <span className="th-title">Acervo + Aulas</span>
+                        <small className="th-price">R$ 39,90<span className="th-period">/mês</span></small>
+                        <Link href="/cadastro" className="btn-table-cta">Assinar</Link>
+                      </div>
+                    </th>
+                    <th scope="col" className="col-feat">
+                      <div className="th-plan">
+                        <span className="th-tag">Recomendado</span>
+                        <span className="th-title">Completo</span>
+                        {billingCycle === 'anual' ? (
+                          <small className="th-price th-price-promo">
+                            <span className="th-val">R$ 33,25</span><span className="th-period">/mês</span>
+                            <span className="th-subtext">R$ 399 faturado/ano</span>
+                          </small>
+                        ) : (
+                          <small className="th-price">R$ 49,90<span className="th-period">/mês</span></small>
+                        )}
+                        <Link href="/cadastro" className="btn-table-cta btn-table-feat">Assinar</Link>
+                      </div>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -566,33 +600,39 @@ export default function LandingPage() {
                   </tr>
                   <tr>
                     <th scope="row">Aulas gravadas em módulos</th>
-                    <td className="no">não incluído</td>
+                    <td className="no"><span className="dash-icon" aria-label="Não incluído">—</span></td>
                     <td className="yes"><svg viewBox="0 0 24 24" aria-label="Incluído"><path d="m5 12 4.5 4.5L19 7"/></svg></td>
                     <td className="yes col-feat"><svg viewBox="0 0 24 24" aria-label="Incluído"><path d="m5 12 4.5 4.5L19 7"/></svg></td>
                   </tr>
                   <tr>
                     <th scope="row">Baralhos interativos online</th>
-                    <td className="no">não incluído</td>
-                    <td className="no">não incluído</td>
+                    <td className="no"><span className="dash-icon" aria-label="Não incluído">—</span></td>
+                    <td className="no"><span className="dash-icon" aria-label="Não incluído">—</span></td>
                     <td className="yes col-feat"><svg viewBox="0 0 24 24" aria-label="Incluído"><path d="m5 12 4.5 4.5L19 7"/></svg></td>
                   </tr>
                   <tr>
-                    <th scope="row">Histórias temáticas</th>
-                    <td className="no">não incluído</td>
-                    <td className="no">não incluído</td>
+                    <th scope="row">Histórias temáticas de aplicação</th>
+                    <td className="no"><span className="dash-icon" aria-label="Não incluído">—</span></td>
+                    <td className="no"><span className="dash-icon" aria-label="Não incluído">—</span></td>
                     <td className="yes col-feat"><svg viewBox="0 0 24 24" aria-label="Incluído"><path d="m5 12 4.5 4.5L19 7"/></svg></td>
                   </tr>
                   <tr>
                     <th scope="row">Novos recursos interativos todo mês</th>
-                    <td className="no">não incluído</td>
-                    <td className="no">não incluído</td>
+                    <td className="no"><span className="dash-icon" aria-label="Não incluído">—</span></td>
+                    <td className="no"><span className="dash-icon" aria-label="Não incluído">—</span></td>
                     <td className="yes col-feat"><svg viewBox="0 0 24 24" aria-label="Incluído"><path d="m5 12 4.5 4.5L19 7"/></svg></td>
                   </tr>
                   <tr>
-                    <th scope="row">Opção de pagamento anual</th>
-                    <td className="no">não</td>
-                    <td className="no">não</td>
-                    <td className="col-feat">R$ 399/ano</td>
+                    <th scope="row">Opção de desconto no plano anual</th>
+                    <td className="no"><span className="dash-icon" aria-label="Não disponível">—</span></td>
+                    <td className="no"><span className="dash-icon" aria-label="Não disponível">—</span></td>
+                    <td className="col-feat">
+                      {billingCycle === 'anual' ? (
+                        <span className="anual-highlight">R$ 399/ano <em>(-33%)</em></span>
+                      ) : (
+                        <span>R$ 399/ano</span>
+                      )}
+                    </td>
                   </tr>
                 </tbody>
               </table>
