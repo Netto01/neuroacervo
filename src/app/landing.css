@@ -354,10 +354,11 @@ footer { position:relative; z-index:1; margin-top:120px; border-top:1px solid va
 
 .compare tbody th { font-weight:400; color:var(--ink-soft); font-size:14px; }
 .compare .col-feat { background:rgba(218,254,170,.35); }
-.compare .yes svg { width:18px; height:18px; fill:none; stroke:var(--accent-strong); stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; vertical-align:middle; }
-.compare .no { font:400 14px/1 var(--mono); color:var(--ink-faint); }
-.dash-icon { display:inline-block; font:400 18px/1 var(--mono); color:var(--ink-faint); opacity:.7; }
-.anual-highlight { font:700 12.5px/1.2 var(--mono); color:var(--accent-strong); }
+.compare td.yes, .compare td.no { text-align:center; vertical-align:middle; }
+.compare .yes svg { display:block; margin:0 auto; width:18px; height:18px; fill:none; stroke:var(--accent-strong); stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+.compare .no { font:400 14px/1 var(--mono); color:var(--ink-faint); text-align:center; }
+.dash-icon { display:block; margin:0 auto; text-align:center; width:100%; font:400 18px/1 var(--mono); color:var(--ink-faint); opacity:.7; line-height:1; }
+.anual-highlight { display:block; margin:0 auto; text-align:center; font:700 12.5px/1.2 var(--mono); color:var(--accent-strong); }
 .anual-highlight em { font-style:normal; font-size:10.5px; opacity:.9; }
 
 .plans-foot { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px 24px; margin-top:28px; padding-top:16px; border-top:1px dashed var(--line); font:400 11.5px/1.5 var(--mono); letter-spacing:.06em; text-transform:uppercase; color:var(--ink-faint); }
@@ -552,8 +553,8 @@ footer { position:relative; z-index:1; margin-top:120px; border-top:1px solid va
   .th-period { display:none; }
   .th-subtext { font-size:9px; }
   .btn-table-cta { height:26px; padding:0 8px; font-size:10.5px; margin-top:5px; }
-  .compare .yes svg { width:16px; height:16px; }
-  .dash-icon { font-size:15px; }
+  .compare .yes svg { display:block; margin:0 auto; width:16px; height:16px; }
+  .dash-icon { display:block; margin:0 auto; text-align:center; width:100%; font-size:15px; line-height:1; }
   .hide-mobile { display:none; }
   .anual-highlight { font-size:10px; }
   .anual-highlight em { font-size:8.5px; display:block; }
@@ -589,8 +590,8 @@ footer { position:relative; z-index:1; margin-top:120px; border-top:1px solid va
   .th-price { font-size:10px; }
   .th-tag { font-size:7px; padding:1px 3px; }
   .btn-table-cta { height:23px; padding:0 4px; font-size:9.5px; margin-top:3px; }
-  .compare .yes svg { width:14px; height:14px; }
-  .dash-icon { font-size:13px; }
+  .compare .yes svg { display:block; margin:0 auto; width:14px; height:14px; }
+  .dash-icon { display:block; margin:0 auto; text-align:center; width:100%; font-size:13px; line-height:1; }
   .anual-highlight { font-size:9px; }
   .anual-highlight em { font-size:8px; }
   .foot-mega .word { font-size:clamp(44px, 14vw, 80px); }
