@@ -8,6 +8,7 @@ const BRAND_LOGO_SRC = "/brand/isologo-preto.svg";
 
 export default function LandingPage() {
   const [billingCycle, setBillingCycle] = useState<'mensal' | 'anual'>('mensal');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     // Headroom script: esconde a barra ao rolar para baixo, mostra ao subir
@@ -54,7 +55,7 @@ export default function LandingPage() {
 
       <header className="nav" id="nav">
         <div className="container nav-inner">
-          <Link className="brand" href="/" aria-label="NeuroAcervo, início">
+          <Link className="brand" href="/" aria-label="NeuroAcervo, início" onClick={() => setIsMobileMenuOpen(false)}>
             <img className="brand-mark" src={BRAND_LOGO_SRC} width="26" height="34" alt="NeuroAcervo" />
             <span className="brand-name">NeuroAcervo</span>
           </Link>
@@ -70,8 +71,48 @@ export default function LandingPage() {
           <div className="nav-side">
             <a className="nav-cta ghost" href="#planos">Ver planos</a>
             <Link className="nav-cta" href="/entrar">Entrar</Link>
+            <button
+              type="button"
+              className="nav-mobile-toggle"
+              aria-label={isMobileMenuOpen ? "Fechar menu" : "Abrir menu"}
+              aria-expanded={isMobileMenuOpen}
+              onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+            >
+              {isMobileMenuOpen ? (
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <line x1="3" y1="6" x2="21" y2="6"></line>
+                  <line x1="3" y1="12" x2="21" y2="12"></line>
+                  <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+              )}
+            </button>
           </div>
         </div>
+
+        {isMobileMenuOpen && (
+          <div className="nav-mobile-drawer" role="dialog" aria-label="Menu móvel">
+            <ul className="nav-mobile-links">
+              <li><a href="#acervo" onClick={() => setIsMobileMenuOpen(false)}>O acervo <span>→</span></a></li>
+              <li><a href="#metodo" onClick={() => setIsMobileMenuOpen(false)}>Como funciona <span>→</span></a></li>
+              <li><a href="#guia" onClick={() => setIsMobileMenuOpen(false)}>Por dentro <span>→</span></a></li>
+              <li><a href="#planos" onClick={() => setIsMobileMenuOpen(false)}>Planos de assinatura <span>→</span></a></li>
+              <li><a href="#duvidas" onClick={() => setIsMobileMenuOpen(false)}>Dúvidas frequentes <span>→</span></a></li>
+            </ul>
+            <div className="nav-mobile-actions">
+              <a className="btn btn-primary" href="#planos" onClick={() => setIsMobileMenuOpen(false)}>
+                Ver os planos
+              </a>
+              <Link className="btn btn-ghost" href="/entrar" onClick={() => setIsMobileMenuOpen(false)}>
+                Já sou assinante · Entrar
+              </Link>
+            </div>
+          </div>
+        )}
       </header>
 
       <main id="conteudo">

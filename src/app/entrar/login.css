@@ -13,7 +13,7 @@
 }
 *,*::before,*::after { box-sizing:border-box; }
 html, body { height:100%; }
-body { margin:0; background:var(--paper); color:var(--ink); font:400 16px/1.6 var(--body); -webkit-font-smoothing:antialiased; }
+body { margin:0; background:var(--paper); color:var(--ink); font:400 16px/1.6 var(--body); -webkit-font-smoothing:antialiased; overflow-x:hidden; }
 body::before { content:""; position:fixed; inset:0; z-index:30; pointer-events:none;
   background-image:radial-gradient(circle at 12% 18%, rgba(106,92,56,.07) 0, transparent 28%), radial-gradient(circle at 88% 72%, rgba(106,92,56,.06) 0, transparent 32%), var(--noise);
   background-size:auto, auto, 240px 240px; mix-blend-mode:multiply; opacity:.92; }
@@ -124,6 +124,7 @@ form { margin-top:32px; display:grid; gap:18px; }
   .panel-meta { display:none; }
   .side { padding:0 8px; }
   .side-top span { display:none; }
-  .side-top { justify-content:flex-end; }
+  .side-top { justify-content:space-between; flex-wrap:wrap; gap:8px; }
+  .back { padding:7px 12px; font-size:12px; }
 }
 @media (prefers-reduced-motion: reduce) { .btn, .input input { transition:none; } }

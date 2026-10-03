@@ -32,6 +32,7 @@
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
   position: relative;
+  overflow-x: hidden;
 }
 
 .cad-body::before {
@@ -992,11 +993,23 @@ legend.cad-legend {
   .cad-side {
     padding: 0 8px;
   }
-  .cad-side-top span {
+  .cad-side-top {
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 0 14px;
+  }
+  .cad-top-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .cad-top-tag {
     display: none;
   }
-  .cad-side-top {
-    justify-content: flex-end;
+  .cad-back {
+    padding: 7px 12px;
+    font-size: 12px;
   }
   .cad-grid2 {
     grid-template-columns: 1fr;
