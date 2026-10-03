@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import './landing.css';
 
+// NeuroAcervo - Plataforma Editorial de Avaliação Neuropsicológica
 const BRAND_LOGO_SRC = "/brand/isologo-preto.svg";
 
 export default function LandingPage() {
