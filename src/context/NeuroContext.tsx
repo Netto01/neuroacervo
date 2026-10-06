@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { MaterialItem, CourseModule, UserProfile, CognitiveDomain, AgeGroup, MaterialType } from '@/types/neuro';
 import { INITIAL_MATERIALS, INITIAL_MODULES } from '@/data/neuroData';
-import { getMaterials, getModules, insertMaterial, removeMaterial, isSupabaseConfigured } from '@/lib/supabase';
+import { getMaterials, getModules, insertMaterial, removeMaterial, isSupabaseConfigured, getUserProfile, signOut, supabase, cleanupDemoData } from '@/lib/supabase';
 
 interface FilterState {
   searchTerm: string;
@@ -16,7 +16,8 @@ interface FilterState {
 interface NeuroContextType {
   materials: MaterialItem[];
   modules: CourseModule[];
-  currentUser: UserProfile;
+  currentUser: UserProfile | null;
+  setCurrentUser: React.Dispatch<React.SetStateAction<UserProfile | null>>;
   activeRole: 'member' | 'admin';
   setActiveRole: (role: 'member' | 'admin') => void;
   favorites: string[];
@@ -30,8 +31,11 @@ interface NeuroContextType {
   resetFilters: () => void;
   addMaterial: (newMat: Omit<MaterialItem, 'id' | 'publishedAt'>) => Promise<void>;
   deleteMaterial: (id: string) => Promise<void>;
+  refreshMaterials: () => Promise<void>;
   addLesson: (moduleId: string, lesson: { title: string; description: string; durationMinutes: number; videoUrl: string; keyTakeaways: string[] }) => void;
   isSupabaseConnected: boolean;
+  logout: () => Promise<void>;
+  isLoadingUser: boolean;
 }
 
 const DEFAULT_FILTERS: FilterState = {
@@ -42,54 +46,73 @@ const DEFAULT_FILTERS: FilterState = {
   onlySatepsiFree: false
 };
 
-const DEFAULT_USER: UserProfile = {
-  id: 'usr-1',
-  name: 'Dra. Camila Vasconcelos',
-  email: 'camila.neuro@clinica.com.br',
-  crp: 'CRP 06/142981',
-  role: 'member',
-  plan: 'Membro Anual Pro',
-  joinedAt: 'Janeiro de 2026'
-};
-
 const NeuroContext = createContext<NeuroContextType | undefined>(undefined);
 
 export const NeuroProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [materials, setMaterials] = useState<MaterialItem[]>(INITIAL_MATERIALS);
-  const [modules, setModules] = useState<CourseModule[]>(INITIAL_MODULES);
-  const [currentUser] = useState<UserProfile>(DEFAULT_USER);
+  const [materials, setMaterials] = useState<MaterialItem[]>([]);
+  const [modules, setModules] = useState<CourseModule[]>([]);
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+  const [isLoadingUser, setIsLoadingUser] = useState<boolean>(true);
   const [activeRole, setActiveRole] = useState<'member' | 'admin'>('member');
-  const [favorites, setFavorites] = useState<string[]>(['mat-moca', 'mat-laudo-tdah-adulto']);
-  const [completedLessons, setCompletedLessons] = useState<string[]>(['les-1-1']);
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [completedLessons, setCompletedLessons] = useState<string[]>([]);
   const [activeMaterialModal, setActiveMaterialModal] = useState<MaterialItem | null>(null);
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
 
-  // Carregar dados de Supabase ou LocalStorage
+  // Carregar dados de autenticação e materiais
   useEffect(() => {
-    async function loadData() {
+    async function loadAuthAndData() {
       if (isSupabaseConfigured) {
+        try {
+          setIsLoadingUser(true);
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.user) {
+            // Se o usuário está autenticado, limpa dados demo se ainda existirem
+            cleanupDemoData().catch(() => {});
+
+            const user = session.user;
+            const profile = await getUserProfile(user.id);
+            if (profile) {
+              setCurrentUser(profile);
+              setActiveRole(profile.role);
+            } else {
+              const meta = user.user_metadata || {};
+              const fallback: UserProfile = {
+                id: user.id,
+                name: meta.full_name || user.email?.split('@')[0] || 'Assinante',
+                email: user.email || '',
+                crp: meta.crp ? (meta.crp.toUpperCase().startsWith('CRP') ? meta.crp : `CRP ${meta.crp}`) : '',
+                role: (meta.role as 'member' | 'admin') || 'member',
+                plan: (meta.plan as any) || 'Membro Anual Pro',
+                joinedAt: user.created_at ? new Date(user.created_at).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }) : 'Recente'
+              };
+              setCurrentUser(fallback);
+              setActiveRole(fallback.role);
+            }
+          } else {
+            setCurrentUser(null);
+          }
+        } catch (err) {
+          console.error('Erro ao carregar sessão do usuário:', err);
+          setCurrentUser(null);
+        } finally {
+          setIsLoadingUser(false);
+        }
+
         try {
           const [dbMaterials, dbModules] = await Promise.all([
             getMaterials(),
             getModules()
           ]);
-          if (dbMaterials && dbMaterials.length > 0) {
-            setMaterials(dbMaterials);
-          }
-          if (dbModules && dbModules.length > 0) {
-            setModules(dbModules);
-          }
+          setMaterials(dbMaterials || []);
+          setModules(dbModules || []);
         } catch {
-          // Fallback gracioso para dados locais
+          // Fallback gracioso para dados padrão
+          setMaterials([]);
+          setModules([]);
         }
       } else {
-        try {
-          const storedMats = localStorage.getItem('neuroacervo_custom_materials');
-          if (storedMats) {
-            const parsed = JSON.parse(storedMats);
-            setMaterials([...INITIAL_MATERIALS, ...parsed]);
-          }
-        } catch {}
+        setIsLoadingUser(false);
       }
 
       // Favoritos e aulas concluídas locais
@@ -102,7 +125,42 @@ export const NeuroProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       } catch {}
     }
 
-    loadData();
+    loadAuthAndData();
+
+    // Ouvir alterações de sessão do Supabase em tempo real
+    let subscription: { unsubscribe: () => void } | null = null;
+    if (isSupabaseConfigured) {
+      const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (session?.user) {
+          const user = session.user;
+          const profile = await getUserProfile(user.id);
+          if (profile) {
+            setCurrentUser(profile);
+            setActiveRole(profile.role);
+          } else {
+            const meta = user.user_metadata || {};
+            const fallback: UserProfile = {
+              id: user.id,
+              name: meta.full_name || user.email?.split('@')[0] || 'Assinante',
+              email: user.email || '',
+              crp: meta.crp ? (meta.crp.toUpperCase().startsWith('CRP') ? meta.crp : `CRP ${meta.crp}`) : '',
+              role: (meta.role as 'member' | 'admin') || 'member',
+              plan: (meta.plan as any) || 'Membro Anual Pro',
+              joinedAt: user.created_at ? new Date(user.created_at).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }) : 'Recente'
+            };
+            setCurrentUser(fallback);
+            setActiveRole(fallback.role);
+          }
+        } else if (event === 'SIGNED_OUT') {
+          setCurrentUser(null);
+        }
+      });
+      subscription = data.subscription;
+    }
+
+    return () => {
+      subscription?.unsubscribe();
+    };
   }, []);
 
   const toggleFavorite = (materialId: string) => {
@@ -160,6 +218,17 @@ export const NeuroProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
+  const refreshMaterials = async () => {
+    if (isSupabaseConfigured) {
+      try {
+        const dbMaterials = await getMaterials();
+        setMaterials(dbMaterials || []);
+      } catch (err) {
+        console.error('Erro ao recarregar materiais:', err);
+      }
+    }
+  };
+
   const addLesson = (moduleId: string, lesson: { title: string; description: string; durationMinutes: number; videoUrl: string; keyTakeaways: string[] }) => {
     setModules(prev => prev.map(m => {
       if (m.id !== moduleId) return m;
@@ -177,12 +246,21 @@ export const NeuroProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }));
   };
 
+  const logout = async () => {
+    await signOut();
+    setCurrentUser(null);
+    if (typeof window !== 'undefined') {
+      window.location.href = '/entrar';
+    }
+  };
+
   return (
     <NeuroContext.Provider
       value={{
         materials,
         modules,
         currentUser,
+        setCurrentUser,
         activeRole,
         setActiveRole,
         favorites,
@@ -196,8 +274,11 @@ export const NeuroProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         resetFilters,
         addMaterial,
         deleteMaterial,
+        refreshMaterials,
         addLesson,
-        isSupabaseConnected: isSupabaseConfigured
+        isSupabaseConnected: isSupabaseConfigured,
+        logout,
+        isLoadingUser
       }}
     >
       {children}

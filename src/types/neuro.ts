@@ -76,7 +76,8 @@ export interface UserProfile {
   email: string;
   crp?: string;
   role: 'admin' | 'member';
-  plan: 'Membro Anual Pro' | 'Membro Mensal' | 'Acesso Institucional';
+  plan: string;
+  billingCycle?: 'mensal' | 'anual';
   avatarUrl?: string;
   joinedAt: string;
 }

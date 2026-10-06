@@ -1,13 +1,27 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { signUp } from '@/lib/supabase';
+import { useSearchParams } from 'next/navigation';
+import { signUp, resendConfirmationEmail } from '@/lib/supabase';
+import { STRIPE_PLANS } from '@/config/plans';
 import './cadastro.css';
 
 type PerfilType = 'psicologo' | 'estudante' | 'outro' | '';
 
-export default function CadastroPage() {
+function CadastroContent() {
+  const searchParams = useSearchParams();
+  const rawPlano = (searchParams.get('plano') || '').toLowerCase();
+  const rawCiclo = (searchParams.get('ciclo') || '').toLowerCase();
+
+  const selectedPlanKey: 'consulta' | 'estudo' | 'pratica' = 
+    rawPlano.includes('pratica') || rawPlano.includes('completo') ? 'pratica' :
+    rawPlano.includes('estudo') || rawPlano.includes('aula') ? 'estudo' : 'consulta';
+
+  const planDef = STRIPE_PLANS[selectedPlanKey];
+  const selectedBillingCycle: 'mensal' | 'anual' = 
+    (selectedPlanKey === 'pratica' && rawCiclo === 'anual') ? 'anual' : 'mensal';
+
   // Step state: 1 = Seus dados, 2 = Acesso, 3 = Sucesso
   const [step, setStep] = useState<1 | 2 | 3>(1);
 
@@ -39,15 +53,34 @@ export default function CadastroPage() {
   const [senhaErr, setSenhaErr] = useState(false);
   const [confErr, setConfErr] = useState(false);
   const [termosErr, setTermosErr] = useState(false);
-  const [cadError, setCadError] = useState(false);
+
+  // Feedback & API states
+  const [step1Msg, setStep1Msg] = useState<string | null>(null);
+  const [cadErrorTitle, setCadErrorTitle] = useState<string | null>(null);
+  const [cadErrorMessage, setCadErrorMessage] = useState<string | null>(null);
+  const [isEmailTaken, setIsEmailTaken] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Resend confirmation email states
+  const [resending, setResending] = useState(false);
+  const [resendStatus, setResendStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [resendCountdown, setResendCountdown] = useState(0);
+
+  useEffect(() => {
+    if (resendCountdown <= 0) return;
+    const timer = setInterval(() => {
+      setResendCountdown((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [resendCountdown]);
 
   // Masks
   const handleCrpChange = (val: string) => {
-    const d = val.replace(/\D/g, '').slice(0, 7);
+    const d = val.replace(/\D/g, '').slice(0, 8);
     const masked = d.length > 2 ? d.slice(0, 2) + '/' + d.slice(2) : d;
     setCrp(masked);
     setCrpErr(false);
+    setStep1Msg(null);
   };
 
   const handleTelChange = (val: string) => {
@@ -76,7 +109,7 @@ export default function CadastroPage() {
 
   // Step 1 -> Step 2 validation
   const handleGoStep2 = () => {
-    const isNomeOk = nome.trim().split(/\s+/).length >= 2;
+    const isNomeOk = nome.trim().length >= 2;
     const isEmailOk = isValidEmail(email);
     const isPerfilOk = Boolean(perfil);
     let isCrpOk = true;
@@ -87,18 +120,58 @@ export default function CadastroPage() {
     setPerfilErr(!isPerfilOk);
 
     if (perfil === 'psicologo') {
-      isCrpOk = /^\d{2}\/\d{4,5}$/.test(crp);
+      const cleanCrp = crp.replace(/\D/g, '');
+      isCrpOk = cleanCrp.length >= 4 && cleanCrp.length <= 8;
       setCrpErr(!isCrpOk);
     } else if (perfil === 'estudante') {
       isInstOk = instituicao.trim().length > 0;
       setInstErr(!isInstOk);
     }
 
-    if (!isNomeOk || !isEmailOk || !isPerfilOk || !isCrpOk || !isInstOk) {
+    if (!isNomeOk) {
+      setStep1Msg('Por favor, informe seu nome.');
+      const el = document.getElementById('nome');
+      el?.focus();
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
 
+    if (!isEmailOk) {
+      setStep1Msg('Por favor, informe um e-mail válido.');
+      const el = document.getElementById('email');
+      el?.focus();
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    if (!isPerfilOk) {
+      setStep1Msg('Por favor, selecione seu perfil: Psicólogo(a), Estudante ou Outro.');
+      const el = document.getElementById('f-perfil');
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    if (!isCrpOk) {
+      setStep1Msg('Por favor, informe um registro de CRP válido (ex: 06/123456).');
+      const el = document.getElementById('crp');
+      el?.focus();
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    if (!isInstOk) {
+      setStep1Msg('Por favor, informe sua instituição de ensino.');
+      const el = document.getElementById('inst');
+      el?.focus();
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    setStep1Msg(null);
     setStep(2);
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   // Submit Registration
@@ -116,7 +189,9 @@ export default function CadastroPage() {
     setSenhaErr(!isSenhaOk);
     setConfErr(!isConfOk);
     setTermosErr(!isTermosOk);
-    setCadError(false);
+    setCadErrorTitle(null);
+    setCadErrorMessage(null);
+    setIsEmailTaken(false);
 
     if (!isSenhaOk || !isConfOk || !isTermosOk) {
       return;
@@ -127,27 +202,74 @@ export default function CadastroPage() {
     try {
       const { error } = await signUp(email.trim(), senha, {
         full_name: nome.trim(),
-        role: perfil,
+        user_type: perfil,
         crp: perfil === 'psicologo' ? crp : undefined,
         clinical_area: perfil === 'psicologo' ? area : undefined,
         institution: perfil === 'estudante' ? instituicao : undefined,
         period: perfil === 'estudante' ? periodo : undefined,
         profession: perfil === 'outro' ? profissao : undefined,
-        whatsapp: whatsapp || undefined,
-        newsletter: novidades
+        phone: whatsapp || undefined,
+        newsletter: novidades,
+        plan: planDef.nome,
+        billing_cycle: selectedBillingCycle
       });
 
       if (error) {
-        setCadError(true);
+        const msg = error.message?.toLowerCase() || '';
+        const status = (error as { status?: number }).status;
+        if (msg.includes('already registered') || msg.includes('already exists') || status === 422) {
+          setIsEmailTaken(true);
+          setCadErrorTitle('Este e-mail já está cadastrado');
+          setCadErrorMessage('Já existe uma conta associada a este e-mail no NeuroAcervo.');
+        } else if (msg.includes('password') || msg.includes('weak')) {
+          setCadErrorTitle('Senha inválida');
+          setCadErrorMessage('A senha informada não atende aos critérios mínimos de segurança.');
+        } else if (msg.includes('rate limit')) {
+          setCadErrorTitle('Muitas tentativas');
+          setCadErrorMessage('Por favor, aguarde alguns instantes antes de tentar novamente.');
+        } else {
+          setCadErrorTitle('Não foi possível criar a conta');
+          setCadErrorMessage(error.message || 'Verifique seus dados ou tente novamente mais tarde.');
+        }
         setLoading(false);
         return;
       }
 
       setLoading(false);
       setStep(3);
-    } catch {
-      setCadError(true);
+    } catch (err: unknown) {
+      const e = err as Error;
+      setCadErrorTitle('Erro inesperado');
+      setCadErrorMessage(e?.message || 'Ocorreu uma falha na conexão. Tente novamente mais tarde.');
       setLoading(false);
+    }
+  };
+
+  const handleResendConfirmation = async () => {
+    if (!email || resending || resendCountdown > 0) return;
+    setResending(true);
+    setResendStatus(null);
+    try {
+      const { error } = await resendConfirmationEmail(email.trim());
+      if (error) {
+        setResendStatus({
+          type: 'error',
+          message: error.message || 'Não foi possível reenviar o link no momento. Aguarde alguns instantes.'
+        });
+      } else {
+        setResendStatus({
+          type: 'success',
+          message: 'Novo link enviado com sucesso! Verifique sua caixa de entrada e spam.'
+        });
+        setResendCountdown(60);
+      }
+    } catch {
+      setResendStatus({
+        type: 'error',
+        message: 'Ocorreu um erro ao reenviar. Tente novamente mais tarde.'
+      });
+    } finally {
+      setResending(false);
     }
   };
 
@@ -241,6 +363,31 @@ export default function CadastroPage() {
                   </li>
                 </ol>
 
+                {rawPlano && (
+                  <div style={{
+                    marginBottom: '18px',
+                    padding: '12px 16px',
+                    borderRadius: '12px',
+                    background: 'rgba(21,20,15,0.04)',
+                    border: '1px solid rgba(21,20,15,0.1)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    fontSize: '13px'
+                  }}>
+                    <div>
+                      <span style={{ color: 'var(--ink-mute)', marginRight: '6px' }}>Plano selecionado:</span>
+                      <strong style={{ color: 'var(--ink)', fontFamily: 'var(--sans)' }}>{planDef.nome}</strong>
+                      <span style={{ marginLeft: '6px', color: 'var(--accent-strong)', fontWeight: 600 }}>
+                        {selectedBillingCycle === 'anual' ? 'R$ 399/ano' : planDef.precoMensal}
+                      </span>
+                    </div>
+                    <Link href="/#planos" style={{ color: 'var(--ink-mute)', textDecoration: 'underline', fontSize: '12px' }}>
+                      Trocar
+                    </Link>
+                  </div>
+                )}
+
                 <form onSubmit={handleSubmit} noValidate>
 
                   {/* ── Passo 1 ── */}
@@ -258,6 +405,7 @@ export default function CadastroPage() {
                             onChange={(e) => {
                               setNome(e.target.value);
                               setNomeErr(false);
+                              setStep1Msg(null);
                             }}
                             required
                           />
@@ -265,7 +413,7 @@ export default function CadastroPage() {
                         {nomeErr && (
                           <span className="cad-err" id="nome-err">
                             <svg viewBox="0 0 24 24"><path d="M12 8v5M12 16h.01"/><circle cx="12" cy="12" r="9"/></svg>
-                            <span>Informe seu nome completo (pelo menos dois nomes).</span>
+                            <span>Informe seu nome.</span>
                           </span>
                         )}
                       </div>
@@ -284,6 +432,7 @@ export default function CadastroPage() {
                             onChange={(e) => {
                               setEmail(e.target.value);
                               setEmailErr(false);
+                              setStep1Msg(null);
                             }}
                             required
                           />
@@ -309,6 +458,7 @@ export default function CadastroPage() {
                               onChange={() => {
                                 setPerfil('psicologo');
                                 setPerfilErr(false);
+                                setStep1Msg(null);
                               }}
                             />
                             <span><i>i.</i>Psicólogo(a)<small>Com registro no CRP</small></span>
@@ -322,6 +472,7 @@ export default function CadastroPage() {
                               onChange={() => {
                                 setPerfil('estudante');
                                 setPerfilErr(false);
+                                setStep1Msg(null);
                               }}
                             />
                             <span><i>ii.</i>Estudante<small>Graduação em psicologia</small></span>
@@ -335,6 +486,7 @@ export default function CadastroPage() {
                               onChange={() => {
                                 setPerfil('outro');
                                 setPerfilErr(false);
+                                setStep1Msg(null);
                               }}
                             />
                             <span><i>iii.</i>Outro<small>Profissional da saúde/educação</small></span>
@@ -457,7 +609,14 @@ export default function CadastroPage() {
                         <span className="cad-hint">Só para avisos de suporte e de novos materiais.</span>
                       </div>
 
-                      <button className="cad-btn" type="button" onClick={handleGoStep2}>
+                      {step1Msg && (
+                        <div className="cad-alert error" role="alert" style={{ marginBottom: '6px' }}>
+                          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M15 9l-6 6"/></svg>
+                          <span>{step1Msg}</span>
+                        </div>
+                      )}
+
+                      <button className="cad-btn" type="submit">
                         <span>Continuar</span>
                         <span className="arrow">
                           <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
@@ -469,10 +628,20 @@ export default function CadastroPage() {
                   {/* ── Passo 2 ── */}
                   {step === 2 && (
                     <div style={{ display: 'grid', gap: '18px' }}>
-                      {cadError && (
+                      {(cadErrorTitle || cadErrorMessage) && (
                         <div className="cad-alert error" role="alert">
                           <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M15 9l-6 6"/></svg>
-                          <span><b>Não foi possível criar a conta.</b> Verifique se o e-mail já está cadastrado ou tente de novo.</span>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <b>{cadErrorTitle || 'Não foi possível criar a conta.'}</b>
+                            <span>{cadErrorMessage}</span>
+                            {isEmailTaken && (
+                              <div style={{ marginTop: '4px' }}>
+                                <Link href="/entrar" className="cad-link" style={{ fontWeight: 600, textDecoration: 'underline' }}>
+                                  Ir para o login ou redefinir senha →
+                                </Link>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       )}
 
@@ -617,25 +786,63 @@ export default function CadastroPage() {
                 <span className="cad-label">Conta criada</span>
                 <h2 id="t-done">Bem-vindo(a) ao <em>acervo</em><span className="dot">.</span></h2>
                 <p className="sub">
-                  Enviamos uma confirmação para <b>{email}</b>.
+                  Enviamos um link de confirmação para <b>{email}</b>.
                 </p>
                 <ol className="cad-next">
                   <li>
-                    <b>01</b>Confirme seu e-mail pelo link que enviamos (confira também o spam).
+                    <b>01</b>Abra sua caixa de entrada e clique no link de ativação da conta (confira também a aba de spam ou promoções).
                   </li>
                   <li>
-                    <b>02</b>Entre com seu e-mail e a senha que você criou.
+                    <b>02</b>Após a confirmação, você será direcionado para o login com a senha que acabou de criar.
                   </li>
                   <li>
-                    <b>03</b>Comece pela Biblioteca: use a busca ou os filtros por tipo de material.
+                    <b>03</b>Acesse a plataforma e explore guias, compêndios, laudos e aulas práticas.
                   </li>
                 </ol>
-                <Link className="cad-btn" href="/entrar">
-                  <span>Ir para o login</span>
-                  <span className="arrow">
-                    <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-                  </span>
-                </Link>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '24px' }}>
+                  <Link className="cad-btn" href="/entrar">
+                    <span>Ir para o login</span>
+                    <span className="arrow">
+                      <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                    </span>
+                  </Link>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', marginTop: '6px' }}>
+                    <button
+                      type="button"
+                      className="cad-btn-ghost"
+                      onClick={handleResendConfirmation}
+                      disabled={resending || resendCountdown > 0}
+                      style={{ width: '100%', justifyContent: 'center' }}
+                    >
+                      {resending
+                        ? 'Reenviando e-mail...'
+                        : resendCountdown > 0
+                        ? `Reenviar e-mail (${resendCountdown}s)`
+                        : 'Não recebeu o link? Reenviar e-mail de confirmação'}
+                    </button>
+
+                    {resendStatus && (
+                      <div
+                        className={`cad-alert ${resendStatus.type === 'success' ? 'ok' : 'error'}`}
+                        style={{ width: '100%', padding: '10px 14px', fontSize: '13px' }}
+                      >
+                        <svg viewBox="0 0 24 24">
+                          {resendStatus.type === 'success' ? (
+                            <path d="m5 12 4.5 4.5L19 7"/>
+                          ) : (
+                            <>
+                              <circle cx="12" cy="12" r="9"/>
+                              <path d="m9 9 6 6M15 9l-6 6"/>
+                            </>
+                          )}
+                        </svg>
+                        <span>{resendStatus.message}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </section>
             )}
           </div>
@@ -652,5 +859,13 @@ export default function CadastroPage() {
         </main>
       </div>
     </div>
+  );
+}
+
+export default function CadastroPage() {
+  return (
+    <Suspense fallback={null}>
+      <CadastroContent />
+    </Suspense>
   );
 }

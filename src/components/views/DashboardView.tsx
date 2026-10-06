@@ -196,15 +196,29 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate, onSele
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {featuredMaterials.map((mat) => (
-            <MaterialCard
-              key={mat.id}
-              material={mat}
-              onSelect={onSelectMaterial}
-            />
-          ))}
-        </div>
+        {featuredMaterials.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {featuredMaterials.map((mat) => (
+              <MaterialCard
+                key={mat.id}
+                material={mat}
+                onSelect={onSelectMaterial}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-dashed border-slate-300 dark:border-slate-800 p-8 text-center space-y-3 bg-white/50 dark:bg-slate-900/50">
+            <div className="w-10 h-10 rounded-full bg-teal-500/10 text-teal-600 dark:text-teal-400 mx-auto flex items-center justify-center">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+              Nenhum material no acervo ainda
+            </h3>
+            <p className="text-xs text-slate-500 max-w-md mx-auto">
+              O acervo está sendo estruturado. Os instrumentos clínicos, testes, roteiros e modelos de laudo serão cadastrados em breve.
+            </p>
+          </div>
+        )}
       </div>
 
     </div>

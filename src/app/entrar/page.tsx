@@ -1,13 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { signIn, resetPasswordForEmail, isSupabaseConfigured } from '@/lib/supabase';
 import './login.css';
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isConfirmed = searchParams.get('confirmed') === 'true';
 
   // View state: 'login' | 'reset'
   const [view, setView] = useState<'login' | 'reset'>('login');
@@ -138,6 +140,13 @@ export default function LoginPage() {
             <p className="sub">Use o e-mail cadastrado na compra.</p>
 
             <form id="form-login" noValidate onSubmit={handleLoginSubmit}>
+              {isConfirmed && (
+                <div className="alert ok" role="status" style={{ marginBottom: '16px' }}>
+                  <svg viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></svg>
+                  <span><b>E-mail confirmado com sucesso!</b> Sua conta está ativa. Faça login para acessar o acervo.</span>
+                </div>
+              )}
+
               <div className="alert error" id="login-error" role="alert" hidden={!loginError}>
                 <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M15 9l-6 6"/></svg>
                 <span><b>E-mail ou senha incorretos.</b> Confira e tente de novo, ou redefina sua senha.</span>
@@ -315,5 +324,13 @@ export default function LoginPage() {
       </main>
 
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
   );
 }

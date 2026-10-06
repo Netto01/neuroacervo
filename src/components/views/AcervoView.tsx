@@ -100,22 +100,26 @@ export const AcervoView: React.FC<AcervoViewProps> = ({ onSelectMaterial }) => {
       ) : (
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-300 dark:border-slate-800 p-12 text-center space-y-4">
           <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 mx-auto flex items-center justify-center">
-            <AlertCircle className="w-6 h-6" />
+            {materials.length === 0 ? <BookOpen className="w-6 h-6 text-teal-600" /> : <AlertCircle className="w-6 h-6" />}
           </div>
           <div>
             <h3 className="text-base font-bold text-slate-900 dark:text-white">
-              Nenhum material encontrado com esses filtros
+              {materials.length === 0 ? 'Nenhum material cadastrado no acervo ainda' : 'Nenhum material encontrado com esses filtros'}
             </h3>
             <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-              Tente buscar por termos mais genéricos ou desmarcar alguns dos domínios e faixas etárias selecionados.
+              {materials.length === 0 
+                ? 'O acervo está preparado. Novos instrumentos de rastreio, protocolos de aplicação e laudos serão cadastrados em breve.'
+                : 'Tente buscar por termos mais genéricos ou desmarcar alguns dos domínios e faixas etárias selecionados.'}
             </p>
           </div>
-          <button
-            onClick={resetFilters}
-            className="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold shadow-sm transition-all"
-          >
-            Limpar todos os filtros
-          </button>
+          {materials.length > 0 && (
+            <button
+              onClick={resetFilters}
+              className="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold shadow-sm transition-all"
+            >
+              Limpar todos os filtros
+            </button>
+          )}
         </div>
       )}
 

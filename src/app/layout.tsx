@@ -12,6 +12,8 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+import { AppProviders } from "@/components/providers/AppProviders";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -28,7 +30,9 @@ export default function RootLayout({
         />
       </head>
       <body suppressHydrationWarning>
-        {children}
+        <AppProviders>
+          {children}
+        </AppProviders>
       </body>
     </html>
   );

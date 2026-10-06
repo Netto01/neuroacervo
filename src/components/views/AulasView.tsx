@@ -99,6 +99,21 @@ export const AulasView: React.FC<AulasViewProps> = ({ onSelectMaterial }) => {
       </div>
 
       {/* Main Content Layout: Player on Left, Modules List on Right */}
+      {modules.length === 0 ? (
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-300 dark:border-slate-800 p-12 text-center space-y-4">
+          <div className="w-12 h-12 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 mx-auto flex items-center justify-center">
+            <Video className="w-6 h-6" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">
+              Nenhuma aula cadastrada no momento
+            </h3>
+            <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+              Os módulos de videoaulas com raciocínio diagnóstico e estudos de caso práticos serão disponibilizados em breve.
+            </p>
+          </div>
+        </div>
+      ) : (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Left Column: Player & Lesson Info (2 cols on large) */}
@@ -339,6 +354,7 @@ export const AulasView: React.FC<AulasViewProps> = ({ onSelectMaterial }) => {
         </div>
 
       </div>
+      )}
 
     </div>
   );

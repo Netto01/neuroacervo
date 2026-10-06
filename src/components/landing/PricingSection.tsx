@@ -24,7 +24,7 @@ export function PricingSection() {
           <h2 className="display" id="h-planos">Escolha o <em>seu</em> acervo<span className="dot">.</span></h2>
           <div className="right">
             <p>Três planos, um acervo que cresce todo mês. Comece por onde fizer sentido e mude de plano quando quiser.</p>
-            <div className="billing" role="group" aria-label="Forma de cobrança do plano Completo">
+            <div className="billing" role="group" aria-label="Forma de cobrança do plano Prática">
               <button
                 type="button"
                 aria-pressed={!isAnual}
@@ -40,7 +40,7 @@ export function PricingSection() {
                 Anual <b>−33%</b>
               </button>
             </div>
-            <span className="billing-note">O pagamento anual está disponível no plano Completo.</span>
+            <span className="billing-note">O pagamento anual está disponível no plano Prática.</span>
           </div>
         </div>
 
@@ -48,7 +48,7 @@ export function PricingSection() {
           {/* Plano 01 */}
           <article className="plan" aria-labelledby="p1">
             <div className="num">01<span className="tag">Leitura</span></div>
-            <h3 id="p1">Acervo <span>PDFs</span></h3>
+            <h3 id="p1">Consulta <span>PDFs</span></h3>
             <p className="for">Para quem quer os materiais de consulta para baixar e usar.</p>
             <div className="price">
               <span className="cur">R$</span>
@@ -63,8 +63,8 @@ export function PricingSection() {
               <li className="off"><svg viewBox="0 0 24 24"><path d="M6 12h12"/></svg><span>Aulas gravadas</span></li>
               <li className="off"><svg viewBox="0 0 24 24"><path d="M6 12h12"/></svg><span>Recursos interativos</span></li>
             </ul>
-            <Link className="btn btn-ghost" href="/cadastro?plano=acervo&ciclo=mensal">
-              <span>Assinar o Acervo</span>
+            <Link className="btn btn-ghost" href="/cadastro?plano=consulta&ciclo=mensal">
+              <span>Assinar o Consulta</span>
               <span className="arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
             </Link>
           </article>
@@ -72,7 +72,7 @@ export function PricingSection() {
           {/* Plano 02 */}
           <article className="plan" aria-labelledby="p2">
             <div className="num">02<span className="tag">Estudo</span></div>
-            <h3 id="p2">Acervo <span>+ Aulas</span></h3>
+            <h3 id="p2">Estudo <span>+ Aulas</span></h3>
             <p className="for">Para quem quer os materiais e as aulas gravadas em módulos.</p>
             <div className="price">
               <span className="cur">R$</span>
@@ -81,14 +81,14 @@ export function PricingSection() {
             </div>
             <div className="price-note">Cobrança mensal</div>
             <ul className="feat">
-              <li><svg viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></svg><span>Todos os PDFs do plano Acervo</span></li>
+              <li><svg viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></svg><span>Todos os PDFs do plano Consulta</span></li>
               <li><svg viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></svg><span><b>Aulas gravadas</b> em módulos, com progresso salvo</span></li>
               <li className="off"><svg viewBox="0 0 24 24"><path d="M6 12h12"/></svg><span>Baralhos interativos</span></li>
               <li className="off"><svg viewBox="0 0 24 24"><path d="M6 12h12"/></svg><span>Histórias temáticas</span></li>
               <li className="off"><svg viewBox="0 0 24 24"><path d="M6 12h12"/></svg><span>Novos recursos interativos todo mês</span></li>
             </ul>
-            <Link className="btn btn-ghost" href="/cadastro?plano=aulas&ciclo=mensal">
-              <span>Assinar Acervo + Aulas</span>
+            <Link className="btn btn-ghost" href="/cadastro?plano=estudo&ciclo=mensal">
+              <span>Assinar o Estudo</span>
               <span className="arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
             </Link>
           </article>
@@ -96,7 +96,7 @@ export function PricingSection() {
           {/* Plano 03 (destaque) */}
           <article className="plan featured" aria-labelledby="p3">
             <div className="num">03<span className="tag">Recomendado</span></div>
-            <h3 id="p3">Completo <span>tudo + prática</span></h3>
+            <h3 id="p3">Prática <span>tudo + sessão</span></h3>
             <p className="for">Para quem avalia e quer, além do estudo, ferramentas para usar na sessão.</p>
             <div className="price">
               <span className="cur">R$</span>
@@ -106,7 +106,7 @@ export function PricingSection() {
               <span className="per">{isAnual ? '/ano' : '/mês'}</span>
             </div>
             <div className="price-note">
-              {isAnual ? 'Equivale a R$ 33,25 por mês' : 'Só R$ 10 a mais que o plano Aulas'}
+              {isAnual ? 'Equivale a R$ 33,25 por mês' : 'Só R$ 10 a mais que o plano Estudo'}
             </div>
             <ul className="feat">
               <li><svg viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></svg><span>Todos os PDFs e todas as aulas</span></li>
@@ -122,9 +122,9 @@ export function PricingSection() {
             )}
             <Link
               className="btn btn-primary"
-              href={`/cadastro?plano=completo&ciclo=${billingCycle}`}
+              href={`/cadastro?plano=pratica&ciclo=${billingCycle}`}
             >
-              <span>Assinar o Completo</span>
+              <span>Assinar o Prática</span>
               <span className="arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
             </Link>
           </article>
@@ -141,22 +141,22 @@ export function PricingSection() {
                 <th scope="col" className="col-resource">O que está incluído</th>
                 <th scope="col" className="col-plan">
                   <div className="th-plan">
-                    <span className="th-title">Acervo</span>
+                    <span className="th-title">Consulta</span>
                     <small className="th-price">R$ 19,90<span className="th-period">/mês</span></small>
-                    <Link href="/cadastro" className="btn-table-cta">Assinar</Link>
+                    <Link href="/cadastro?plano=consulta&ciclo=mensal" className="btn-table-cta">Assinar</Link>
                   </div>
                 </th>
                 <th scope="col" className="col-plan">
                   <div className="th-plan">
-                    <span className="th-title"><span className="hide-mobile">Acervo </span>+ Aulas</span>
+                    <span className="th-title">Estudo</span>
                     <small className="th-price">R$ 39,90<span className="th-period">/mês</span></small>
-                    <Link href="/cadastro" className="btn-table-cta">Assinar</Link>
+                    <Link href="/cadastro?plano=estudo&ciclo=mensal" className="btn-table-cta">Assinar</Link>
                   </div>
                 </th>
                 <th scope="col" className="col-plan col-feat">
                   <div className="th-plan">
                     <span className="th-tag">Recomendado</span>
-                    <span className="th-title">Completo</span>
+                    <span className="th-title">Prática</span>
                     {billingCycle === 'anual' ? (
                       <small className="th-price th-price-promo">
                         <span className="th-val">R$ 33,25</span><span className="th-period">/mês</span>
@@ -165,7 +165,7 @@ export function PricingSection() {
                     ) : (
                       <small className="th-price">R$ 49,90<span className="th-period">/mês</span></small>
                     )}
-                    <Link href="/cadastro" className="btn-table-cta btn-table-feat">Assinar</Link>
+                    <Link href={`/cadastro?plano=pratica&ciclo=${billingCycle}`} className="btn-table-cta btn-table-feat">Assinar</Link>
                   </div>
                 </th>
               </tr>

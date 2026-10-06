@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNeuro } from '@/context/NeuroContext';
+import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import { CognitiveDomain, MaterialType, AgeGroup } from '@/types/neuro';
 import { DOMAIN_LABELS, TYPE_LABELS } from '@/data/neuroData';
 import { 
@@ -46,13 +47,36 @@ export const AdminView: React.FC = () => {
   const [lessonVideoUrl, setLessonVideoUrl] = useState('https://www.youtube.com/embed/dQw4w9WgXcQ');
   const [lessonTakeaway, setLessonTakeaway] = useState('');
 
-  // Mock members list
-  const [members] = useState([
-    { id: '1', name: 'Dra. Camila Vasconcelos', email: 'camila.neuro@clinica.com.br', crp: 'CRP 06/142981', plan: 'Anual Pro', status: 'Ativo', date: '15/01/2026' },
-    { id: '2', name: 'Dr. Rodrigo Mendes', email: 'rodrigo.mendes@neuropsico.med.br', crp: 'CRP 08/098432', plan: 'Anual Pro', status: 'Ativo', date: '02/02/2026' },
-    { id: '3', name: 'Dra. Larissa Toledo', email: 'larissa.toledo@psicologia.com', crp: 'CRP 05/112093', plan: 'Mensal', status: 'Ativo', date: '18/02/2026' },
-    { id: '4', name: 'Mariana Duarte', email: 'mariana.estudante@psi.ufmg.br', crp: 'Estudante/Pós', plan: 'Mensal', status: 'Ativo', date: '25/02/2026' }
-  ]);
+  // Real members list from Supabase
+  const [members, setMembers] = useState<{ id: string; name: string; email: string; crp: string; plan: string; status: string; date: string }[]>([]);
+
+  useEffect(() => {
+    async function loadMembers() {
+      if (isSupabaseConfigured) {
+        try {
+          const { data, error } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
+          if (!error && data && data.length > 0) {
+            setMembers(data.map(p => ({
+              id: p.id,
+              name: p.full_name || 'Sem nome informado',
+              email: p.email,
+              crp: p.crp || '–',
+              plan: p.plan || 'Membro Anual Pro',
+              status: 'Ativo',
+              date: p.created_at ? new Date(p.created_at).toLocaleDateString('pt-BR') : '–'
+            })));
+          } else {
+            setMembers([]);
+          }
+        } catch {
+          setMembers([]);
+        }
+      } else {
+        setMembers([]);
+      }
+    }
+    loadMembers();
+  }, []);
 
   const handleSaveMaterial = (e: React.FormEvent) => {
     e.preventDefault();
@@ -201,34 +225,40 @@ export const AdminView: React.FC = () => {
           </div>
 
           <div className="divide-y divide-slate-100 dark:divide-slate-800">
-            {materials.map((mat) => (
-              <div key={mat.id} className="p-4 flex items-center justify-between gap-4 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${TYPE_LABELS[mat.type].badge}`}>
-                      {TYPE_LABELS[mat.type].label}
-                    </span>
-                    <span className="text-xs text-slate-400 font-mono">
-                      Formato: {mat.downloadFormat}
-                    </span>
-                  </div>
-                  <h4 className="font-bold text-sm text-slate-900 dark:text-white">
-                    {mat.title}
-                  </h4>
-                  <p className="text-xs text-slate-500 line-clamp-1">
-                    {mat.subtitle}
-                  </p>
-                </div>
-
-                <button
-                  onClick={() => deleteMaterial(mat.id)}
-                  className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors shrink-0"
-                  title="Excluir Material"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+            {materials.length === 0 ? (
+              <div className="p-8 text-center text-slate-400 text-xs">
+                Nenhum material cadastrado ainda. Clique em &quot;+ Novo Material&quot; acima para cadastrar o primeiro.
               </div>
-            ))}
+            ) : (
+              materials.map((mat) => (
+                <div key={mat.id} className="p-4 flex items-center justify-between gap-4 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${TYPE_LABELS[mat.type].badge}`}>
+                        {TYPE_LABELS[mat.type].label}
+                      </span>
+                      <span className="text-xs text-slate-400 font-mono">
+                        Formato: {mat.downloadFormat}
+                      </span>
+                    </div>
+                    <h4 className="font-bold text-sm text-slate-900 dark:text-white">
+                      {mat.title}
+                    </h4>
+                    <p className="text-xs text-slate-500 line-clamp-1">
+                      {mat.subtitle}
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={() => deleteMaterial(mat.id)}
+                    className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors shrink-0"
+                    title="Excluir Material"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))
+            )}
           </div>
         </div>
       )}
@@ -236,7 +266,12 @@ export const AdminView: React.FC = () => {
       {/* Tab 2: Lessons Management */}
       {activeAdminTab === 'aulas' && (
         <div className="space-y-4">
-          {modules.map((mod) => (
+          {modules.length === 0 ? (
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 p-8 text-center text-slate-400 text-xs">
+              Nenhum módulo ou aula cadastrada ainda.
+            </div>
+          ) : (
+            modules.map((mod) => (
             <div key={mod.id} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
               <div className="p-4 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
                 <div>
@@ -261,9 +296,10 @@ export const AdminView: React.FC = () => {
                 ))}
               </div>
             </div>
-          ))}
-        </div>
-      )}
+          ))
+        )}
+      </div>
+    )}
 
       {/* Tab 3: Members List */}
       {activeAdminTab === 'membros' && (

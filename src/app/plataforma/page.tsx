@@ -8,48 +8,24 @@ import { MaterialModal } from '@/components/materials/MaterialModal';
 import { MaterialItem } from '@/types/neuro';
 import './dashboard.css';
 
-type PlanoTipo = 'acervo' | 'aulas' | 'completo';
-
-const PLANOS_INFO = {
-  acervo: {
-    nome: 'Acervo',
-    preco: 'R$ 19,90/mês',
-    desc: 'Todos os PDFs do acervo. Renova em 03/11/2026.',
-    cta: 'Fazer upgrade',
-    ctaHref: '/#planos'
-  },
-  aulas: {
-    nome: 'Acervo + Aulas',
-    preco: 'R$ 39,90/mês',
-    desc: 'PDFs e aulas gravadas. Renova em 03/11/2026.',
-    cta: 'Fazer upgrade',
-    ctaHref: '/#planos'
-  },
-  completo: {
-    nome: 'Completo',
-    preco: 'R$ 49,90/mês',
-    desc: 'Acesso a todo o acervo, às aulas e aos recursos interativos. Renova em 03/11/2026.',
-    cta: 'Gerenciar assinatura',
-    ctaHref: '#'
-  }
-};
-
-const NIVEL: Record<PlanoTipo, number> = {
-  acervo: 1,
-  aulas: 2,
-  completo: 3
-};
+import { resolveUserPlan } from '@/utils/userPlan';
 
 function DashboardInner() {
   const router = useRouter();
-  const { materials, currentUser, activeMaterialModal, setActiveMaterialModal } = useNeuro();
+  const { materials, modules, favorites, currentUser, activeMaterialModal, setActiveMaterialModal, logout, isLoadingUser } = useNeuro();
 
-  const [plano, setPlano] = useState<PlanoTipo>('completo');
   const [activeTab, setActiveTab] = useState<'inicio' | 'biblioteca' | 'aulas' | 'recursos' | 'pasta'>('inicio');
   const [busca, setBusca] = useState('');
   const [saudacao, setSaudacao] = useState('Boa noite');
   const [hoje, setHoje] = useState('');
   const buscaInputRef = useRef<HTMLInputElement>(null);
+
+  // Redireciona para o login se não houver usuário autenticado
+  useEffect(() => {
+    if (!isLoadingUser && !currentUser) {
+      router.push('/entrar');
+    }
+  }, [isLoadingUser, currentUser, router]);
 
   useEffect(() => {
     const h = new Date().getHours();
@@ -70,8 +46,19 @@ function DashboardInner() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const nivelAtual = NIVEL[plano];
-  const infoPlano = PLANOS_INFO[plano];
+  if (isLoadingUser) {
+    return (
+      <div style={{ display: 'flex', minHeight: '100vh', alignItems: 'center', justifyContent: 'center', background: '#efe7d2', color: '#15140f', fontFamily: 'sans-serif' }}>
+        <div style={{ textAlign: 'center' }}>
+          <img src="/brand/isologo-preto.svg" width="36" height="46" alt="NeuroAcervo" style={{ opacity: 0.8, marginBottom: '16px' }} />
+          <p style={{ fontSize: '14px', letterSpacing: '0.05em' }}>Carregando sua plataforma...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const planInfo = resolveUserPlan(currentUser);
+  const nivelAtual = planInfo.nivel;
 
   const handleOpenMaterialModal = (idOuTitulo: string) => {
     const achado = materials.find(m => 
@@ -86,7 +73,7 @@ function DashboardInner() {
   };
 
   return (
-    <div className="dash-body" data-plano={plano}>
+    <div className="dash-body" data-plano={planInfo.tipo}>
       <a className="skip" href="#conteudo">Pular para o conteúdo</a>
 
       {/* SVG Symbols centralizados */}
@@ -127,118 +114,103 @@ function DashboardInner() {
           <div>
             <div className="nav-label">Acervo</div>
             <nav className="nav">
-              <button
-                type="button"
-                onClick={() => setActiveTab('inicio')}
-                aria-current={activeTab === 'inicio' ? 'page' : undefined}
+              <Link
+                href="/plataforma"
+                aria-current="page"
               >
                 <svg className="ico"><use href="#i-home"/></svg>
                 <span>Início</span>
-              </button>
+              </Link>
 
-              <button
-                type="button"
-                onClick={() => {
-                  handleOpenMaterialModal('mat-moca');
-                }}
-              >
+              <Link href="/biblioteca">
                 <svg className="ico"><use href="#i-lib"/></svg>
                 <span>Biblioteca</span>
-                <span className="n">{materials.length > 0 ? materials.length : 248}</span>
-              </button>
+                <span className="n">{materials.length}</span>
+              </Link>
 
-              <button
-                type="button"
-                onClick={() => {
-                  if (nivelAtual < 2) {
-                    router.push('/#planos');
-                  } else {
-                    handleOpenMaterialModal('Aulas');
-                  }
-                }}
-              >
-                <svg className="ico"><use href="#i-aula"/></svg>
+              <Link href="/aulas">
+                <svg className="ico"><use href={!planInfo.hasAulas ? "#i-lock" : "#i-aula"}/></svg>
                 <span>Aulas</span>
-                {nivelAtual >= 2 ? (
-                  <span className="n">38</span>
+                {!planInfo.hasAulas ? (
+                  <span className="pill" style={{ opacity: 0.7, background: 'rgba(21,20,15,0.06)' }}>Estudo</span>
                 ) : (
-                  <svg className="ico sm lock"><use href="#i-lock"/></svg>
+                  <span className="n">{modules.reduce((acc, m) => acc + (m.lessons?.length || 0), 0)}</span>
                 )}
-              </button>
+              </Link>
 
-              <button
-                type="button"
-                onClick={() => {
-                  if (nivelAtual < 3) {
-                    router.push('/#planos');
-                  } else {
-                    const el = document.getElementById('tools');
-                    el?.scrollIntoView({ behavior: 'smooth' });
-                  }
-                }}
-              >
-                <svg className="ico"><use href="#i-cards"/></svg>
+              <Link href="/recursos-interativos">
+                <svg className="ico"><use href={!planInfo.hasRecursos ? "#i-lock" : "#i-cards"}/></svg>
                 <span>Recursos interativos</span>
-                {nivelAtual >= 3 ? (
-                  <span className="pill">Novo</span>
+                {!planInfo.hasRecursos ? (
+                  <span className="pill" style={{ opacity: 0.7, background: 'rgba(21,20,15,0.06)' }}>Prática</span>
                 ) : (
-                  <svg className="ico sm lock"><use href="#i-lock"/></svg>
+                  <span className="pill">Novo</span>
                 )}
-              </button>
+              </Link>
 
-              <button
-                type="button"
-                onClick={() => {
-                  const el = document.getElementById('h-pasta');
-                  el?.scrollIntoView({ behavior: 'smooth' });
-                }}
-              >
+              <Link href="/minha-pasta">
                 <svg className="ico"><use href="#i-folder"/></svg>
                 <span>Minha pasta</span>
-                <span className="n">6</span>
-              </button>
+                <span className="n">{favorites.length}</span>
+              </Link>
             </nav>
           </div>
 
           <div>
-            <div className="nav-label">Atalhos</div>
+            <div className="nav-label">Atalhos Clínicos</div>
             <nav className="nav" aria-label="Atalhos">
-              <button type="button" onClick={() => handleOpenMaterialModal('Span de dígitos')}>
+              <Link href="/guias">
                 <svg className="ico"><use href="#i-guia"/></svg>
                 <span>Guias rápidos</span>
-              </button>
-              <button type="button" onClick={() => handleOpenMaterialModal('Modelo de laudo')}>
+              </Link>
+              <Link href="/laudos">
                 <svg className="ico"><use href="#i-laudo"/></svg>
                 <span>Modelos de laudo</span>
-              </button>
-              <button type="button" onClick={() => handleOpenMaterialModal('Anamnese')}>
+              </Link>
+              <Link href="/anamnese">
                 <svg className="ico"><use href="#i-anamnese"/></svg>
                 <span>Anamnese</span>
-              </button>
+              </Link>
+              <Link href="/compendios">
+                <svg className="ico"><use href="#i-compendio"/></svg>
+                <span>Compêndios</span>
+              </Link>
             </nav>
           </div>
 
           <div className="plan-box">
             <div className="k">Seu plano</div>
-            <div className="v">{infoPlano.nome} <em>· {infoPlano.preco}</em></div>
-            <p>{infoPlano.desc}</p>
-            <Link href={infoPlano.ctaHref}>
-              <span>{infoPlano.cta}</span>
+            <div className="v">{planInfo.nome} <em>· {planInfo.preco}</em></div>
+            <p>{planInfo.desc}</p>
+            <Link href={planInfo.ctaHref}>
+              <span>{planInfo.cta}</span>
               <svg className="ico sm"><use href="#i-arrow"/></svg>
             </Link>
           </div>
 
           <div className="user">
             <span className="avatar" aria-hidden="true">
-              {currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'M'}
+              {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
             </span>
-            <div>
-              <b>{currentUser.name || 'Marina Souza'}</b>
-              <span>{currentUser.crp || 'CRP 06/12345'}</span>
+            <div className="user-info">
+              <b title={currentUser?.name || currentUser?.email || 'Assinante'}>
+                {currentUser?.name || currentUser?.email || 'Assinante'}
+              </b>
+              <span title={currentUser?.crp ? (currentUser.crp.toUpperCase().startsWith('CRP') ? currentUser.crp : `CRP ${currentUser.crp}`) : (currentUser?.email || '')}>
+                {currentUser?.crp ? (currentUser.crp.toUpperCase().startsWith('CRP') ? currentUser.crp : `CRP ${currentUser.crp}`) : (currentUser?.email || '')}
+              </span>
             </div>
-            <Link href="/entrar" aria-label="Sair">
+            <button
+              type="button"
+              onClick={async () => {
+                await logout();
+              }}
+              aria-label="Sair da conta"
+              title="Sair da conta"
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', padding: 0 }}
+            >
               <svg className="ico"><use href="#i-out"/></svg>
-            </Link>
+            </button>
           </div>
         </aside>
 
@@ -275,21 +247,25 @@ function DashboardInner() {
             <div>
               <span className="label">Área do assinante</span>
               <h1>
-                <span id="saudacao">{saudacao}</span>, <em>{currentUser.name ? currentUser.name.split(' ')[0] : 'Marina'}</em><span className="dot">.</span>
+                <span id="saudacao">{saudacao}</span>, <em>{currentUser?.name ? currentUser.name.split(' ')[0] : 'colega'}</em><span className="dot">.</span>
               </h1>
-              <p>Chegaram 3 materiais novos desde a sua última visita. Continue de onde parou ou explore o acervo.</p>
+              <p>
+                {materials.length > 0 
+                  ? `Você tem ${materials.length} material(is) no acervo. Continue de onde parou ou explore o acervo.`
+                  : 'Bem-vindo(a) ao seu painel. O acervo está preparado para receber os novos materiais e instrumentos.'}
+              </p>
             </div>
             <div className="stats" aria-label="Seu mês">
               <div className="stat">
-                <b>12</b>
+                <b>0</b>
                 <span>materiais abertos este mês</span>
               </div>
               <div className="stat">
-                <b>{nivelAtual >= 2 ? '4' : '–'}</b>
+                <b>0</b>
                 <span>aulas concluídas</span>
               </div>
               <div className="stat">
-                <b>6</b>
+                <b>{favorites.length}</b>
                 <span>itens na sua pasta</span>
               </div>
             </div>
@@ -302,95 +278,32 @@ function DashboardInner() {
               <span className="t" id="h-cont">Continue de onde parou</span>
             </div>
             <div className="resume">
-              {nivelAtual >= 2 ? (
-                <div 
-                  className="lesson" 
-                  role="button" 
-                  tabIndex={0} 
-                  onClick={() => handleOpenMaterialModal('Raciocínio clínico na anamnese')}
-                >
-                  <div>
-                    <div className="lr">
-                      <b>Aula em andamento</b>
-                      <span>Módulo 3 · Aula 2</span>
-                    </div>
-                    <h3>Raciocínio clínico <em>na anamnese</em> do TDAH</h3>
-                    <p>Como conduzir a entrevista com pais e professores e o que registrar para o laudo.</p>
-                    <div className="prog">
-                      <span>25:12</span>
-                      <div className="bar"><i style={{ width: '60%' }}></i></div>
-                      <span>42:05</span>
-                    </div>
-                    <span className="go">
-                      Continuar aula 
-                      <span><svg className="ico sm"><use href="#i-arrow"/></svg></span>
-                    </span>
-                  </div>
-                  <div className="thumb" aria-hidden="true">
-                    <svg className="curve" viewBox="0 0 240 90">
-                      <path className="a" d="M30,90 C80,90 95,20 120,20 C145,20 160,90 210,90 Z"/>
-                      <path className="c" d="M0,90 C80,90 95,20 120,20 C145,20 160,90 240,90"/>
-                    </svg>
-                    <span className="play"><svg className="ico"><use href="#i-play"/></svg></span>
-                    <span className="t">60% assistido</span>
-                  </div>
+              {materials.length === 0 ? (
+                <div style={{ gridColumn: '1 / -1', background: 'var(--bone)', border: '1px dashed var(--line)', borderRadius: '16px', padding: '36px 24px', textAlign: 'center' }}>
+                  <svg className="ico" style={{ width: 32, height: 32, opacity: 0.4, margin: '0 auto 8px', display: 'block' }}><use href="#i-lib"/></svg>
+                  <h4 style={{ margin: '0 0 6px', fontSize: '15px', fontWeight: 600 }}>Nenhum material em andamento</h4>
+                  <p style={{ margin: 0, fontSize: '13px', color: 'var(--ink-faint)' }}>Os materiais e aulas cadastrados aparecerão aqui para você retomar seus estudos de onde parou.</p>
                 </div>
               ) : (
-                <div className="locked-panel">
-                  <svg className="ico" style={{ width: 28, height: 28, color: 'var(--accent-strong)' }}>
-                    <use href="#i-aula"/>
-                  </svg>
-                  <h3>Aulas gravadas em módulos</h3>
-                  <p>Estude no seu ritmo, com o progresso salvo, a partir do plano Acervo + Aulas.</p>
-                  <Link className="btn" href="/#planos">
-                    <span>Ver planos</span>
-                    <span><svg className="ico sm"><use href="#i-arrow"/></svg></span>
-                  </Link>
+                <div className="recent" style={{ gridColumn: '1 / -1' }}>
+                  <h4>Materiais disponíveis</h4>
+                  {materials.slice(0, 3).map((mat) => (
+                    <div 
+                      key={mat.id}
+                      className="row" 
+                      role="button" 
+                      tabIndex={0} 
+                      onClick={() => handleOpenMaterialModal(mat.id)}
+                    >
+                      <span className="mark bg-guia"><svg className="ico"><use href="#i-guia"/></svg></span>
+                      <span className="t">
+                        <b>{mat.title}</b>
+                        <span>{mat.subtitle || mat.type}</span>
+                      </span>
+                    </div>
+                  ))}
                 </div>
               )}
-
-              <div className="recent">
-                <h4>Abertos recentemente</h4>
-                <div 
-                  className="row" 
-                  role="button" 
-                  tabIndex={0} 
-                  onClick={() => handleOpenMaterialModal('Span de dígitos')}
-                >
-                  <span className="mark bg-guia"><svg className="ico"><use href="#i-guia"/></svg></span>
-                  <span className="t">
-                    <b>Span de dígitos: aplicação e interpretação</b>
-                    <span>Guia rápido · 6 páginas</span>
-                  </span>
-                  <span className="when">hoje</span>
-                </div>
-                <div 
-                  className="row" 
-                  role="button" 
-                  tabIndex={0} 
-                  onClick={() => handleOpenMaterialModal('Modelo de laudo: criança e adolescente')}
-                >
-                  <span className="mark bg-laudo"><svg className="ico"><use href="#i-laudo"/></svg></span>
-                  <span className="t">
-                    <b>Modelo de laudo: criança e adolescente</b>
-                    <span>Modelo de laudo · DOCX e PDF</span>
-                  </span>
-                  <span className="when">ontem</span>
-                </div>
-                <div 
-                  className="row" 
-                  role="button" 
-                  tabIndex={0} 
-                  onClick={() => handleOpenMaterialModal('Roteiro de anamnese para adultos')}
-                >
-                  <span className="mark bg-anamnese"><svg className="ico"><use href="#i-anamnese"/></svg></span>
-                  <span className="t">
-                    <b>Roteiro de anamnese para adultos</b>
-                    <span>Anamnese · 9 páginas</span>
-                  </span>
-                  <span className="when">2 dias</span>
-                </div>
-              </div>
             </div>
           </section>
 
@@ -399,58 +312,53 @@ function DashboardInner() {
             <div className="sec-rule">
               <span className="roman">II.</span>
               <span className="t" id="h-cat">Explore o acervo</span>
-              <button type="button" onClick={() => handleOpenMaterialModal('mat-moca')}>Ver biblioteca →</button>
+              <Link href="/biblioteca">Ver biblioteca →</Link>
             </div>
             <div className="cats">
-              <div className="cat" role="button" tabIndex={0} onClick={() => handleOpenMaterialModal('Guia rápido')}>
+              <Link href="/guias" className="cat">
                 <span className="mark bg-guia"><svg className="ico"><use href="#i-guia"/></svg></span>
                 <b>Guias rápidos</b>
-                <span className="cnt">41 itens</span>
-              </div>
-              <div className="cat" role="button" tabIndex={0} onClick={() => handleOpenMaterialModal('Modelo de laudo')}>
+                <span className="cnt">{materials.filter(m => m.type === 'guia_rapido').length} itens</span>
+              </Link>
+              <Link href="/laudos" className="cat">
                 <span className="mark bg-laudo"><svg className="ico"><use href="#i-laudo"/></svg></span>
                 <b>Modelos de laudo</b>
-                <span className="cnt">18 itens</span>
-              </div>
-              <div className="cat" role="button" tabIndex={0} onClick={() => handleOpenMaterialModal('Anamnese')}>
+                <span className="cnt">{materials.filter(m => m.type === 'modelo_laudo').length} itens</span>
+              </Link>
+              <Link href="/anamnese" className="cat">
                 <span className="mark bg-anamnese"><svg className="ico"><use href="#i-anamnese"/></svg></span>
                 <b>Anamnese</b>
-                <span className="cnt">22 itens</span>
-              </div>
-              <div className="cat" role="button" tabIndex={0} onClick={() => handleOpenMaterialModal('Compêndio')}>
+                <span className="cnt">{materials.filter(m => m.type === 'entrevista_anamnese').length} itens</span>
+              </Link>
+              <Link href="/compendios" className="cat">
                 <span className="mark bg-compendio"><svg className="ico"><use href="#i-compendio"/></svg></span>
                 <b>Compêndios</b>
-                <span className="cnt">12 itens</span>
-              </div>
-              <div className="cat" role="button" tabIndex={0} onClick={() => handleOpenMaterialModal('Instrumento')}>
+                <span className="cnt">{materials.filter(m => m.type === 'compendio_estudo').length} itens</span>
+              </Link>
+              <Link href="/biblioteca?tipo=instrumento_rastreio" className="cat">
                 <span className="mark bg-instrumento"><svg className="ico"><use href="#i-instrumento"/></svg></span>
                 <b>Instrumentos</b>
-                <span className="cnt">53 itens</span>
-              </div>
-              <div className="cat" role="button" tabIndex={0} onClick={() => handleOpenMaterialModal('PDF')}>
+                <span className="cnt">{materials.filter(m => m.type === 'instrumento_rastreio').length} itens</span>
+              </Link>
+              <Link href="/biblioteca?tipo=tabela_normativa" className="cat">
                 <span className="mark bg-pdf"><svg className="ico"><use href="#i-pdf"/></svg></span>
-                <b>PDFs e artigos</b>
-                <span className="cnt">64 itens</span>
-              </div>
-              <div 
+                <b>Tabelas normativas</b>
+                <span className="cnt">{materials.filter(m => m.type === 'tabela_normativa').length} itens</span>
+              </Link>
+              <Link 
+                href={nivelAtual >= 2 ? "/aulas" : "/#planos"}
                 className="cat" 
-                role="button" 
-                tabIndex={0} 
-                onClick={() => {
-                  if (nivelAtual < 2) router.push('/#planos');
-                  else handleOpenMaterialModal('Aulas');
-                }}
               >
                 <span className="mark bg-aula"><svg className="ico"><use href="#i-aula"/></svg></span>
                 <b>Aulas</b>
                 {nivelAtual >= 2 ? (
-                  <span className="cnt">38 aulas</span>
+                  <span className="cnt">{modules.reduce((acc, m) => acc + (m.lessons?.length || 0), 0)} aulas</span>
                 ) : (
                   <span className="cnt" style={{ display: 'inline-flex', gap: 5, alignItems: 'center' }}>
                     <svg className="ico sm"><use href="#i-lock"/></svg>Plano Aulas
                   </span>
                 )}
-              </div>
+              </Link>
             </div>
           </section>
 
@@ -459,15 +367,16 @@ function DashboardInner() {
             <div className="sec-rule">
               <span className="roman">III.</span>
               <span className="t" id="h-tools">Recursos interativos</span>
-              {nivelAtual >= 3 && <button type="button">Ver todos →</button>}
+              {nivelAtual >= 3 && <Link href="/recursos-interativos">Ver todos →</Link>}
             </div>
             <div className="tools" id="tools">
               <div 
                 className={`tool ${nivelAtual < 3 ? 'locked' : ''}`}
-                role="button"
-                tabIndex={0}
+                role="button" 
+                tabIndex={0} 
                 onClick={() => {
                   if (nivelAtual < 3) router.push('/#planos');
+                  else router.push('/recursos-interativos');
                 }}
               >
                 <div className="tool-body" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -480,7 +389,7 @@ function DashboardInner() {
                 </div>
                 {nivelAtual < 3 && (
                   <div className="lock-over">
-                    <b><svg className="ico sm"><use href="#i-lock"/></svg>Disponível no plano Completo</b>
+                    <b><svg className="ico sm"><use href="#i-lock"/></svg>Disponível no plano Prática</b>
                     <span className="btn">
                       Por R$ {nivelAtual === 2 ? '10' : '30'} a mais por mês 
                       <span><svg className="ico sm"><use href="#i-arrow"/></svg></span>
@@ -511,7 +420,7 @@ function DashboardInner() {
                 </div>
                 {nivelAtual < 3 && (
                   <div className="lock-over">
-                    <b><svg className="ico sm"><use href="#i-lock"/></svg>Disponível no plano Completo</b>
+                    <b><svg className="ico sm"><use href="#i-lock"/></svg>Disponível no plano Prática</b>
                     <span className="btn">
                       Por R$ {nivelAtual === 2 ? '10' : '30'} a mais por mês 
                       <span><svg className="ico sm"><use href="#i-arrow"/></svg></span>
@@ -542,7 +451,7 @@ function DashboardInner() {
                 </div>
                 {nivelAtual < 3 && (
                   <div className="lock-over">
-                    <b><svg className="ico sm"><use href="#i-lock"/></svg>Disponível no plano Completo</b>
+                    <b><svg className="ico sm"><use href="#i-lock"/></svg>Disponível no plano Prática</b>
                     <span className="btn">
                       Por R$ {nivelAtual === 2 ? '10' : '30'} a mais por mês 
                       <span><svg className="ico sm"><use href="#i-arrow"/></svg></span>
@@ -559,73 +468,31 @@ function DashboardInner() {
               <div className="sec-rule">
                 <span className="roman">IV.</span>
                 <span className="t" id="h-new">Novidades no acervo</span>
-                <button type="button" onClick={() => handleOpenMaterialModal('mat-moca')}>Ver todas →</button>
+                <Link href="/biblioteca">Ver todas →</Link>
               </div>
               <div className="list">
-                <div 
-                  className="row" 
-                  role="button" 
-                  tabIndex={0} 
-                  onClick={() => handleOpenMaterialModal('Teste de trilhas: aplicação e interpretação')}
-                >
-                  <span className="mark bg-guia"><svg className="ico"><use href="#i-guia"/></svg></span>
-                  <span className="t">
-                    <b>Teste de trilhas: aplicação e interpretação</b>
-                    <span>Guia rápido · Adulto · 5 páginas</span>
-                  </span>
-                  <span className="badge">Novo</span>
-                </div>
-
-                <div 
-                  className="row" 
-                  role="button" 
-                  tabIndex={0} 
-                  onClick={() => handleOpenMaterialModal('Compêndio de memória episódica')}
-                >
-                  <span className="mark bg-compendio"><svg className="ico"><use href="#i-compendio"/></svg></span>
-                  <span className="t">
-                    <b>Compêndio de memória episódica</b>
-                    <span>Compêndio · 32 páginas</span>
-                  </span>
-                  <span className="badge">Novo</span>
-                </div>
-
-                <div 
-                  className="row" 
-                  role="button" 
-                  tabIndex={0} 
-                  onClick={() => {
-                    if (nivelAtual < 3) router.push('/#planos');
-                    else handleOpenMaterialModal('Baralho de funções executivas');
-                  }}
-                >
-                  <span className="mark bg-instrumento"><svg className="ico"><use href="#i-cards"/></svg></span>
-                  <span className="t">
-                    <b>Baralho de funções executivas</b>
-                    <span>Recurso interativo · online</span>
-                  </span>
-                  {nivelAtual >= 3 ? (
-                    <span className="badge">Novo</span>
-                  ) : (
-                    <span className="badge lk">
-                      <svg className="ico sm"><use href="#i-lock"/></svg>Completo
-                    </span>
-                  )}
-                </div>
-
-                <div 
-                  className="row" 
-                  role="button" 
-                  tabIndex={0} 
-                  onClick={() => handleOpenMaterialModal('Modelo de laudo: idoso com queixa de memória')}
-                >
-                  <span className="mark bg-laudo"><svg className="ico"><use href="#i-laudo"/></svg></span>
-                  <span className="t">
-                    <b>Modelo de laudo: idoso com queixa de memória</b>
-                    <span>Modelo de laudo · DOCX e PDF</span>
-                  </span>
-                  <span className="badge up">Atualizado</span>
-                </div>
+                {materials.length === 0 ? (
+                  <div style={{ background: 'var(--bone)', border: '1px dashed var(--line)', borderRadius: '14px', padding: '24px 16px', textAlign: 'center' }}>
+                    <p style={{ margin: 0, fontSize: '13px', color: 'var(--ink-faint)' }}>Nenhum material cadastrado ainda. As novidades aparecerão aqui quando forem publicadas.</p>
+                  </div>
+                ) : (
+                  materials.slice(0, 4).map((m) => (
+                    <div
+                      key={m.id}
+                      className="row"
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => handleOpenMaterialModal(m.id)}
+                    >
+                      <span className="mark bg-guia"><svg className="ico"><use href="#i-guia"/></svg></span>
+                      <span className="t">
+                        <b>{m.title}</b>
+                        <span>{m.subtitle || m.type}</span>
+                      </span>
+                      <span className="badge">Novo</span>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
 
@@ -633,50 +500,33 @@ function DashboardInner() {
               <div className="sec-rule">
                 <span className="roman">V.</span>
                 <span className="t" id="h-pasta">Minha pasta</span>
-                <button type="button" onClick={() => handleOpenMaterialModal('mat-moca')}>Abrir →</button>
               </div>
               <div className="folder">
-                <div 
-                  className="row" 
-                  role="button" 
-                  tabIndex={0} 
-                  onClick={() => handleOpenMaterialModal('Roteiro de entrevista com a escola')}
-                >
-                  <span className="mark bg-anamnese"><svg className="ico"><use href="#i-anamnese"/></svg></span>
-                  <span className="t">
-                    <b>Roteiro de entrevista com a escola</b>
-                    <span>Anamnese</span>
-                  </span>
-                  <svg className="ico" style={{ color: 'var(--accent-strong)' }}><use href="#i-bookmark"/></svg>
-                </div>
-
-                <div 
-                  className="row" 
-                  role="button" 
-                  tabIndex={0} 
-                  onClick={() => handleOpenMaterialModal('Folha de registro: fluência verbal')}
-                >
-                  <span className="mark bg-instrumento"><svg className="ico"><use href="#i-instrumento"/></svg></span>
-                  <span className="t">
-                    <b>Folha de registro: fluência verbal</b>
-                    <span>Instrumento</span>
-                  </span>
-                  <svg className="ico" style={{ color: 'var(--accent-strong)' }}><use href="#i-bookmark"/></svg>
-                </div>
-
-                <div 
-                  className="row" 
-                  role="button" 
-                  tabIndex={0} 
-                  onClick={() => handleOpenMaterialModal('Critérios diagnósticos: síntese comentada')}
-                >
-                  <span className="mark bg-pdf"><svg className="ico"><use href="#i-pdf"/></svg></span>
-                  <span className="t">
-                    <b>Critérios diagnósticos: síntese comentada</b>
-                    <span>PDF</span>
-                  </span>
-                  <svg className="ico" style={{ color: 'var(--accent-strong)' }}><use href="#i-bookmark"/></svg>
-                </div>
+                {favorites.length === 0 ? (
+                  <div style={{ background: 'var(--bone)', border: '1px dashed var(--line)', borderRadius: '14px', padding: '24px 16px', textAlign: 'center' }}>
+                    <p style={{ margin: 0, fontSize: '13px', color: 'var(--ink-faint)' }}>Sua pasta de materiais salvos está vazia.</p>
+                  </div>
+                ) : (
+                  favorites.map((favId) => {
+                    const mat = materials.find(m => m.id === favId);
+                    return (
+                      <div 
+                        key={favId}
+                        className="row" 
+                        role="button" 
+                        tabIndex={0} 
+                        onClick={() => handleOpenMaterialModal(favId)}
+                      >
+                        <span className="mark bg-anamnese"><svg className="ico"><use href="#i-anamnese"/></svg></span>
+                        <span className="t">
+                          <b>{mat?.title || favId}</b>
+                          <span>{mat?.type || 'Material'}</span>
+                        </span>
+                        <svg className="ico" style={{ color: 'var(--accent-strong)' }}><use href="#i-bookmark"/></svg>
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </div>
           </section>
@@ -691,63 +541,28 @@ function DashboardInner() {
       </div>
 
       {/* barra inferior (celular) */}
-      <nav className="tabbar" aria-label="Navegação">
-        <button 
-          type="button" 
-          onClick={() => setActiveTab('inicio')}
-          aria-current={activeTab === 'inicio' ? 'page' : undefined}
-        >
+      <nav className="tabbar" aria-label="Navegação móvel">
+        <Link href="/plataforma" aria-current="page">
           <svg className="ico"><use href="#i-home"/></svg>
           <span>Início</span>
-        </button>
-        <button 
-          type="button" 
-          onClick={() => handleOpenMaterialModal('mat-moca')}
-        >
+        </Link>
+        <Link href="/biblioteca">
           <svg className="ico"><use href="#i-lib"/></svg>
           <span>Biblioteca</span>
-        </button>
-        <button 
-          type="button" 
-          onClick={() => {
-            if (nivelAtual < 2) router.push('/#planos');
-            else handleOpenMaterialModal('Aulas');
-          }}
-        >
+        </Link>
+        <Link href="/aulas">
           <svg className="ico"><use href="#i-aula"/></svg>
           <span>Aulas</span>
-        </button>
-        <Link href="/entrar">
-          <svg className="ico"><use href="#i-user"/></svg>
-          <span>Conta</span>
+        </Link>
+        <Link href="/recursos-interativos">
+          <svg className="ico"><use href="#i-cards"/></svg>
+          <span>Recursos</span>
+        </Link>
+        <Link href="/minha-pasta">
+          <svg className="ico"><use href="#i-folder"/></svg>
+          <span>Pasta</span>
         </Link>
       </nav>
-
-      {/* Seletor flutuante para demonstração de planos */}
-      <div className="demo" role="group" aria-label="Demonstração: ver o painel como">
-        <span className="lbl">Ver como</span>
-        <button
-          type="button"
-          onClick={() => setPlano('acervo')}
-          aria-pressed={plano === 'acervo'}
-        >
-          Acervo
-        </button>
-        <button
-          type="button"
-          onClick={() => setPlano('aulas')}
-          aria-pressed={plano === 'aulas'}
-        >
-          Aulas
-        </button>
-        <button
-          type="button"
-          onClick={() => setPlano('completo')}
-          aria-pressed={plano === 'completo'}
-        >
-          Completo
-        </button>
-      </div>
 
       {/* Modal de detalhes do material se aberto */}
       <MaterialModal
@@ -759,9 +574,5 @@ function DashboardInner() {
 }
 
 export default function PlataformaPage() {
-  return (
-    <NeuroProvider>
-      <DashboardInner />
-    </NeuroProvider>
-  );
+  return <DashboardInner />;
 }

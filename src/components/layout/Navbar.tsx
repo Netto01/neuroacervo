@@ -1,6 +1,8 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useNeuro } from '@/context/NeuroContext';
 import { 
   Brain, 
@@ -9,26 +11,30 @@ import {
   FileText, 
   Compass, 
   ShieldCheck, 
-  User, 
-  Search,
   Sparkles,
-  LayoutDashboard
+  LayoutDashboard,
+  FolderHeart
 } from 'lucide-react';
 
 interface NavbarProps {
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
+  activeTab?: string;
+  setActiveTab?: (tab: string) => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
+  const pathname = usePathname();
   const { activeRole, setActiveRole, currentUser, favorites } = useNeuro();
 
   const navItems = [
-    { id: 'dashboard', label: 'Início', icon: LayoutDashboard },
-    { id: 'acervo', label: 'Acervo & Filtros', icon: BookOpen },
-    { id: 'aulas', label: 'Videoaulas', icon: Video },
-    { id: 'laudos', label: 'Laudos & Anamneses', icon: FileText },
-    { id: 'guias', label: 'Guias & Cortes', icon: Compass },
+    { id: 'dashboard', label: 'Início', href: '/plataforma', icon: LayoutDashboard },
+    { id: 'biblioteca', label: 'Biblioteca', href: '/biblioteca', icon: BookOpen },
+    { id: 'aulas', label: 'Aulas', href: '/aulas', icon: Video },
+    { id: 'recursos', label: 'Recursos', href: '/recursos-interativos', icon: Sparkles },
+    { id: 'pasta', label: 'Minha Pasta', href: '/minha-pasta', icon: FolderHeart },
+    { id: 'guias', label: 'Guias', href: '/guias', icon: Compass },
+    { id: 'laudos', label: 'Laudos', href: '/laudos', icon: FileText },
+    { id: 'anamnese', label: 'Anamnese', href: '/anamnese', icon: FileText },
+    { id: 'compendios', label: 'Compêndios', href: '/compendios', icon: BookOpen },
   ];
 
   return (
@@ -37,8 +43,8 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
         <div className="flex items-center justify-between h-16 gap-4">
           
           {/* Brand Logo */}
-          <div 
-            onClick={() => setActiveTab('dashboard')}
+          <Link 
+            href="/plataforma"
             className="flex items-center gap-3 cursor-pointer select-none group"
           >
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-teal-600 via-emerald-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-teal-500/20 group-hover:scale-105 transition-transform">
@@ -57,21 +63,22 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
                 Hub de Avaliação Neuropsicológica
               </p>
             </div>
-          </div>
+          </Link>
 
           {/* Navigation Items (Desktop) */}
-          <nav className="hidden md:flex items-center space-x-1 lg:space-x-2">
+          <nav className="hidden lg:flex items-center space-x-1">
             {navItems.map((item) => {
               const Icon = item.icon;
-              const isActive = activeTab === item.id && activeRole === 'member';
+              const isActive = pathname === item.href || (activeTab === item.id && activeRole === 'member');
               return (
-                <button
+                <Link
                   key={item.id}
+                  href={item.href}
                   onClick={() => {
                     setActiveRole('member');
-                    setActiveTab(item.id);
+                    setActiveTab?.(item.id);
                   }}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                  className={`flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-xs xl:text-sm font-medium transition-all ${
                     isActive
                       ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-950 shadow-sm'
                       : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 hover:text-slate-900 dark:hover:text-white'
@@ -79,7 +86,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
                 >
                   <Icon className="w-4 h-4" />
                   <span>{item.label}</span>
-                </button>
+                </Link>
               );
             })}
           </nav>
@@ -92,7 +99,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
               <button
                 onClick={() => {
                   setActiveRole('member');
-                  if (activeTab === 'admin') setActiveTab('dashboard');
+                  setActiveTab?.('dashboard');
                 }}
                 className={`px-2.5 py-1 rounded-md transition-all ${
                   activeRole === 'member'
@@ -105,7 +112,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
               <button
                 onClick={() => {
                   setActiveRole('admin');
-                  setActiveTab('admin');
+                  setActiveTab?.('admin');
                 }}
                 className={`flex items-center gap-1 px-2.5 py-1 rounded-md transition-all ${
                   activeRole === 'admin'
@@ -119,13 +126,10 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
             </div>
 
             {/* Quick Favorites Count */}
-            <button
-              onClick={() => {
-                setActiveRole('member');
-                setActiveTab('acervo');
-              }}
+            <Link
+              href="/minha-pasta"
               className="relative p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
-              title="Favoritos"
+              title="Minha Pasta"
             >
               <Sparkles className="w-4 h-4 text-amber-500" />
               {favorites.length > 0 && (
@@ -133,22 +137,28 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
                   {favorites.length}
                 </span>
               )}
-            </button>
+            </Link>
 
             {/* User Profile Pill */}
-            <div className="flex items-center gap-2 pl-2 border-l border-slate-200 dark:border-slate-800">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-slate-700 to-slate-900 dark:from-slate-700 dark:to-teal-900 flex items-center justify-center text-white text-xs font-semibold">
-                CV
+            {currentUser ? (
+              <div className="flex items-center gap-2 pl-2 border-l border-slate-200 dark:border-slate-800">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-slate-700 to-slate-900 dark:from-slate-700 dark:to-teal-900 flex items-center justify-center text-white text-xs font-semibold">
+                  {currentUser.name ? currentUser.name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() : 'U'}
+                </div>
+                <div className="hidden lg:block text-left">
+                  <p className="text-xs font-medium text-slate-800 dark:text-slate-200 leading-tight">
+                    {currentUser.name}
+                  </p>
+                  <p className="text-[10px] text-teal-600 dark:text-teal-400 font-mono">
+                    {currentUser.crp || currentUser.email}
+                  </p>
+                </div>
               </div>
-              <div className="hidden lg:block text-left">
-                <p className="text-xs font-medium text-slate-800 dark:text-slate-200 leading-tight">
-                  {currentUser.name}
-                </p>
-                <p className="text-[10px] text-teal-600 dark:text-teal-400 font-mono">
-                  {currentUser.crp}
-                </p>
-              </div>
-            </div>
+            ) : (
+              <Link href="/entrar" className="text-xs font-medium text-teal-600 dark:text-teal-400 px-3 py-1 rounded-md border border-teal-500/30 hover:bg-teal-500/10">
+                Entrar
+              </Link>
+            )}
 
           </div>
 
@@ -156,16 +166,17 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
       </div>
 
       {/* Mobile Sub-Navigation Bar */}
-      <div className="md:hidden border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-950/95 overflow-x-auto py-2 px-4 flex items-center gap-2 no-scrollbar">
+      <div className="lg:hidden border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-950/95 overflow-x-auto py-2 px-4 flex items-center gap-2 no-scrollbar">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = activeTab === item.id && activeRole === 'member';
+          const isActive = pathname === item.href || (activeTab === item.id && activeRole === 'member');
           return (
-            <button
+            <Link
               key={item.id}
+              href={item.href}
               onClick={() => {
                 setActiveRole('member');
-                setActiveTab(item.id);
+                setActiveTab?.(item.id);
               }}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap shrink-0 transition-all ${
                 isActive
@@ -175,7 +186,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
             >
               <Icon className="w-3.5 h-3.5" />
               <span>{item.label}</span>
-            </button>
+            </Link>
           );
         })}
       </div>

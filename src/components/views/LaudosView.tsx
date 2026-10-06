@@ -75,43 +75,57 @@ export const LaudosView: React.FC<LaudosViewProps> = ({ onSelectMaterial }) => {
           Templates de Laudos e Entrevistas Prontos para Download
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {reportMaterials.map((mat) => (
-            <div
-              key={mat.id}
-              onClick={() => onSelectMaterial(mat)}
-              className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800/90 p-5 shadow-sm hover:shadow-lg hover:border-teal-500/50 cursor-pointer transition-all flex flex-col justify-between group"
-            >
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
-                    {mat.downloadFormat} Editável
-                  </span>
-                  <span className="text-[11px] text-slate-400 font-mono">
-                    {mat.downloadSize}
-                  </span>
+        {reportMaterials.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {reportMaterials.map((mat) => (
+              <div
+                key={mat.id}
+                onClick={() => onSelectMaterial(mat)}
+                className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800/90 p-5 shadow-sm hover:shadow-lg hover:border-teal-500/50 cursor-pointer transition-all flex flex-col justify-between group"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                      {mat.downloadFormat} Editável
+                    </span>
+                    <span className="text-[11px] text-slate-400 font-mono">
+                      {mat.downloadSize}
+                    </span>
+                  </div>
+
+                  <h3 className="font-bold text-slate-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors line-clamp-2 text-base mb-1.5">
+                    {mat.title}
+                  </h3>
+                  <p className="text-xs text-slate-500 line-clamp-3 mb-4">
+                    {mat.subtitle}
+                  </p>
                 </div>
 
-                <h3 className="font-bold text-slate-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors line-clamp-2 text-base mb-1.5">
-                  {mat.title}
-                </h3>
-                <p className="text-xs text-slate-500 line-clamp-3 mb-4">
-                  {mat.subtitle}
-                </p>
-              </div>
-
-              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                <span className="text-xs text-teal-700 dark:text-teal-400 font-semibold group-hover:underline">
-                  Ver estrutura do modelo
-                </span>
-                <div className="p-2 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 text-xs font-bold flex items-center gap-1 group-hover:scale-105 transition-transform">
-                  <Download className="w-3.5 h-3.5" />
-                  <span>Baixar</span>
+                <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                  <span className="text-xs text-teal-700 dark:text-teal-400 font-semibold group-hover:underline">
+                    Ver estrutura do modelo
+                  </span>
+                  <div className="p-2 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 text-xs font-bold flex items-center gap-1 group-hover:scale-105 transition-transform">
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Baixar</span>
+                  </div>
                 </div>
               </div>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-dashed border-slate-300 dark:border-slate-800 p-8 text-center space-y-3 bg-white dark:bg-slate-900">
+            <div className="w-10 h-10 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 mx-auto flex items-center justify-center">
+              <FileText className="w-5 h-5" />
             </div>
-          ))}
-        </div>
+            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+              Nenhum modelo de laudo cadastrado ainda
+            </h3>
+            <p className="text-xs text-slate-500 max-w-md mx-auto">
+              Os modelos editáveis de laudos e roteiros de anamnese estruturados conforme o CFP serão adicionados em breve.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Copy-Paste Standard Clinical Clauses */}
