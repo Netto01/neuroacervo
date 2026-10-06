@@ -1,0 +1,25 @@
+{
+  "name": "NeuroAcervo",
+  "short_name": "NeuroAcervo",
+  "icons": [
+    {
+      "src": "/favicon/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "theme_color": "#2f6b31",
+  "background_color": "#efe7d2",
+  "display": "standalone"
+}

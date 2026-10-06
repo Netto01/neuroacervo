@@ -4,10 +4,26 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "NeuroAcervo · Avaliação neuropsicológica com método",
   description: "Guias rápidos de aplicação e interpretação, modelos de laudo, roteiros de anamnese, compêndios e aulas de avaliação neuropsicológica.",
+  icons: {
+    icon: [
+      { url: "/favicon/favicon.ico", sizes: "any" },
+      { url: "/favicon/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon/favicon-32x32.png", type: "image/png", sizes: "32x32" },
+      { url: "/favicon/favicon-16x16.png", type: "image/png", sizes: "16x16" },
+      { url: "/favicon/favicon-48x48.png", type: "image/png", sizes: "48x48" },
+    ],
+    apple: [
+      { url: "/favicon/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+    other: [
+      { rel: "mask-icon", url: "/favicon/favicon.svg", color: "#2f6b31" },
+    ],
+  },
+  manifest: "/favicon/site.webmanifest",
 };
 
 export const viewport: Viewport = {
-  themeColor: "#efe7d2",
+  themeColor: "#2f6b31",
   width: "device-width",
   initialScale: 1,
 };
