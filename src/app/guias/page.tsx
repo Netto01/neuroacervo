@@ -6,7 +6,6 @@ import { useNeuro } from '@/context/NeuroContext';
 import { PlatformShell } from '@/components/layout/PlatformShell';
 import { MaterialItem } from '@/types/neuro';
 import { getMaterialReaderUrl, downloadMaterialFile } from '@/utils/materialActions';
-import '@/app/plataforma/dashboard.css';
 
 export default function GuiasPage() {
   const { materials, favorites, toggleFavorite } = useNeuro();

@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { NeuroProvider, useNeuro } from '@/context/NeuroContext';
 import { PlatformShell } from '@/components/layout/PlatformShell';
-import '@/app/plataforma/dashboard.css';
 import { 
   Play, 
   Pause, 

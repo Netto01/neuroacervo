@@ -69,7 +69,7 @@ export const PlatformShell: React.FC<PlatformShellProps> = ({
 
   if (isLoadingUser) {
     return (
-      <div style={{ display: 'flex', minHeight: '100vh', alignItems: 'center', justifyContent: 'center', background: 'var(--paper)', color: 'var(--ink)', fontFamily: 'var(--body)' }}>
+      <div style={{ display: 'flex', minHeight: '100vh', alignItems: 'center', justifyContent: 'center', background: '#efe7d2', color: '#15140f', fontFamily: 'sans-serif' }}>
         <div style={{ textAlign: 'center' }}>
           <img src="/brand/isologo-preto.svg" width="36" height="46" alt="NeuroAcervo" style={{ opacity: 0.8, marginBottom: '16px' }} />
           <p style={{ fontSize: '14px', letterSpacing: '0.05em' }}>Carregando sua plataforma...</p>

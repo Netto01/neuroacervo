@@ -11,10 +11,10 @@
   --line: rgba(21, 20, 15, 0.16);
   --line-soft: rgba(21, 20, 15, 0.08);
   --desk: #e3dac3;
-  --sans: var(--font-inter-tight), "Inter Tight", "Inter", system-ui, sans-serif;
-  --serif: var(--font-serif), "Playfair Display", Georgia, serif;
-  --body: var(--font-inter), "Inter", system-ui, sans-serif;
-  --mono: var(--font-mono), "JetBrains Mono", ui-monospace, Menlo, monospace;
+  --sans: "Inter Tight", "Inter", system-ui, sans-serif;
+  --serif: "Playfair Display", Georgia, serif;
+  --body: "Inter", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
   --noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .42  0 0 0 0 .36  0 0 0 0 .22  0 0 0 0 .06 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
   --head: 64px;
   --left: 272px;
