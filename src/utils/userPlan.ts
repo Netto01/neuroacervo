@@ -48,7 +48,7 @@ export function resolveUserPlan(user: UserProfile | null): PlanAccessInfo {
       tipo: 'pratica',
       nivel: 3,
       nome: 'Prática',
-      preco: isAnual ? 'R$ 399/ano (R$ 33,25/mês)' : 'R$ 49,90/mês',
+      preco: isAnual ? 'R$ 33,25/mês' : 'R$ 49,90/mês',
       desc: 'Acesso a todo o acervo de consulta, às aulas gravadas e aos recursos interativos de prática clínica.',
       cta: 'Gerenciar assinatura',
       ctaHref: 'mailto:suporte@neuroacervo.com.br?subject=Gerenciar%20Assinatura',
