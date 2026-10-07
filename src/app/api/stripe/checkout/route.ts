@@ -1,6 +1,44 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { getStripePriceId, STRIPE_PLANS } from '@/config/plans';
+import { STRIPE_PLANS } from '@/config/plans';
+
+/**
+ * Localiza dinamicamente o Price ID diretamente na API da Stripe
+ * buscando pelo produto que corresponde ao plano ('Consulta', 'Estudo', 'Prática')
+ * e pelo ciclo de faturamento ('mensal' -> month, 'anual' -> year).
+ */
+async function resolveStripePriceId(
+  stripe: Stripe,
+  planKey: string,
+  billingCycle: 'mensal' | 'anual' = 'mensal'
+): Promise<string> {
+  const products = await stripe.products.list({ active: true, limit: 30 });
+
+  const targetProduct = products.data.find((p) => {
+    const name = p.name.toLowerCase();
+    if (planKey === 'consulta') return name.includes('consulta');
+    if (planKey === 'estudo') return name.includes('estudo');
+    if (planKey === 'pratica') return name.includes('prática') || name.includes('pratica');
+    return false;
+  });
+
+  if (!targetProduct) {
+    throw new Error(`Produto para o plano "${planKey}" não foi encontrado na sua conta Stripe.`);
+  }
+
+  // Busca os preços ativos vinculados a este produto
+  const prices = await stripe.prices.list({ product: targetProduct.id, active: true });
+  const interval = billingCycle === 'anual' ? 'year' : 'month';
+  const targetPrice = prices.data.find((pr) => pr.recurring?.interval === interval);
+
+  if (!targetPrice) {
+    throw new Error(
+      `Preço para cobrança ${billingCycle} (${interval}) não foi encontrado no produto "${targetProduct.name}" na Stripe.`
+    );
+  }
+
+  return targetPrice.id;
+}
 
 export async function POST(req: Request) {
   try {
@@ -22,15 +60,10 @@ export async function POST(req: Request) {
       );
     }
 
-    const priceId = getStripePriceId(planKey, billingCycle);
-    if (!priceId) {
-      return NextResponse.json(
-        { error: `Nenhum Price ID encontrado para o plano ${planKey} no ciclo ${billingCycle}.` },
-        { status: 400 }
-      );
-    }
-
     const stripe = new Stripe(secretKey);
+
+    // Puxa o Price ID diretamente da API da Stripe no backend
+    const priceId = await resolveStripePriceId(stripe, planKey, billingCycle);
 
     // Identificar a URL base (host) da aplicação
     const origin = req.headers.get('origin') || 
