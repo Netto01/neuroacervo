@@ -4,20 +4,82 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { NeuroProvider, useNeuro } from '@/context/NeuroContext';
-import { MaterialModal } from '@/components/materials/MaterialModal';
-import { MaterialItem } from '@/types/neuro';
+import { MaterialItem, MaterialType } from '@/types/neuro';
+import { DOMAIN_LABELS, AGE_LABELS, TYPE_LABELS } from '@/data/neuroData';
 import './dashboard.css';
 
 import { resolveUserPlan } from '@/utils/userPlan';
 
+const getTypeConfig = (type?: string) => {
+  switch (type) {
+    case 'guia_rapido':
+      return {
+        label: 'Guia Rápido de Aplicação',
+        shortLabel: 'Guia Rápido',
+        ico: 'i-guia',
+        bg: 'bg-guia',
+        cTag: 'c-guia'
+      };
+    case 'modelo_laudo':
+      return {
+        label: 'Modelo de Laudo Clínico',
+        shortLabel: 'Laudo',
+        ico: 'i-laudo',
+        bg: 'bg-laudo',
+        cTag: 'c-laudo'
+      };
+    case 'entrevista_anamnese':
+      return {
+        label: 'Entrevista de Anamnese',
+        shortLabel: 'Anamnese',
+        ico: 'i-anamnese',
+        bg: 'bg-anamnese',
+        cTag: 'c-anamnese'
+      };
+    case 'compendio_estudo':
+      return {
+        label: 'Compêndio de Estudos',
+        shortLabel: 'Compêndio',
+        ico: 'i-compendio',
+        bg: 'bg-compendio',
+        cTag: 'c-compendio'
+      };
+    case 'instrumento_rastreio':
+      return {
+        label: 'Instrumento de Rastreio',
+        shortLabel: 'Instrumento',
+        ico: 'i-instrumento',
+        bg: 'bg-instrumento',
+        cTag: 'c-instrumento'
+      };
+    case 'tabela_normativa':
+      return {
+        label: 'Tabela Normativa',
+        shortLabel: 'Tabela',
+        ico: 'i-pdf',
+        bg: 'bg-pdf',
+        cTag: 'c-pdf'
+      };
+    default:
+      return {
+        label: 'Material do Acervo',
+        shortLabel: 'Material',
+        ico: 'i-guia',
+        bg: 'bg-guia',
+        cTag: 'c-guia'
+      };
+  }
+};
+
 function DashboardInner() {
   const router = useRouter();
-  const { materials, modules, favorites, currentUser, activeMaterialModal, setActiveMaterialModal, logout, isLoadingUser } = useNeuro();
+  const { materials, modules, favorites, toggleFavorite, currentUser, logout, isLoadingUser } = useNeuro();
 
   const [activeTab, setActiveTab] = useState<'inicio' | 'biblioteca' | 'aulas' | 'recursos' | 'pasta'>('inicio');
   const [busca, setBusca] = useState('');
   const [saudacao, setSaudacao] = useState('Boa noite');
   const [hoje, setHoje] = useState('');
+  const [activeDrawerMaterial, setActiveDrawerMaterial] = useState<MaterialItem | null>(null);
   const buscaInputRef = useRef<HTMLInputElement>(null);
 
   // Redireciona para o login se não houver usuário autenticado
@@ -37,6 +99,9 @@ function DashboardInner() {
     }
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setActiveDrawerMaterial(null);
+      }
       if (e.key === '/' && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
         e.preventDefault();
         buscaInputRef.current?.focus();
@@ -60,16 +125,24 @@ function DashboardInner() {
   const planInfo = resolveUserPlan(currentUser);
   const nivelAtual = planInfo.nivel;
 
-  const handleOpenMaterialModal = (idOuTitulo: string) => {
+  const handleOpenMaterial = (idOuTitulo: string) => {
     const achado = materials.find(m => 
       m.id === idOuTitulo || 
       m.title.toLowerCase().includes(idOuTitulo.toLowerCase())
     );
     if (achado) {
-      setActiveMaterialModal(achado);
+      setActiveDrawerMaterial(achado);
     } else if (materials.length > 0) {
-      setActiveMaterialModal(materials[0]);
+      setActiveDrawerMaterial(materials[0]);
     }
+  };
+
+  const handleDownload = (material: MaterialItem) => {
+    if (material.downloadUrl && (material.downloadUrl.startsWith('http://') || material.downloadUrl.startsWith('https://') || material.downloadUrl.startsWith('/'))) {
+      window.open(material.downloadUrl, '_blank');
+      return;
+    }
+    window.open(`/leitor?id=${material.id}`, '_blank');
   };
 
   return (
@@ -220,19 +293,99 @@ function DashboardInner() {
             <Link className="mobile-brand" href="/plataforma" aria-label="NeuroAcervo, início">
               <img src="/brand/isologo-preto.svg" width="22" height="28" alt="NeuroAcervo" />
             </Link>
-            <label className="search">
-              <svg className="ico"><use href="#i-search"/></svg>
-              <input
-                id="busca"
-                ref={buscaInputRef}
-                type="search"
-                value={busca}
-                onChange={(e) => setBusca(e.target.value)}
-                placeholder="Buscar teste, função ou tema"
-                aria-label="Buscar no acervo"
-              />
-              <span className="kbd">/</span>
-            </label>
+            <div style={{ position: 'relative', flex: 1, maxWidth: '520px' }}>
+              <label className="search" style={{ width: '100%' }}>
+                <svg className="ico"><use href="#i-search"/></svg>
+                <input
+                  id="busca"
+                  ref={buscaInputRef}
+                  type="search"
+                  value={busca}
+                  onChange={(e) => setBusca(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && busca.trim()) {
+                      router.push(`/biblioteca?busca=${encodeURIComponent(busca.trim())}`);
+                    }
+                  }}
+                  placeholder="Buscar teste, função ou tema"
+                  aria-label="Buscar no acervo"
+                />
+                <span className="kbd">/</span>
+              </label>
+
+              {busca.trim().length > 0 && (
+                <div 
+                  style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 6px)',
+                    left: 0,
+                    right: 0,
+                    zIndex: 60,
+                    background: 'var(--paper)',
+                    border: '1px solid var(--line)',
+                    borderRadius: '14px',
+                    boxShadow: '0 12px 30px rgba(21, 20, 15, 0.12)',
+                    padding: '8px',
+                    maxHeight: '320px',
+                    overflowY: 'auto'
+                  }}
+                >
+                  {(() => {
+                    const termo = busca.toLowerCase();
+                    const filtrados = materials.filter(m => 
+                      m.title.toLowerCase().includes(termo) ||
+                      m.subtitle?.toLowerCase().includes(termo) ||
+                      m.description?.toLowerCase().includes(termo) ||
+                      m.targetPopulation?.toLowerCase().includes(termo)
+                    );
+                    if (filtrados.length === 0) {
+                      return (
+                        <div style={{ padding: '12px', fontSize: '13px', color: 'var(--ink-mute)', textAlign: 'center' }}>
+                          Nenhum material encontrado para &quot;{busca}&quot;
+                        </div>
+                      );
+                    }
+                    return (
+                      <>
+                        <div style={{ padding: '6px 10px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '.1em', color: 'var(--ink-faint)', borderBottom: '1px solid var(--line-soft)', marginBottom: '4px' }}>
+                          Materiais encontrados ({filtrados.length})
+                        </div>
+                        {filtrados.slice(0, 5).map(m => {
+                          const cfg = getTypeConfig(m.type);
+                          return (
+                            <div
+                              key={m.id}
+                              className="row"
+                              role="button"
+                              tabIndex={0}
+                              style={{ cursor: 'pointer', padding: '8px 10px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '10px' }}
+                              onClick={() => {
+                                handleOpenMaterial(m.id);
+                                setBusca('');
+                              }}
+                            >
+                              <span className={`mark ${cfg.bg}`} style={{ width: '32px', height: '32px', borderRadius: '8px', display: 'grid', placeItems: 'center' }}>
+                                <svg className="ico" style={{ width: '16px', height: '16px' }}><use href={`#${cfg.ico}`}/></svg>
+                              </span>
+                              <span className="t" style={{ flex: 1, minWidth: 0 }}>
+                                <b style={{ display: 'block', fontSize: '13.5px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.title}</b>
+                                <span style={{ fontSize: '12px', color: 'var(--ink-mute)' }}>{m.subtitle || cfg.label}</span>
+                              </span>
+                            </div>
+                          );
+                        })}
+                        <Link
+                          href={`/biblioteca?busca=${encodeURIComponent(busca.trim())}`}
+                          style={{ display: 'block', textAlign: 'center', padding: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--ink)', borderTop: '1px solid var(--line-soft)', marginTop: '4px' }}
+                        >
+                          Ver todos os resultados na biblioteca →
+                        </Link>
+                      </>
+                    );
+                  })()}
+                </div>
+              )}
+            </div>
             <div className="top-meta">
               <span id="hoje">{hoje}</span>
               <button className="icon-btn" type="button" aria-label="Novidades (3 novas)">
@@ -287,21 +440,24 @@ function DashboardInner() {
               ) : (
                 <div className="recent" style={{ gridColumn: '1 / -1' }}>
                   <h4>Materiais disponíveis</h4>
-                  {materials.slice(0, 3).map((mat) => (
-                    <div 
-                      key={mat.id}
-                      className="row" 
-                      role="button" 
-                      tabIndex={0} 
-                      onClick={() => handleOpenMaterialModal(mat.id)}
-                    >
-                      <span className="mark bg-guia"><svg className="ico"><use href="#i-guia"/></svg></span>
-                      <span className="t">
-                        <b>{mat.title}</b>
-                        <span>{mat.subtitle || mat.type}</span>
-                      </span>
-                    </div>
-                  ))}
+                  {materials.slice(0, 3).map((mat) => {
+                    const cfg = getTypeConfig(mat.type);
+                    return (
+                      <div 
+                        key={mat.id}
+                        className="row" 
+                        role="button" 
+                        tabIndex={0} 
+                        onClick={() => handleOpenMaterial(mat.id)}
+                      >
+                        <span className={`mark ${cfg.bg}`}><svg className="ico"><use href={`#${cfg.ico}`}/></svg></span>
+                        <span className="t">
+                          <b>{mat.title}</b>
+                          <span>{mat.subtitle || cfg.label}</span>
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -476,22 +632,25 @@ function DashboardInner() {
                     <p style={{ margin: 0, fontSize: '13px', color: 'var(--ink-faint)' }}>Nenhum material cadastrado ainda. As novidades aparecerão aqui quando forem publicadas.</p>
                   </div>
                 ) : (
-                  materials.slice(0, 4).map((m) => (
-                    <div
-                      key={m.id}
-                      className="row"
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => handleOpenMaterialModal(m.id)}
-                    >
-                      <span className="mark bg-guia"><svg className="ico"><use href="#i-guia"/></svg></span>
-                      <span className="t">
-                        <b>{m.title}</b>
-                        <span>{m.subtitle || m.type}</span>
-                      </span>
-                      <span className="badge">Novo</span>
-                    </div>
-                  ))
+                  materials.slice(0, 4).map((m) => {
+                    const cfg = getTypeConfig(m.type);
+                    return (
+                      <div
+                        key={m.id}
+                        className="row"
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => handleOpenMaterial(m.id)}
+                      >
+                        <span className={`mark ${cfg.bg}`}><svg className="ico"><use href={`#${cfg.ico}`}/></svg></span>
+                        <span className="t">
+                          <b>{m.title}</b>
+                          <span>{m.subtitle || cfg.label}</span>
+                        </span>
+                        <span className="badge">Novo</span>
+                      </div>
+                    );
+                  })
                 )}
               </div>
             </div>
@@ -509,18 +668,19 @@ function DashboardInner() {
                 ) : (
                   favorites.map((favId) => {
                     const mat = materials.find(m => m.id === favId);
+                    const cfg = getTypeConfig(mat?.type);
                     return (
                       <div 
                         key={favId}
                         className="row" 
                         role="button" 
                         tabIndex={0} 
-                        onClick={() => handleOpenMaterialModal(favId)}
+                        onClick={() => handleOpenMaterial(favId)}
                       >
-                        <span className="mark bg-anamnese"><svg className="ico"><use href="#i-anamnese"/></svg></span>
+                        <span className={`mark ${cfg.bg}`}><svg className="ico"><use href={`#${cfg.ico}`}/></svg></span>
                         <span className="t">
                           <b>{mat?.title || favId}</b>
-                          <span>{mat?.type || 'Material'}</span>
+                          <span>{mat?.subtitle || cfg.label}</span>
                         </span>
                         <svg className="ico" style={{ color: 'var(--accent-strong)' }}><use href="#i-bookmark"/></svg>
                       </div>
@@ -564,11 +724,142 @@ function DashboardInner() {
         </Link>
       </nav>
 
-      {/* Modal de detalhes do material se aberto */}
-      <MaterialModal
-        material={activeMaterialModal}
-        onClose={() => setActiveMaterialModal(null)}
+      {/* Scrim e Aba Lateral (Drawer) de detalhes do material */}
+      <div 
+        className={`scrim ${activeDrawerMaterial ? 'on' : ''}`}
+        onClick={() => setActiveDrawerMaterial(null)}
+        aria-hidden="true"
       />
+      <aside className={`drawer ${activeDrawerMaterial ? 'on' : ''}`} aria-hidden={!activeDrawerMaterial}>
+        {activeDrawerMaterial && (() => {
+          const cfg = getTypeConfig(activeDrawerMaterial.type);
+          const isSaved = favorites.includes(activeDrawerMaterial.id);
+          const domainsStr = activeDrawerMaterial.domains?.map(d => DOMAIN_LABELS[d]?.label || d).join(', ') || 'Geral';
+          const popStr = activeDrawerMaterial.targetPopulation || activeDrawerMaterial.ageGroups?.map(a => AGE_LABELS[a] || a).join(', ') || 'Clínica geral';
+          const formatoStr = activeDrawerMaterial.downloadFormat || 'PDF';
+          const tamanhoStr = activeDrawerMaterial.downloadSize || '1.2 MB';
+
+          return (
+            <>
+              <div className="d-top">
+                <span>{cfg.label}</span>
+                <button 
+                  type="button" 
+                  className="d-close" 
+                  onClick={() => setActiveDrawerMaterial(null)}
+                  aria-label="Fechar detalhes"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="d-body">
+                <div className="d-cover">
+                  <svg className="curve" viewBox="0 0 520 120" aria-hidden="true">
+                    <path className="a" d="M80,120 C190,120 220,24 300,24 C380,24 410,120 520,120 Z"/>
+                    <path className="c" d="M40,120 C190,120 220,24 300,24 C380,24 410,120 560,120"/>
+                  </svg>
+                  <span className={`mark ${cfg.bg}`}>
+                    <svg className="ico"><use href={`#${cfg.ico}`}/></svg>
+                  </span>
+                </div>
+
+                <span className={`ctag ${cfg.cTag}`} style={{ display: 'inline-flex', marginTop: '20px' }}>
+                  {cfg.shortLabel}
+                </span>
+
+                <h2>{activeDrawerMaterial.title}</h2>
+                {activeDrawerMaterial.subtitle && (
+                  <p className="lead">{activeDrawerMaterial.subtitle}</p>
+                )}
+
+                <dl className="dl">
+                  <dt>Formato</dt>
+                  <dd>{formatoStr} · {tamanhoStr}</dd>
+
+                  <dt>População</dt>
+                  <dd>{popStr}</dd>
+
+                  <dt>Domínio / Função</dt>
+                  <dd>{domainsStr}</dd>
+
+                  {activeDrawerMaterial.authorReference && (
+                    <>
+                      <dt>Autor / Ref.</dt>
+                      <dd>{activeDrawerMaterial.authorReference}</dd>
+                    </>
+                  )}
+
+                  {activeDrawerMaterial.estimatedTime && (
+                    <>
+                      <dt>Aplicação</dt>
+                      <dd>{activeDrawerMaterial.estimatedTime}</dd>
+                    </>
+                  )}
+                </dl>
+
+                {activeDrawerMaterial.description && (
+                  <div style={{ marginTop: '22px' }}>
+                    <h4 style={{ margin: '0 0 8px', font: '400 11px/1 var(--mono)', letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--ink-faint)' }}>
+                      Descrição do instrumento
+                    </h4>
+                    <p style={{ margin: 0, font: '400 14px/1.6 var(--body)', color: 'var(--ink-soft)' }}>
+                      {activeDrawerMaterial.description}
+                    </p>
+                  </div>
+                )}
+
+                {activeDrawerMaterial.keyInstructions && activeDrawerMaterial.keyInstructions.length > 0 && (
+                  <div className="toc">
+                    <h4>Instruções principais</h4>
+                    <ol>
+                      {activeDrawerMaterial.keyInstructions.map((inst, idx) => (
+                        <li key={idx}>{inst}</li>
+                      ))}
+                    </ol>
+                  </div>
+                )}
+
+                <div className="d-note">
+                  <svg className="ico"><use href="#i-info"/></svg>
+                  <span><b>Material de apoio clínico.</b> Os guias e modelos não substituem manuais oficiais e capacitação técnica especializada.</span>
+                </div>
+              </div>
+
+              <div className="d-foot">
+                <Link 
+                  className="btn" 
+                  href={`/leitor?id=${activeDrawerMaterial.id}`}
+                >
+                  Abrir no Leitor <span><svg className="ico sm"><use href="#i-arrow"/></svg></span>
+                </Link>
+
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  onClick={() => handleDownload(activeDrawerMaterial)}
+                >
+                  Baixar {formatoStr}
+                </button>
+
+                <button
+                  className="save"
+                  type="button"
+                  aria-pressed={isSaved}
+                  aria-label={isSaved ? 'Remover da pasta' : 'Salvar na pasta'}
+                  title={isSaved ? 'Remover da pasta' : 'Salvar na pasta'}
+                  style={{ width: '48px', height: '48px', flex: 'none', display: 'grid', placeItems: 'center', borderRadius: '12px', border: '1px solid var(--line)', background: isSaved ? 'var(--bone)' : 'transparent', cursor: 'pointer' }}
+                  onClick={() => toggleFavorite(activeDrawerMaterial.id)}
+                >
+                  <svg className="ico" style={{ color: isSaved ? 'var(--accent-strong)' : 'var(--ink)' }}>
+                    <use href="#i-bookmark"/>
+                  </svg>
+                </button>
+              </div>
+            </>
+          );
+        })()}
+      </aside>
     </div>
   );
 }
