@@ -26,6 +26,7 @@
   inset: 0;
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
   margin: 0;
   padding: 0;
   background: var(--paper);
@@ -824,7 +825,7 @@
 .leitor-root .tools {
   position: fixed;
   left: calc(var(--left) + (100vw - var(--left) - var(--right)) / 2);
-  bottom: 22px;
+  bottom: max(22px, env(safe-area-inset-bottom, 22px));
   transform: translateX(-50%);
   z-index: 25;
   display: flex;
@@ -1053,7 +1054,7 @@
   }
   .leitor-root .tools {
     left: 50%;
-    bottom: 12px;
+    bottom: max(12px, env(safe-area-inset-bottom, 12px));
     gap: 0;
     padding: 4px;
     max-width: calc(100vw - 20px);
@@ -1064,6 +1065,7 @@
   .leitor-root .pages {
     padding: 16px 10px 100px;
     gap: 14px;
+    -webkit-overflow-scrolling: touch;
   }
   .leitor-root .pw .num {
     display: none;

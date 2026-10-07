@@ -26,6 +26,8 @@ export const viewport: Viewport = {
   themeColor: "#2f6b31",
   width: "device-width",
   initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover",
 };
 
 import { AppProviders } from "@/components/providers/AppProviders";
