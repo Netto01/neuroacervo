@@ -7,6 +7,7 @@ import { NeuroProvider, useNeuro } from '@/context/NeuroContext';
 import { MaterialItem, MaterialType } from '@/types/neuro';
 import { DOMAIN_LABELS, AGE_LABELS, TYPE_LABELS } from '@/data/neuroData';
 import './dashboard.css';
+import { PendingSubscriptionBanner } from '@/components/common/PendingSubscriptionBanner';
 
 import { resolveUserPlan } from '@/utils/userPlan';
 import { getMaterialReaderUrl, downloadMaterialFile } from '@/utils/materialActions';
@@ -284,6 +285,7 @@ function DashboardInner() {
 
         {/* conteúdo principal */}
         <main className="main" id="conteudo">
+          <PendingSubscriptionBanner />
           <div className="topbar">
             <Link className="mobile-brand" href="/plataforma" aria-label="NeuroAcervo, início">
               <img src="/brand/isologo-preto.svg" width="22" height="28" alt="NeuroAcervo" />

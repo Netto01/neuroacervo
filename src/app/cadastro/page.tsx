@@ -200,7 +200,7 @@ function CadastroContent() {
     setLoading(true);
 
     try {
-      const { error } = await signUp(email.trim(), senha, {
+      const { data: signUpData, error } = await signUp(email.trim(), senha, {
         full_name: nome.trim(),
         user_type: perfil,
         crp: perfil === 'psicologo' ? crp : undefined,
@@ -211,7 +211,8 @@ function CadastroContent() {
         phone: whatsapp || undefined,
         newsletter: novidades,
         plan: planDef.nome,
-        billing_cycle: selectedBillingCycle
+        billing_cycle: selectedBillingCycle,
+        subscription_status: 'pending'
       });
 
       if (error) {
@@ -233,6 +234,29 @@ function CadastroContent() {
         }
         setLoading(false);
         return;
+      }
+
+      // Conectar e redirecionar imediatamente para o Stripe Checkout
+      const userId = signUpData?.user?.id;
+      try {
+        const checkoutRes = await fetch('/api/stripe/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId,
+            userEmail: email.trim(),
+            planKey: selectedPlanKey,
+            billingCycle: selectedBillingCycle
+          })
+        });
+
+        const checkoutData = await checkoutRes.json();
+        if (checkoutData?.url) {
+          window.location.href = checkoutData.url;
+          return;
+        }
+      } catch (checkoutErr) {
+        console.warn('Erro ao redirecionar para o Stripe Checkout:', checkoutErr);
       }
 
       setLoading(false);

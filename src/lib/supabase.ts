@@ -78,6 +78,9 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
       role: (data.role as 'member' | 'admin') || 'member',
       plan: data.plan || 'Estudo',
       billingCycle: data.billing_cycle || 'mensal',
+      subscriptionStatus: (data.subscription_status as any) || (data.plan ? 'active' : 'pending'),
+      stripeCustomerId: data.stripe_customer_id || undefined,
+      stripeSubscriptionId: data.stripe_subscription_id || undefined,
       avatarUrl: data.avatar_url,
       joinedAt: data.created_at ? new Date(data.created_at).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }) : 'Recente'
     };

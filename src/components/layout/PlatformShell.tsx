@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useNeuro } from '@/context/NeuroContext';
 import '@/app/plataforma/dashboard.css';
-
+import { PendingSubscriptionBanner } from '@/components/common/PendingSubscriptionBanner';
 import { resolveUserPlan } from '@/utils/userPlan';
 
 export type PlatformPageId = 
@@ -250,6 +250,7 @@ export const PlatformShell: React.FC<PlatformShellProps> = ({
 
         {/* Conteúdo Principal */}
         <main className="main" id="conteudo">
+          <PendingSubscriptionBanner />
           {/* Topbar */}
           <div className="topbar">
             <Link className="mobile-brand" href="/plataforma" aria-label="NeuroAcervo, início">

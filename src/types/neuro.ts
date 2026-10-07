@@ -79,6 +79,9 @@ export interface UserProfile {
   role: 'admin' | 'member';
   plan: string;
   billingCycle?: 'mensal' | 'anual';
+  subscriptionStatus?: 'active' | 'pending' | 'canceled' | 'past_due';
+  stripeCustomerId?: string;
+  stripeSubscriptionId?: string;
   avatarUrl?: string;
   joinedAt: string;
 }

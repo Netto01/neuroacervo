@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { NeuroProvider, useNeuro } from '@/context/NeuroContext';
 import { MaterialItem } from '@/types/neuro';
 import '../plataforma/dashboard.css';
+import { PendingSubscriptionBanner } from '@/components/common/PendingSubscriptionBanner';
 
 import { resolveUserPlan, PlanoTipo } from '@/utils/userPlan';
 import { getMaterialReaderUrl, downloadMaterialFile } from '@/utils/materialActions';
@@ -395,6 +396,7 @@ function BibliotecaInner() {
 
         {/* conteúdo */}
         <main className="main" id="conteudo">
+          <PendingSubscriptionBanner />
           <div className="topbar">
             <Link className="mobile-brand" href="/plataforma" aria-label="NeuroAcervo, início">
               <img src="/brand/isologo-preto.svg" width="22" height="28" alt="NeuroAcervo" />
