@@ -106,9 +106,19 @@ function LeitorContent() {
     return `${nome} · ${reg} · uso pessoal`;
   }, [currentUser]);
 
-  // Estados do leitor
+  // Estados do leitor - calcula zoom ideal para caber na tela já no primeiro render
   const [pdfJsLoaded, setPdfJsLoaded] = useState(false);
-  const [zoom, setZoom] = useState(1);
+  const [zoom, setZoom] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const w = window.innerWidth;
+      const isMobile = w <= 860;
+      const isTablet = w <= 1100;
+      const panelsW = isMobile ? 0 : isTablet ? 272 : (272 + 312);
+      const estViewerW = Math.max(320, w - panelsW - (isMobile ? 20 : 56));
+      return Math.max(0.35, Math.min(1.8, Math.round((estViewerW / 794) * 100) / 100));
+    }
+    return 0.85;
+  });
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [activeLeftTab, setActiveLeftTab] = useState<'toc' | 'find'>('toc');
@@ -245,6 +255,7 @@ function LeitorContent() {
       const allDemo = [p1Cover, p2Toc, ...contentPages];
       setDemoPages(allDemo);
       setTotalPages(allDemo.length);
+      setTimeout(handleFitWidth, 50);
 
       const demoSections: TocItem[] = [
         { title: 'Capa', n: '·', page: 1 },
@@ -273,6 +284,7 @@ function LeitorContent() {
         if (isCancelled) return;
         pdfDocRef.current = doc;
         setTotalPages(doc.numPages);
+        setTimeout(handleFitWidth, 50);
 
         return doc.getOutline().then((outline: any) => {
           if (outline && outline.length > 0) {
@@ -324,13 +336,36 @@ function LeitorContent() {
     }
   }, [zoom, totalPages, pdfUrl]);
 
-  // Ajustar largura (Fit Width)
+  // Ajustar largura (Fit to screen)
   const handleFitWidth = () => {
     if (!viewerRef.current) return;
-    const w = viewerRef.current.clientWidth - (window.innerWidth <= 860 ? 20 : 96);
-    const newZ = Math.max(0.4, Math.min(1.8, Math.round((w / 794) * 100) / 100));
+    const clientW = viewerRef.current.clientWidth;
+    if (!clientW || clientW <= 0) return;
+    const padding = window.innerWidth <= 860 ? 20 : 56;
+    const availableW = clientW - padding;
+    const newZ = Math.max(0.35, Math.min(1.8, Math.round((availableW / 794) * 100) / 100));
     setZoom(newZ);
   };
+
+  // Auto-ajustar à tela na abertura do leitor e no redimensionamento da janela
+  useEffect(() => {
+    const adjust = () => {
+      handleFitWidth();
+    };
+
+    adjust();
+    const t1 = setTimeout(adjust, 60);
+    const t2 = setTimeout(adjust, 200);
+    const t3 = setTimeout(adjust, 600);
+
+    window.addEventListener('resize', adjust);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+      window.removeEventListener('resize', adjust);
+    };
+  }, []);
 
   // Navegar para página
   const goToPage = (pageNumber: number) => {
@@ -606,7 +641,7 @@ function LeitorContent() {
                   style={{
                     width: `${Math.round(794 * zoom)}px`,
                     height: `${Math.round(1123 * zoom)}px`,
-                    setProperty: `--z: ${zoom}`
+                    ['--z' as any]: zoom
                   } as any}
                 >
                   <canvas ref={(el) => { canvasRefs.current[i] = el; }} />
