@@ -1,6 +1,6 @@
 import { MaterialItem, CourseModule, CognitiveDomain, MaterialType, AgeGroup } from '@/types/neuro';
 
-export const DOMAIN_LABELS: Record<CognitiveDomain, { label: string; color: string; bg: string }> = {
+export const DOMAIN_LABELS: Record<string, { label: string; color: string; bg: string }> = {
   atencao: { label: 'Atenção', color: 'text-amber-500 dark:text-amber-400', bg: 'bg-amber-500/10 border-amber-500/20' },
   memoria: { label: 'Memória', color: 'text-blue-500 dark:text-blue-400', bg: 'bg-blue-500/10 border-blue-500/20' },
   funcoes_executivas: { label: 'Funções Executivas', color: 'text-emerald-500 dark:text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20' },
@@ -8,10 +8,13 @@ export const DOMAIN_LABELS: Record<CognitiveDomain, { label: string; color: stri
   visuoespacial: { label: 'Habilidades Visuoespaciais', color: 'text-teal-500 dark:text-teal-400', bg: 'bg-teal-500/10 border-teal-500/20' },
   humor_comportamento: { label: 'Humor & Comportamento', color: 'text-rose-500 dark:text-rose-400', bg: 'bg-rose-500/10 border-rose-500/20' },
   rastreio_global: { label: 'Rastreio Global', color: 'text-indigo-500 dark:text-indigo-400', bg: 'bg-indigo-500/10 border-indigo-500/20' },
-  inteligencia: { label: 'Eficiência Intelectual', color: 'text-violet-500 dark:text-violet-400', bg: 'bg-violet-500/10 border-violet-500/20' }
+  inteligencia: { label: 'Eficiência Intelectual', color: 'text-violet-500 dark:text-violet-400', bg: 'bg-violet-500/10 border-violet-500/20' },
+  consulta: { label: 'Plano Consulta', color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20' },
+  estudo: { label: 'Plano Estudo', color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-500/10 border-blue-500/20' },
+  pratica: { label: 'Plano Prática', color: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-500/10 border-purple-500/20' }
 };
 
-export const TYPE_LABELS: Record<MaterialType, { label: string; badge: string }> = {
+export const TYPE_LABELS: Record<string, { label: string; badge: string }> = {
   instrumento_rastreio: { label: 'Instrumento de Rastreio', badge: 'bg-teal-50 text-teal-700 dark:bg-teal-950/60 dark:text-teal-300 border-teal-200 dark:border-teal-800' },
   guia_rapido: { label: 'Guia Rápido de Aplicação', badge: 'bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border-blue-200 dark:border-blue-800' },
   modelo_laudo: { label: 'Modelo de Laudo', badge: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800' },
@@ -20,7 +23,7 @@ export const TYPE_LABELS: Record<MaterialType, { label: string; badge: string }>
   tabela_normativa: { label: 'Tabela Normativa & Cortes', badge: 'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border-amber-200 dark:border-amber-800' }
 };
 
-export const AGE_LABELS: Record<AgeGroup, string> = {
+export const AGE_LABELS: Record<string, string> = {
   infantil: 'Infantil (0 a 11 anos)',
   adolescente: 'Adolescentes (12 a 17 anos)',
   adulto: 'Adultos (18 a 59 anos)',

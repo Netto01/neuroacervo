@@ -159,6 +159,7 @@ export async function getMaterials(): Promise<MaterialItem[]> {
       satepsiRestricted: item.satepsiRestricted ?? item.satepsi_restricted ?? false,
       downloadFormat: item.downloadFormat || item.download_format || 'PDF',
       downloadSize: item.downloadSize || item.download_size || '1.0 MB',
+      downloadUrl: item.downloadUrl || item.download_url || '',
       authorReference: item.authorReference || item.author_reference || '',
       clinicalUtility: item.clinicalUtility || item.clinical_utility || '',
       cutoffsSnippet: item.cutoffsSnippet || item.cutoffs_snippet || [],

@@ -21,6 +21,8 @@ export interface MaterialAdminItem {
   selo?: string;
   sumario?: string;
   arquivoNome?: string;
+  downloadUrl?: string;
+  downloadSize?: string;
   createdAt?: string;
 }
 
@@ -73,6 +75,9 @@ export default function AdminMateriaisPage() {
   const [formFuncao, setFormFuncao] = useState('Geral');
   const [formSelo, setFormSelo] = useState('novo');
   const [formArquivoNome, setFormArquivoNome] = useState('Escolher arquivo');
+  const [formDownloadUrl, setFormDownloadUrl] = useState('');
+  const [formFileSize, setFormFileSize] = useState('1.5 MB');
+  const [isUploadingR2, setIsUploadingR2] = useState(false);
   const [formSumario, setFormSumario] = useState('');
   const [formLegal, setFormLegal] = useState(false);
   const [tituloError, setTituloError] = useState(false);
@@ -142,6 +147,8 @@ export default function AdminMateriaisPage() {
               ? m.key_instructions.join('\n')
               : m.content_preview || '',
             arquivoNome: m.download_url ? m.download_url.split('/').pop() : undefined,
+            downloadUrl: m.download_url || '',
+            downloadSize: m.download_size || '1.5 MB',
             createdAt: m.created_at || m.published_at
           };
         });
@@ -244,6 +251,9 @@ export default function AdminMateriaisPage() {
     setFormFuncao('Geral');
     setFormSelo('novo');
     setFormArquivoNome('Escolher arquivo');
+    setFormDownloadUrl('');
+    setFormFileSize('1.5 MB');
+    setIsUploadingR2(false);
     setFormSumario('');
     setFormLegal(false);
     setTituloError(false);
@@ -262,8 +272,11 @@ export default function AdminMateriaisPage() {
     setFormDesc(item.desc || '');
     setFormPopulacao(item.populacao || ['adulto']);
     setFormFuncao(item.funcao || 'Geral');
-    setFormSelo(item.selo || 'novo');
-    setFormArquivoNome(item.arquivoNome || 'Substituir arquivo');
+    const fileNameFromUrl = item.downloadUrl ? item.downloadUrl.split('/').pop() || '' : '';
+    setFormArquivoNome(item.arquivoNome || fileNameFromUrl || 'Substituir arquivo');
+    setFormDownloadUrl(item.downloadUrl || '');
+    setFormFileSize(item.downloadSize || '1.5 MB');
+    setIsUploadingR2(false);
     setFormSumario(item.sumario || '');
     setFormLegal(true);
     setTituloError(false);
@@ -273,6 +286,43 @@ export default function AdminMateriaisPage() {
 
   const closeForm = () => {
     setIsDrawerOpen(false);
+  };
+
+  // Upload automático para o Cloudflare R2
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setFormArquivoNome(file.name);
+    setIsUploadingR2(true);
+    showToast('Enviando arquivo para o Cloudflare R2...');
+
+    try {
+      const data = new FormData();
+      data.append('file', file);
+
+      const res = await fetch('/api/admin/upload-r2', {
+        method: 'POST',
+        body: data,
+      });
+
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || 'Erro no upload para o Cloudflare R2.');
+      }
+
+      setFormDownloadUrl(json.url);
+      setFormArquivoNome(file.name);
+      if (json.sizeFormatted) {
+        setFormFileSize(json.sizeFormatted);
+      }
+      showToast('Arquivo enviado para o Cloudflare R2 com sucesso!');
+    } catch (err: any) {
+      console.error('Erro no upload R2:', err);
+      showToast('Falha no upload para R2: ' + (err?.message || 'Erro inesperado'));
+    } finally {
+      setIsUploadingR2(false);
+    }
   };
 
   const handleTipoChange = (newTipo: string) => {
@@ -325,9 +375,9 @@ export default function AdminMateriaisPage() {
         clinical_utility: formFuncao,
         domains:
           formPlano === 'Prática' ? ['pratica'] : formPlano === 'Estudo' ? ['estudo'] : ['consulta'],
-        download_format: 'PDF',
-        download_size: '1.5 MB',
-        download_url: formArquivoNome !== 'Escolher arquivo' ? formArquivoNome : '',
+        download_format: formDownloadUrl.toLowerCase().endsWith('.docx') ? 'DOCX' : formDownloadUrl.toLowerCase().endsWith('.mp4') ? 'MP4' : 'PDF',
+        download_size: formFileSize || '1.5 MB',
+        download_url: formDownloadUrl || (formArquivoNome !== 'Escolher arquivo' ? formArquivoNome : ''),
         key_instructions: formSumario ? formSumario.split('\n').filter(Boolean) : [],
         is_featured: formSelo === 'novo',
         published_at: status === 'publicado' ? new Date().toISOString() : null
@@ -864,25 +914,68 @@ export default function AdminMateriaisPage() {
             </div>
 
             <div className="f">
-              <span style={{ font: '600 11px/1.3 var(--sans)', letterSpacing: '.16em', textTransform: 'uppercase' }}>
-                Arquivo
-              </span>
-              <label className="drop" style={{ position: 'relative' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <span style={{ font: '600 11px/1.3 var(--sans)', letterSpacing: '.16em', textTransform: 'uppercase' }}>
+                  Arquivo (Upload para Cloudflare R2)
+                </span>
+                {isUploadingR2 && (
+                  <span style={{ font: '500 11px/1 var(--sans)', color: 'var(--accent-strong)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    Enviando para o R2...
+                  </span>
+                )}
+              </div>
+              <label className="drop" style={{ position: 'relative', opacity: isUploadingR2 ? 0.7 : 1 }}>
                 <input
                   type="file"
                   id="m-arq"
                   accept=".pdf,.docx,.mp4"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    setFormArquivoNome(file ? file.name : 'Escolher arquivo');
-                  }}
+                  disabled={isUploadingR2}
+                  onChange={handleFileChange}
                 />
                 <svg className="ico" style={{ width: 24, height: 24, color: 'var(--accent-strong)' }}>
                   <use href="#i-folder"/>
                 </svg>
-                <b id="m-arq-n">{formArquivoNome}</b>
-                <span>PDF, DOCX ou vídeo MP4</span>
+                <b id="m-arq-n">
+                  {isUploadingR2 ? 'Enviando arquivo para o R2...' : formArquivoNome}
+                </b>
+                <span>PDF, DOCX ou vídeo MP4 (upload direto e seguro)</span>
               </label>
+
+              {formDownloadUrl && (
+                <div style={{ marginTop: '8px', padding: '10px 12px', borderRadius: '10px', background: 'rgba(72,139,73,0.08)', border: '1px solid rgba(72,139,73,0.2)', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                  <div style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <span style={{ fontWeight: 600, color: 'var(--accent-strong)', marginRight: '6px' }}>✓ R2 Vinculado:</span>
+                    <span style={{ color: 'var(--ink-mute)', fontFamily: 'var(--mono)' }}>{formDownloadUrl}</span>
+                  </div>
+                  <a 
+                    href={formDownloadUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    style={{ color: 'var(--accent-strong)', textDecoration: 'underline', flexShrink: 0, fontWeight: 600 }}
+                  >
+                    Testar link ↗
+                  </a>
+                </div>
+              )}
+
+              <div style={{ marginTop: '8px' }}>
+                <input
+                  type="text"
+                  placeholder="Ou cole o link direto (Cloudflare R2, Google Drive, etc.)"
+                  value={formDownloadUrl}
+                  onChange={(e) => setFormDownloadUrl(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--line-soft)',
+                    background: 'var(--paper)',
+                    fontSize: '12px',
+                    fontFamily: 'var(--mono)',
+                    color: 'var(--ink)'
+                  }}
+                />
+              </div>
             </div>
 
             <div className="f">

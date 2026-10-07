@@ -31,6 +31,7 @@ export interface MaterialItem {
   satepsiRestricted: boolean;
   downloadFormat: 'PDF' | 'DOCX' | 'XLSX' | 'ZIP';
   downloadSize: string;
+  downloadUrl?: string;
   authorReference: string;
   clinicalUtility: string;
   cutoffsSnippet?: {
