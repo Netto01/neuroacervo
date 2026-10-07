@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { MaterialItem } from '@/types/neuro';
 import { DOMAIN_LABELS, TYPE_LABELS, AGE_LABELS } from '@/data/neuroData';
 import { useNeuro } from '@/context/NeuroContext';
+import { getMaterialReaderUrl, downloadMaterialFile } from '@/utils/materialActions';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { 
   X, 
@@ -52,132 +53,7 @@ export const MaterialModal: React.FC<MaterialModalProps> = ({ material, onClose 
   const handleDownload = async () => {
     setIsDownloading(true);
     try {
-      // 1. Se houver link externo ou rota local direta
-      if (material.downloadUrl && (material.downloadUrl.startsWith('http://') || material.downloadUrl.startsWith('https://') || material.downloadUrl.startsWith('/'))) {
-        window.open(material.downloadUrl, '_blank');
-        setDownloadSuccess(true);
-        setTimeout(() => setDownloadSuccess(false), 3000);
-        return;
-      }
-
-      // 2. Se houver nome de arquivo e Supabase Storage configurado
-      if (material.downloadUrl && isSupabaseConfigured) {
-        try {
-          const { data } = supabase.storage.from('materials').getPublicUrl(material.downloadUrl);
-          if (data?.publicUrl) {
-            const res = await fetch(data.publicUrl, { method: 'HEAD' });
-            if (res.ok) {
-              window.open(data.publicUrl, '_blank');
-              setDownloadSuccess(true);
-              setTimeout(() => setDownloadSuccess(false), 3000);
-              return;
-            }
-          }
-        } catch {
-          // Continua para fallback
-        }
-      }
-
-      // 3. Fallback: Gerar documento clínico do guia formatado para impressão / salvar como PDF
-      const cleanFileName = (material.downloadUrl || `${material.title.toLowerCase().replace(/[^a-z0-9]/gi, '_')}.pdf`);
-      const printableContent = `
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="utf-8">
-  <title>${material.title}</title>
-  <style>
-    @media print {
-      body { margin: 10mm; font-size: 11pt; }
-      .no-print { display: none !important; }
-      @page { margin: 15mm; }
-    }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; max-width: 820px; margin: 30px auto; padding: 24px; color: #1e293b; background: #fff; }
-    .header-bar { border-bottom: 2px solid #0d9488; padding-bottom: 12px; margin-bottom: 20px; }
-    .tag { display: inline-block; padding: 3px 10px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; border-radius: 999px; background: #ccfbf1; color: #0f766e; margin-bottom: 8px; }
-    h1 { color: #0f172a; margin: 0 0 6px; font-size: 24px; font-weight: 800; }
-    .subtitle { color: #0d9488; font-size: 15px; margin: 0 0 16px; font-weight: 600; }
-    .meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin: 20px 0; font-size: 13px; }
-    .meta-cell b { display: block; font-size: 10.5px; text-transform: uppercase; letter-spacing: .08em; color: #64748b; margin-bottom: 2px; }
-    .meta-cell span { color: #0f172a; font-weight: 600; }
-    .section-title { font-size: 16px; font-weight: 700; color: #0f172a; margin: 26px 0 10px; padding-left: 10px; border-left: 4px solid #0d9488; }
-    p.desc { font-size: 14px; line-height: 1.65; color: #334155; margin: 0 0 16px; }
-    .instructions-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
-    .instruction-item { padding: 10px 14px; border: 1px solid #f1f5f9; border-radius: 8px; background: #fafafa; display: flex; align-items: center; gap: 12px; font-size: 13.5px; }
-    .num-pill { background: #0d9488; color: #fff; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 6px; min-width: 22px; text-align: center; }
-    .footer-note { margin-top: 40px; padding-top: 14px; border-top: 1px solid #e2e8f0; font-size: 11.5px; color: #94a3b8; text-align: center; }
-  </style>
-</head>
-<body>
-  <div class="header-bar">
-    <span class="tag">NeuroAcervo • Guia Clínico</span>
-    <h1>${material.title}</h1>
-    ${material.subtitle ? `<div class="subtitle">${material.subtitle}</div>` : ''}
-  </div>
-
-  <div class="meta-grid">
-    <div class="meta-cell">
-      <b>Utilidade Clínica</b>
-      <span>${material.clinicalUtility || 'Avaliação Neuropsicológica'}</span>
-    </div>
-    <div class="meta-cell">
-      <b>Público-Alvo</b>
-      <span>${material.ageGroups?.map(a => AGE_LABELS[a] || a).join(', ') || 'Clínico'}</span>
-    </div>
-    <div class="meta-cell">
-      <b>Formato & Arquivo</b>
-      <span>${material.downloadFormat} (${material.downloadSize})</span>
-    </div>
-    <div class="meta-cell">
-      <b>Regulamentação</b>
-      <span>${material.satepsiRestricted ? 'Privativo (SATEPSI)' : 'Uso Multiprofissional Livre'}</span>
-    </div>
-  </div>
-
-  <div class="section-title">Descrição & Raciocínio Clínico</div>
-  <p class="desc">${material.description || 'Guia prático de cabeceira com parâmetros técnicos para administração e laudo.'}</p>
-
-  ${material.keyInstructions && material.keyInstructions.length > 0 ? `
-    <div class="section-title">Sumário do Guia & Diretrizes Técnicas</div>
-    <ul class="instructions-list">
-      ${material.keyInstructions.map((item, idx) => `
-        <li class="instruction-item">
-          <span class="num-pill">${String(idx + 1).padStart(2, '0')}</span>
-          <span>${item}</span>
-        </li>
-      `).join('')}
-    </ul>
-  ` : ''}
-
-  ${material.authorReference ? `
-    <div class="section-title">Referência Técnica</div>
-    <p class="desc">${material.authorReference}</p>
-  ` : ''}
-
-  <div class="footer-note">
-    Documento emitido pelo NeuroAcervo • Material de apoio técnico para profissionais habilitados.
-  </div>
-
-  <script>
-    window.onload = function() {
-      setTimeout(function() {
-        window.print();
-      }, 400);
-    };
-  </script>
-</body>
-</html>
-      `;
-
-      const blob = new Blob([printableContent], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
-      const win = window.open(url, '_blank');
-      if (!win) {
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${cleanFileName.replace(/\.pdf$/i, '')}_guia.html`;
-        a.click();
-      }
+      await downloadMaterialFile(material);
       setDownloadSuccess(true);
       setTimeout(() => setDownloadSuccess(false), 3000);
     } catch (err) {
@@ -431,7 +307,7 @@ export const MaterialModal: React.FC<MaterialModalProps> = ({ material, onClose 
             )}
 
             <Link
-              href={`/leitor?id=${material.id}${material.downloadUrl ? `&arquivo=${encodeURIComponent(material.downloadUrl)}` : ''}`}
+              href={getMaterialReaderUrl(material)}
               className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-teal-600/40 bg-teal-50 dark:bg-teal-950/40 text-teal-800 dark:text-teal-300 hover:bg-teal-100 dark:hover:bg-teal-900/60 text-xs font-semibold transition-all"
             >
               <BookOpen className="w-4 h-4" />

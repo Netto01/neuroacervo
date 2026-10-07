@@ -8,6 +8,7 @@ import { MaterialItem } from '@/types/neuro';
 import '../plataforma/dashboard.css';
 
 import { resolveUserPlan, PlanoTipo } from '@/utils/userPlan';
+import { getMaterialReaderUrl, downloadMaterialFile } from '@/utils/materialActions';
 
 const TIPOS = {
   guia:        { nome: 'Guia rápido',        plural: 'Guias rápidos',  ico: 'i-guia',        plano: 'acervo' as PlanoTipo },
@@ -54,6 +55,7 @@ export interface BibliotecaItem {
   func: string;
   formato: string;
   tamanho: string;
+  downloadUrl?: string;
   data: string;
   acessos: number;
   selo: 'novo' | 'atualizado' | '';
@@ -173,6 +175,7 @@ function BibliotecaInner() {
         func: mappedFunc,
         formato: m.downloadFormat || 'PDF',
         tamanho: m.downloadSize || '1.0 MB',
+        downloadUrl: m.downloadUrl,
         data: m.publishedAt ? m.publishedAt.split('T')[0] : '2026-10-01',
         acessos: m.isPopular ? 820 : 120,
         selo: m.isFeatured ? 'novo' : '',
@@ -823,14 +826,41 @@ function BibliotecaInner() {
               <div className="d-foot" id="d-foot">
                 {ok ? (
                   <>
-                    <a className="btn" href="#">
-                      {acao} <span><svg className="ico sm"><use href="#i-arrow"/></svg></span>
-                    </a>
-                    {/PDF|DOCX/i.test(itemAberto.formato) && (
-                      <a className="btn-ghost" href="#">
-                        Baixar {itemAberto.formato.toUpperCase().includes('DOCX') ? 'arquivo' : 'PDF'} <span><svg className="ico sm"><use href="#i-arrow"/></svg></span>
-                      </a>
+                    {itemAberto.tipo === 'aula' ? (
+                      <Link className="btn" href="/aulas">
+                        Assistir aula <span><svg className="ico sm"><use href="#i-arrow"/></svg></span>
+                      </Link>
+                    ) : itemAberto.tipo === 'interativo' ? (
+                      <Link className="btn" href="/recursos-interativos">
+                        Abrir recurso <span><svg className="ico sm"><use href="#i-arrow"/></svg></span>
+                      </Link>
+                    ) : (
+                      <Link 
+                        className="btn" 
+                        href={getMaterialReaderUrl({ id: String(itemAberto.id), downloadUrl: itemAberto.downloadUrl })}
+                      >
+                        Abrir no Leitor <span><svg className="ico sm"><use href="#i-arrow"/></svg></span>
+                      </Link>
                     )}
+
+                    {/PDF|DOCX|XLSX|ZIP/i.test(itemAberto.formato) && itemAberto.tipo !== 'aula' && itemAberto.tipo !== 'interativo' && (
+                      <button 
+                        type="button"
+                        className="btn-ghost"
+                        onClick={() => downloadMaterialFile({
+                          id: String(itemAberto.id),
+                          title: itemAberto.titulo,
+                          downloadUrl: itemAberto.downloadUrl,
+                          downloadFormat: itemAberto.formato,
+                          downloadSize: itemAberto.tamanho,
+                          description: itemAberto.desc,
+                          keyInstructions: itemAberto.sumario
+                        })}
+                      >
+                        Baixar {itemAberto.formato.toUpperCase().includes('DOCX') ? 'arquivo' : 'PDF'} <span><svg className="ico sm"><use href="#i-arrow"/></svg></span>
+                      </button>
+                    )}
+
                     <button
                       className="save"
                       type="button"

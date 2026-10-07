@@ -9,6 +9,7 @@ import { DOMAIN_LABELS, AGE_LABELS, TYPE_LABELS } from '@/data/neuroData';
 import './dashboard.css';
 
 import { resolveUserPlan } from '@/utils/userPlan';
+import { getMaterialReaderUrl, downloadMaterialFile } from '@/utils/materialActions';
 
 const getTypeConfig = (type?: string) => {
   switch (type) {
@@ -137,13 +138,7 @@ function DashboardInner() {
     }
   };
 
-  const handleDownload = (material: MaterialItem) => {
-    if (material.downloadUrl && (material.downloadUrl.startsWith('http://') || material.downloadUrl.startsWith('https://') || material.downloadUrl.startsWith('/'))) {
-      window.open(material.downloadUrl, '_blank');
-      return;
-    }
-    window.open(`/leitor?id=${material.id}`, '_blank');
-  };
+
 
   return (
     <div className="dash-body" data-plano={planInfo.tipo}>
@@ -829,7 +824,7 @@ function DashboardInner() {
               <div className="d-foot">
                 <Link 
                   className="btn" 
-                  href={`/leitor?id=${activeDrawerMaterial.id}`}
+                  href={getMaterialReaderUrl(activeDrawerMaterial)}
                 >
                   Abrir no Leitor <span><svg className="ico sm"><use href="#i-arrow"/></svg></span>
                 </Link>
@@ -837,7 +832,7 @@ function DashboardInner() {
                 <button
                   type="button"
                   className="btn-ghost"
-                  onClick={() => handleDownload(activeDrawerMaterial)}
+                  onClick={() => downloadMaterialFile(activeDrawerMaterial)}
                 >
                   Baixar {formatoStr}
                 </button>

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useNeuro } from '@/context/NeuroContext';
 import { PlatformShell } from '@/components/layout/PlatformShell';
 import { MaterialItem } from '@/types/neuro';
+import { getMaterialReaderUrl, downloadMaterialFile } from '@/utils/materialActions';
 
 export default function GuiasPage() {
   const { materials, favorites, toggleFavorite } = useNeuro();
@@ -173,20 +174,28 @@ export default function GuiasPage() {
             </div>
 
             <div className="d-foot">
+              <Link 
+                className="btn" 
+                href={getMaterialReaderUrl(activeMaterial)}
+              >
+                Abrir no Leitor <span><svg className="ico sm"><use href="#i-arrow"/></svg></span>
+              </Link>
               <button 
                 type="button" 
                 className="btn-ghost"
-                onClick={() => toggleFavorite(activeMaterial.id)}
+                onClick={() => downloadMaterialFile(activeMaterial)}
               >
-                {favorites.includes(activeMaterial.id) ? 'Remover da pasta' : 'Salvar na pasta'}
+                Baixar {activeMaterial.downloadFormat || 'guia'}
               </button>
               <button 
                 type="button" 
-                className="btn"
-                onClick={() => alert(`Iniciando download do guia "${activeMaterial.title}" (${activeMaterial.downloadFormat}).`)}
+                className="save"
+                aria-pressed={favorites.includes(activeMaterial.id)}
+                aria-label={favorites.includes(activeMaterial.id) ? 'Remover da pasta' : 'Salvar na pasta'}
+                style={{ width: '48px', height: '48px', flex: 'none' }}
+                onClick={() => toggleFavorite(activeMaterial.id)}
               >
-                Baixar guia
-                <span><svg className="ico sm"><use href="#i-arrow"/></svg></span>
+                <svg className="ico"><use href="#i-bookmark"/></svg>
               </button>
             </div>
           </>
