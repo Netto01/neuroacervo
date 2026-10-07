@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { NeuroProvider, useNeuro } from '@/context/NeuroContext';
 import { PlatformShell } from '@/components/layout/PlatformShell';
 import { CourseModule, VideoLesson, MaterialItem } from '@/types/neuro';
+import '@/app/plataforma/dashboard.css';
 import { 
   Play, 
   CheckCircle, 

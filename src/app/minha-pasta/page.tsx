@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useNeuro } from '@/context/NeuroContext';
 import { PlatformShell } from '@/components/layout/PlatformShell';
 import { MaterialItem, MaterialType } from '@/types/neuro';
+import '@/app/plataforma/dashboard.css';
 
 const TIPO_LABEL: Record<MaterialType, string> = {
   instrumento_rastreio: 'Instrumento',
