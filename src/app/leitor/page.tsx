@@ -75,24 +75,50 @@ function LeitorContent() {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    if (paramArquivo && (paramArquivo.startsWith('http') || paramArquivo.startsWith('/'))) {
-      setPdfUrl(paramArquivo);
+    const raw = paramArquivo || material.downloadUrl;
+    if (!raw) {
+      setPdfUrl(null);
       return;
     }
-    if (material.downloadUrl) {
-      if (material.downloadUrl.startsWith('http') || material.downloadUrl.startsWith('/')) {
-        setPdfUrl(material.downloadUrl);
-        return;
-      }
-      if (isSupabaseConfigured) {
-        try {
-          const { data } = supabase.storage.from('materials').getPublicUrl(material.downloadUrl);
-          if (data?.publicUrl) {
-            setPdfUrl(data.publicUrl);
-            return;
-          }
-        } catch {}
-      }
+
+    // Se é uma URL direta do Cloudflare R2, passa pelo proxy da API para evitar bloqueios de CORS no PDF.js
+    if (raw.includes('.r2.dev') || raw.includes('.r2.cloudflarestorage.com')) {
+      setPdfUrl(`/api/materiais/pdf?url=${encodeURIComponent(raw)}`);
+      return;
+    }
+
+    // Se é uma rota de API já formatada
+    if (raw.startsWith('/api/materiais/pdf')) {
+      setPdfUrl(raw);
+      return;
+    }
+
+    // Se é uma URL HTTP/HTTPS externa genérica
+    if (raw.startsWith('http://') || raw.startsWith('https://')) {
+      // Tenta carregar via proxy para garantir CORS aberto
+      setPdfUrl(`/api/materiais/pdf?url=${encodeURIComponent(raw)}`);
+      return;
+    }
+
+    // Se é uma chave de arquivo ou nome de arquivo que pode estar no R2
+    if (raw.toLowerCase().endsWith('.pdf') && !raw.startsWith('/')) {
+      setPdfUrl(`/api/materiais/pdf?key=${encodeURIComponent(raw)}`);
+      return;
+    }
+
+    if (raw.startsWith('/')) {
+      setPdfUrl(raw);
+      return;
+    }
+
+    if (isSupabaseConfigured) {
+      try {
+        const { data } = supabase.storage.from('materials').getPublicUrl(raw);
+        if (data?.publicUrl) {
+          setPdfUrl(data.publicUrl);
+          return;
+        }
+      } catch {}
     }
     setPdfUrl(null);
   }, [paramArquivo, material.downloadUrl]);

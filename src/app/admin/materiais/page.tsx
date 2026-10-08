@@ -78,6 +78,7 @@ export default function AdminMateriaisPage() {
   const [formDownloadUrl, setFormDownloadUrl] = useState('');
   const [formFileSize, setFormFileSize] = useState('1.5 MB');
   const [isUploadingR2, setIsUploadingR2] = useState(false);
+  const [uploadR2Error, setUploadR2Error] = useState('');
   const [formSumario, setFormSumario] = useState('');
   const [formLegal, setFormLegal] = useState(false);
   const [tituloError, setTituloError] = useState(false);
@@ -295,6 +296,7 @@ export default function AdminMateriaisPage() {
 
     setFormArquivoNome(file.name);
     setIsUploadingR2(true);
+    setUploadR2Error('');
     showToast('Enviando arquivo para o Cloudflare R2...');
 
     try {
@@ -316,10 +318,13 @@ export default function AdminMateriaisPage() {
       if (json.sizeFormatted) {
         setFormFileSize(json.sizeFormatted);
       }
+      setUploadR2Error('');
       showToast('Arquivo enviado para o Cloudflare R2 com sucesso!');
     } catch (err: any) {
       console.error('Erro no upload R2:', err);
-      showToast('Falha no upload para R2: ' + (err?.message || 'Erro inesperado'));
+      const errMsg = err?.message || 'Falha ao conectar com Cloudflare R2.';
+      setUploadR2Error(errMsg);
+      showToast('Falha no upload para R2: ' + errMsg);
     } finally {
       setIsUploadingR2(false);
     }
@@ -340,6 +345,17 @@ export default function AdminMateriaisPage() {
     }
     if (status === 'publicado' && !formLegal) {
       setLegalError(true);
+      return;
+    }
+
+    if (isUploadingR2) {
+      showToast('Aguarde o envio do arquivo para o Cloudflare R2 terminar antes de salvar.');
+      return;
+    }
+
+    // Se o usuário selecionou um arquivo mas o upload falhou e não tem URL gerada
+    if (formArquivoNome !== 'Escolher arquivo' && !formDownloadUrl) {
+      showToast('O arquivo ainda não foi enviado para o Cloudflare R2 com sucesso. Selecione o arquivo novamente.');
       return;
     }
 
@@ -377,7 +393,7 @@ export default function AdminMateriaisPage() {
           formPlano === 'Prática' ? ['pratica'] : formPlano === 'Estudo' ? ['estudo'] : ['consulta'],
         download_format: formDownloadUrl.toLowerCase().endsWith('.docx') ? 'DOCX' : formDownloadUrl.toLowerCase().endsWith('.mp4') ? 'MP4' : 'PDF',
         download_size: formFileSize || '1.5 MB',
-        download_url: formDownloadUrl || (formArquivoNome !== 'Escolher arquivo' ? formArquivoNome : ''),
+        download_url: formDownloadUrl || '',
         key_instructions: formSumario ? formSumario.split('\n').filter(Boolean) : [],
         is_featured: formSelo === 'novo',
         published_at: status === 'publicado' ? new Date().toISOString() : null
@@ -941,6 +957,16 @@ export default function AdminMateriaisPage() {
                 <span>PDF, DOCX ou vídeo MP4 (upload direto e seguro)</span>
               </label>
 
+              {uploadR2Error && (
+                <div style={{ marginTop: '8px', padding: '10px 12px', borderRadius: '10px', background: 'rgba(168,38,29,0.08)', border: '1px solid rgba(168,38,29,0.25)', fontSize: '12px', color: '#a8261d', lineHeight: 1.4 }}>
+                  <b style={{ display: 'block', marginBottom: '2px' }}>✕ Falha no envio para o Cloudflare R2:</b>
+                  <span>{uploadR2Error}</span>
+                  <div style={{ marginTop: '4px', fontSize: '11px', color: 'var(--ink-mute)' }}>
+                    Verifique se as variáveis do R2 estão configuradas na sua hospedagem (Vercel).
+                  </div>
+                </div>
+              )}
+
               {formDownloadUrl && (
                 <div style={{ marginTop: '8px', padding: '10px 12px', borderRadius: '10px', background: 'rgba(72,139,73,0.08)', border: '1px solid rgba(72,139,73,0.2)', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
                   <div style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -1026,13 +1052,13 @@ export default function AdminMateriaisPage() {
               className="btn-ghost"
               type="button"
               id="save-draft"
-              disabled={isSavingMat}
+              disabled={isSavingMat || isUploadingR2}
               onClick={() => handleSaveMaterial('rascunho')}
             >
               Salvar rascunho
             </button>
-            <button className="btn" type="submit" disabled={isSavingMat}>
-              <span>{isSavingMat ? 'Salvando...' : 'Publicar'}</span>
+            <button className="btn" type="submit" disabled={isSavingMat || isUploadingR2}>
+              <span>{isSavingMat ? 'Salvando...' : isUploadingR2 ? 'Enviando arquivo...' : 'Publicar'}</span>
               <span><svg className="ico sm"><use href="#i-arrow"/></svg></span>
             </button>
           </div>
