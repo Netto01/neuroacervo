@@ -289,6 +289,15 @@ export default function AdminMateriaisPage() {
     setIsDrawerOpen(false);
   };
 
+  // Formatação amigável de tamanho de arquivo
+  const formatBytes = (bytes: number): string => {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
+  };
+
   // Upload automático para o Cloudflare R2
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -300,6 +309,44 @@ export default function AdminMateriaisPage() {
     showToast('Enviando arquivo para o Cloudflare R2...');
 
     try {
+      // 1. Tentar upload direto via Presigned URL (suporta arquivos de qualquer tamanho sem limite da Vercel)
+      try {
+        const preRes = await fetch('/api/admin/upload-r2/presigned', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fileName: file.name,
+            contentType: file.type || 'application/octet-stream',
+          }),
+        });
+
+        if (preRes.ok) {
+          const preJson = await preRes.json();
+          if (preJson.success && preJson.uploadUrl) {
+            const uploadRes = await fetch(preJson.uploadUrl, {
+              method: 'PUT',
+              body: file,
+              headers: {
+                'Content-Type': file.type || 'application/octet-stream',
+              },
+            });
+
+            if (uploadRes.ok) {
+              setFormDownloadUrl(preJson.publicUrl);
+              setFormArquivoNome(file.name);
+              setFormFileSize(formatBytes(file.size));
+              setUploadR2Error('');
+              showToast('Arquivo enviado para o Cloudflare R2 com sucesso!');
+              setIsUploadingR2(false);
+              return;
+            }
+          }
+        }
+      } catch (presignedErr) {
+        console.warn('Tentativa via presigned URL falhou, tentando rota direta...', presignedErr);
+      }
+
+      // 2. Fallback: upload multipart padrão via servidor
       const data = new FormData();
       data.append('file', file);
 
@@ -308,8 +355,23 @@ export default function AdminMateriaisPage() {
         body: data,
       });
 
+      if (!res.ok) {
+        if (res.status === 413) {
+          throw new Error('O arquivo excede o limite de 4.5 MB do servidor da Vercel.');
+        }
+        const text = await res.text();
+        let errMsg = `Erro ${res.status}`;
+        try {
+          const parsed = JSON.parse(text);
+          if (parsed.error) errMsg = parsed.error;
+        } catch {
+          if (text) errMsg = text.slice(0, 140);
+        }
+        throw new Error(errMsg);
+      }
+
       const json = await res.json();
-      if (!res.ok || !json.success) {
+      if (!json.success) {
         throw new Error(json.error || 'Erro no upload para o Cloudflare R2.');
       }
 
