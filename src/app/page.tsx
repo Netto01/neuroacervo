@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 import './landing.css';
 import {
@@ -18,7 +16,7 @@ import {
 
 export default function LandingPage() {
   return (
-    <>
+    <div className="landing-root">
       <LandingHeader />
 
       <main id="conteudo">
@@ -34,6 +32,6 @@ export default function LandingPage() {
       </main>
 
       <LandingFooter />
-    </>
+    </div>
   );
 }

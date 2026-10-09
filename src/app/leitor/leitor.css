@@ -1,4 +1,4 @@
-:root {
+.leitor-root {
   --paper: #efe7d2;
   --bone: #f7f1de;
   --ink: #15140f;
@@ -193,32 +193,40 @@
   align-items: center;
   gap: 8px;
   height: 40px;
-  padding: 0 14px;
+  padding: 0 16px;
   border-radius: 999px;
-  font: 500 14px/1 var(--sans);
-  color: var(--ink-soft);
+  border: 1px solid rgba(21, 20, 15, 0.16);
+  background: var(--bone);
+  font: 500 13.5px/1 var(--sans);
+  color: var(--ink);
   text-decoration: none;
   white-space: nowrap;
+  transition: all 0.15s ease;
+  cursor: pointer;
 }
 
 .leitor-root .btn:hover {
-  background: var(--line-soft);
+  background: var(--paper);
+  border-color: rgba(21, 20, 15, 0.35);
   color: var(--ink);
 }
 
 .leitor-root .btn[aria-pressed="true"] {
   background: var(--lime);
+  border-color: var(--accent);
   color: var(--accent-strong);
 }
 
 .leitor-root .btn.solid {
   background: var(--ink);
+  border-color: var(--ink);
   color: var(--paper);
-  padding: 0 16px 0 18px;
+  padding: 0 18px;
 }
 
 .leitor-root .btn.solid:hover {
   background: #000;
+  border-color: #000;
 }
 
 .leitor-root .btn.solid .ico {
@@ -232,6 +240,8 @@
   display: grid;
   place-items: center;
   color: var(--ink-soft);
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
 
 .leitor-root .icon-btn:hover {
@@ -244,7 +254,8 @@
   color: var(--lime);
 }
 
-.leitor-root .only-m {
+.leitor-root .only-m,
+.leitor-root .only-t {
   display: none;
 }
 
@@ -957,7 +968,7 @@
 }
 
 @media (max-width: 1100px) {
-  :root {
+  .leitor-root {
     --right: 0px;
   }
   .leitor-root .layout {
@@ -990,7 +1001,7 @@
 }
 
 @media (max-width: 860px) {
-  :root {
+  .leitor-root {
     --left: 0px;
     --head: 58px;
   }

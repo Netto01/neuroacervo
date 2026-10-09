@@ -538,7 +538,7 @@ export default function AdminMateriaisPage() {
               <div className="actions">
                 <button className="btn" type="button" onClick={openNewForm}>
                   <span>Novo material</span>
-                  <span><svg className="ico sm"><use href="#i-arrow"/></svg></span>
+                  <span className="arrow"><svg className="ico sm"><use href="#i-arrow"/></svg></span>
                 </button>
               </div>
             </div>

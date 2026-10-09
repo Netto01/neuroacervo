@@ -79,6 +79,7 @@ export const PlatformShell: React.FC<PlatformShellProps> = ({
   }
 
   return (
+    <div className="dash-root">
     <div className="dash-body" data-plano={planInfo.tipo}>
       <a className="skip" href="#conteudo">Pular para o conteúdo</a>
 
@@ -305,6 +306,7 @@ export const PlatformShell: React.FC<PlatformShellProps> = ({
           <span>Pasta</span>
         </Link>
       </nav>
+    </div>
     </div>
   );
 };

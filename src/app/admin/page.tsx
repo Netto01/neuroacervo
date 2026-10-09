@@ -895,11 +895,11 @@ export default function AdminPage() {
                 </button>
                 <a className="btn-ghost" href="https://dashboard.stripe.com" target="_blank" rel="noopener noreferrer">
                   <span>Abrir Stripe</span>
-                  <span><svg className="ico sm"><use href="#i-arrow"/></svg></span>
+                  <span className="arrow"><svg className="ico sm"><use href="#i-arrow"/></svg></span>
                 </a>
                 <button className="btn" type="button" onClick={openNewForm}>
                   <span>Novo material</span>
-                  <span><svg className="ico sm"><use href="#i-arrow"/></svg></span>
+                  <span className="arrow"><svg className="ico sm"><use href="#i-arrow"/></svg></span>
                 </button>
               </div>
             </div>
@@ -1630,7 +1630,7 @@ export default function AdminPage() {
               <div className="actions">
                 <a className="btn-ghost" href="https://dashboard.stripe.com/products" target="_blank" rel="noopener noreferrer">
                   <span>Produtos na Stripe</span>
-                  <span><svg className="ico sm"><use href="#i-arrow"/></svg></span>
+                  <span className="arrow"><svg className="ico sm"><use href="#i-arrow"/></svg></span>
                 </a>
               </div>
             </div>
@@ -2071,7 +2071,7 @@ export default function AdminPage() {
               </button>
               <button className="btn" type="submit" disabled={isSavingMat}>
                 <span>{isSavingMat ? 'Salvando...' : 'Publicar'}</span>
-                <span><svg className="ico sm"><use href="#i-arrow"/></svg></span>
+                <span className="arrow"><svg className="ico sm"><use href="#i-arrow"/></svg></span>
               </button>
             </div>
           </div>

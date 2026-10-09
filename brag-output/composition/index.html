@@ -1,0 +1,713 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>NeuroAcervo — Launch Video</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@500;700;800;900&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,500;0,700;1,500;1,600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --paper: #efe7d2;
+        --bone: #f7f1de;
+        --ink: #15140f;
+        --ink-soft: #2a2620;
+        --ink-mute: #5a5448;
+        --ink-faint: #7c7768;
+        --accent: #488b49;
+        --accent-strong: #2f6b31;
+        --lime: #dafeaa;
+        --line: rgba(21, 20, 15, 0.16);
+        --line-soft: rgba(21, 20, 15, 0.08);
+        --sans: "Inter Tight", "Inter", -apple-system, sans-serif;
+        --serif: "Playfair Display", Georgia, serif;
+        --body: "Inter", -apple-system, sans-serif;
+        --mono: "JetBrains Mono", monospace;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html, body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: var(--body);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* Noise Overlay */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        pointer-events: none;
+        background-image: radial-gradient(circle at 12% 18%, rgba(106, 92, 56, 0.08) 0, transparent 35%),
+                          radial-gradient(circle at 88% 72%, rgba(106, 92, 56, 0.07) 0, transparent 40%);
+        mix-blend-mode: multiply;
+        opacity: 0.9;
+      }
+
+      #root {
+        width: 1920px;
+        height: 1080px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* Top Masthead */
+      .topbar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 64px;
+        padding: 0 72px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--line);
+        font-family: var(--mono);
+        font-size: 14px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--ink-mute);
+        z-index: 50;
+      }
+      .topbar b { color: var(--ink); font-weight: 600; }
+      .topbar .accent { color: var(--accent-strong); }
+      .pulse-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--accent);
+        margin-right: 10px;
+      }
+
+      /* Scene Container */
+      .scene {
+        position: absolute;
+        inset: 64px 0 0 0;
+        padding: 48px 72px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      /* SCENE 1: HOOK (Gauss Curve) */
+      .s1-wrap {
+        width: 100%;
+        max-width: 1400px;
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 60px;
+        align-items: center;
+      }
+      .s1-copy {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+      .s1-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 18px;
+        border-radius: 999px;
+        background: var(--bone);
+        border: 1px solid var(--line);
+        font-family: var(--mono);
+        font-size: 13px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--accent-strong);
+        width: fit-content;
+      }
+      .s1-title {
+        font-family: var(--sans);
+        font-size: 68px;
+        font-weight: 800;
+        line-height: 1.05;
+        letter-spacing: -0.035em;
+        color: var(--ink);
+      }
+      .s1-title em {
+        font-family: var(--serif);
+        font-weight: 500;
+        font-style: italic;
+        color: var(--accent-strong);
+      }
+      .s1-title .dot { color: var(--accent); }
+      .s1-desc {
+        font-size: 22px;
+        line-height: 1.55;
+        color: var(--ink-soft);
+        max-width: 48ch;
+      }
+      .s1-art {
+        position: relative;
+        background: var(--bone);
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        padding: 36px 36px 28px;
+        box-shadow: 0 24px 50px -20px rgba(21, 20, 15, 0.12);
+      }
+      .s1-art-tag {
+        display: flex;
+        justify-content: space-between;
+        font-family: var(--mono);
+        font-size: 13px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #4a4539;
+        margin-bottom: 24px;
+        font-weight: 500;
+      }
+      .plate-svg {
+        width: 100%;
+        height: 250px;
+        display: block;
+      }
+      .plate-svg .area { fill: rgba(72, 139, 73, 0.15); }
+      .plate-svg .curve { fill: none; stroke: var(--accent-strong); stroke-width: 3.5; stroke-linecap: round; }
+      .plate-svg .base { stroke: var(--line); stroke-width: 1.5; }
+      .plate-svg .sd { stroke: rgba(21, 20, 15, 0.2); stroke-dasharray: 4, 4; }
+      .plate-svg text { font-family: var(--mono); font-size: 13.5px; fill: #3f3a2f; font-weight: 600; }
+      .s1-badge {
+        margin-top: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 16px;
+        border-top: 1px solid var(--line-soft);
+        font-family: var(--mono);
+        font-size: 13px;
+        color: var(--ink-mute);
+      }
+      .s1-badge b { color: var(--accent-strong); }
+
+      /* SCENE 2: THE 4 PILLARS */
+      .s2-header {
+        text-align: center;
+        margin-bottom: 50px;
+      }
+      .s2-header .label {
+        font-family: var(--mono);
+        font-size: 14px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--accent-strong);
+        display: inline-block;
+        margin-bottom: 12px;
+      }
+      .s2-header h2 {
+        font-family: var(--sans);
+        font-size: 54px;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+      }
+      .s2-header h2 em {
+        font-family: var(--serif);
+        font-style: italic;
+        color: var(--accent-strong);
+      }
+      .s2-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 28px;
+        width: 100%;
+        max-width: 1560px;
+      }
+      .pillar-card {
+        background: var(--bone);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        padding: 36px 30px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 440px;
+        box-shadow: 0 20px 40px -20px rgba(21, 20, 15, 0.08);
+      }
+      .pillar-card.featured {
+        background: var(--ink);
+        color: var(--paper);
+        border-color: var(--ink);
+      }
+      .pillar-card .num {
+        font-family: var(--serif);
+        font-size: 32px;
+        font-style: italic;
+        font-weight: 600;
+        color: var(--accent-strong);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .pillar-card.featured .num { color: var(--lime); }
+      .pillar-card .tag {
+        font-family: var(--sans);
+        font-style: normal;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: rgba(21, 20, 15, 0.06);
+        color: var(--ink-mute);
+      }
+      .pillar-card.featured .tag {
+        background: rgba(218, 254, 170, 0.15);
+        color: var(--lime);
+      }
+      .pillar-card h3 {
+        font-family: var(--sans);
+        font-size: 28px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        margin: 24px 0 12px;
+      }
+      .pillar-card p {
+        font-size: 15.5px;
+        line-height: 1.55;
+        color: var(--ink-mute);
+      }
+      .pillar-card.featured p { color: rgba(247, 241, 222, 0.75); }
+      .pillar-card .foot {
+        margin-top: 32px;
+        padding-top: 20px;
+        border-top: 1px solid var(--line-soft);
+        font-family: var(--mono);
+        font-size: 12.5px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--accent-strong);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .pillar-card.featured .foot {
+        border-color: rgba(247, 241, 222, 0.15);
+        color: var(--lime);
+      }
+
+      /* SCENE 3: LEITOR CLÍNICO MOCKUP */
+      .s3-wrap {
+        width: 100%;
+        max-width: 1360px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 36px;
+      }
+      .s3-head {
+        text-align: center;
+      }
+      .s3-head h2 {
+        font-family: var(--sans);
+        font-size: 52px;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+      }
+      .s3-head h2 em {
+        font-family: var(--serif);
+        font-style: italic;
+        color: var(--accent-strong);
+      }
+      .reader-mockup {
+        width: 100%;
+        background: var(--bone);
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 35px 70px -30px rgba(21, 20, 15, 0.2);
+      }
+      .reader-bar {
+        background: var(--paper);
+        border-bottom: 1px solid var(--line);
+        padding: 18px 32px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .reader-bar .title-grp {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .reader-bar .icon-box {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: var(--accent-strong);
+        color: #ffffff;
+        display: grid;
+        place-items: center;
+        font-size: 20px;
+      }
+      .reader-bar b {
+        font-size: 19px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        display: block;
+        color: var(--ink);
+      }
+      .reader-bar small {
+        font-family: var(--mono);
+        font-size: 12.5px;
+        color: #4a4539;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+      .reader-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--ink);
+        color: var(--paper);
+        padding: 10px 22px;
+        border-radius: 999px;
+        font-size: 14px;
+        font-weight: 600;
+      }
+      .reader-btn .arrow { color: var(--lime); }
+      .reader-body {
+        padding: 40px 48px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 48px;
+      }
+      .reader-col h4 {
+        font-family: var(--mono);
+        font-size: 13px;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--accent-strong);
+        margin-bottom: 14px;
+      }
+      .reader-col p {
+        font-size: 17px;
+        line-height: 1.6;
+        color: var(--ink-soft);
+      }
+      .score-scale {
+        margin-top: 24px;
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 20px 24px;
+      }
+      .score-scale .lbl {
+        display: flex;
+        justify-content: space-between;
+        font-family: var(--mono);
+        font-size: 13px;
+        margin-bottom: 12px;
+      }
+      .score-scale .lbl b { color: var(--accent-strong); }
+      .scale-track {
+        height: 12px;
+        border-radius: 999px;
+        background: rgba(21, 20, 15, 0.1);
+        position: relative;
+        overflow: hidden;
+      }
+      .scale-fill {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 24%;
+        background: var(--accent);
+        border-radius: 999px;
+      }
+
+      /* SCENE 4: BRAND OUTRO */
+      .s4-wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 32px;
+      }
+      .s4-brand {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+      .s4-brand img {
+        height: 84px;
+        width: auto;
+      }
+      .s4-brand span {
+        font-family: var(--sans);
+        font-size: 80px;
+        font-weight: 900;
+        letter-spacing: -0.04em;
+      }
+      .s4-tagline {
+        font-family: var(--serif);
+        font-size: 38px;
+        font-style: italic;
+        color: var(--accent-strong);
+        max-width: 32ch;
+      }
+      .s4-badge {
+        font-family: var(--mono);
+        font-size: 14px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        padding: 8px 24px;
+        border-radius: 999px;
+        background: var(--lime);
+        color: var(--accent-strong);
+        font-weight: 600;
+      }
+      .s4-cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 16px;
+        padding: 18px 36px;
+        border-radius: 999px;
+        background: var(--accent-strong);
+        color: #ffffff;
+        font-family: var(--sans);
+        font-size: 20px;
+        font-weight: 700;
+        box-shadow: 0 20px 40px -15px var(--accent-strong);
+      }
+      .s4-cta .arr {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        display: grid;
+        place-items: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="20"
+      data-width="1920"
+      data-height="1080"
+    >
+      <!-- Background Audio & SFX -->
+      <audio id="bg-music" data-start="0" data-duration="20" data-track-index="10" data-volume="0.32" src="assets/music.mp3"></audio>
+      <audio id="sfx-s1" class="sfx-s1" data-start="0.3" data-duration="0.11" data-track-index="11" data-volume="0.6" src="assets/sfx/drop.ogg"></audio>
+      <audio id="sfx-s2" class="sfx-s2" data-start="4.7" data-duration="0.60" data-track-index="12" data-volume="0.65" src="assets/sfx/slide.ogg"></audio>
+      <audio id="sfx-s3" class="sfx-s3" data-start="9.8" data-duration="0.62" data-track-index="13" data-volume="0.6" src="assets/sfx/switch.ogg"></audio>
+      <audio id="sfx-s4" class="sfx-s4" data-start="15.8" data-duration="0.10" data-track-index="14" data-volume="0.7" src="assets/sfx/click.ogg"></audio>
+
+      <!-- Top Masthead Bar -->
+      <header class="topbar">
+        <div><b>NA / 2026</b> · Acervo clínico Nº 01</div>
+        <div>Avaliação <span class="accent">neuropsicológica</span> com método</div>
+        <div><span class="pulse-dot"></span>Uso profissional</div>
+      </header>
+
+      <!-- SCENE 1: HOOK (0s - 4.5s) -->
+      <section class="scene" id="scene-1">
+        <div class="s1-wrap">
+          <div class="s1-copy">
+            <span class="s1-pill">Edição 2026 · Acervo Clínico</span>
+            <h1 class="s1-title">
+              Avaliação neuropsicológica <em>com método</em>, num só <em>acervo</em><span class="dot">.</span>
+            </h1>
+            <p class="s1-desc">
+              Guias rápidos de aplicação e interpretação, modelos de laudo e roteiros de anamnese prontos para a rotina clínica.
+            </p>
+          </div>
+          <div class="s1-art">
+            <div class="s1-art-tag">
+              <span>Prancha 01 · Distribuição Normal</span>
+              <span>M 100 · DP 15</span>
+            </div>
+            <svg class="plate-svg" viewBox="0 0 600 280">
+              <path class="area" d="M60,240 C150,240 205,42 300,42 C395,42 450,240 540,240 Z" />
+              <path class="curve" id="s1-curve" d="M30,240 C150,240 205,42 300,42 C395,42 450,240 570,240" />
+              <line class="base" x1="20" y1="240" x2="580" y2="240" />
+              <line class="sd" x1="140" y1="50" x2="140" y2="240" />
+              <line class="sd" x1="220" y1="50" x2="220" y2="240" />
+              <line class="sd" x1="300" y1="25" x2="300" y2="240" />
+              <line class="sd" x1="380" y1="50" x2="380" y2="240" />
+              <line class="sd" x1="460" y1="50" x2="460" y2="240" />
+              <text x="130" y="264">70</text>
+              <text x="210" y="264">85</text>
+              <text x="288" y="264">100</text>
+              <text x="368" y="264">115</text>
+              <text x="448" y="264">130</text>
+            </svg>
+            <div class="s1-badge">
+              <span>Escore padrão · Faixas de Desvio Padrão</span>
+              <b>Pc 2 · 16 · 50 · 84 · 98</b>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCENE 2: THE 4 PILLARS (4.5s - 9.5s) -->
+      <section class="scene" id="scene-2">
+        <div class="s2-header">
+          <span class="label">Organização por Domínio Cognitivo</span>
+          <h2>Tudo o que sua rotina clínica <em>precisa</em>.</h2>
+        </div>
+        <div class="s2-grid">
+          <article class="pillar-card">
+            <div>
+              <div class="num">01 <span class="tag">Aplicação</span></div>
+              <h3>Guias Rápidos</h3>
+              <p>Passo a passo objetivo, regras de início e critérios de interrupção imediata.</p>
+            </div>
+            <div class="foot"><span>Ver guias</span> →</div>
+          </article>
+          <article class="pillar-card featured">
+            <div>
+              <div class="num">02 <span class="tag">Editável</span></div>
+              <h3>Modelos de Laudo</h3>
+              <p>Estrutura clínica técnica completa por hipótese diagnóstica pronta para adaptar.</p>
+            </div>
+            <div class="foot"><span>Modelos Word & PDF</span> →</div>
+          </article>
+          <article class="pillar-card">
+            <div>
+              <div class="num">03 <span class="tag">Entrevista</span></div>
+              <h3>Roteiros de Anamnese</h3>
+              <p>Histórico do desenvolvimento, rotina diária e rastreio de sintomas clínicos.</p>
+            </div>
+            <div class="foot"><span>Acessar roteiros</span> →</div>
+          </article>
+          <article class="pillar-card">
+            <div>
+              <div class="num">04 <span class="tag">Formação</span></div>
+              <h3>Compêndios & Aulas</h3>
+              <p>Fundamentação teórica psicométrica e aulas clínicas gravadas com especialistas.</p>
+            </div>
+            <div class="foot"><span>Assistir aulas</span> →</div>
+          </article>
+        </div>
+      </section>
+
+      <!-- SCENE 3: LEITOR CLÍNICO MOCKUP (9.5s - 15.5s) -->
+      <section class="scene" id="scene-3">
+        <div class="s3-wrap">
+          <div class="s3-head">
+            <h2>Critérios de teste e tabelas normativas no <em>Leitor Imersivo</em>.</h2>
+          </div>
+          <div class="reader-mockup">
+            <div class="reader-bar">
+              <div class="title-grp">
+                <div class="icon-box">⚡</div>
+                <div>
+                  <b>Span de Dígitos (Ordem Direta e Inversa)</b>
+                  <small>Atenção & Memória Operacional · Guia Rápido</small>
+                </div>
+              </div>
+              <div class="reader-btn">
+                <span>Imprimir / Salvar PDF</span>
+                <span class="arrow">↓</span>
+              </div>
+            </div>
+            <div class="reader-body">
+              <div class="reader-col">
+                <h4>Regras de Aplicação & Interrupção</h4>
+                <p>
+                  Apresentar 1 dígito por segundo. Interromper após falha em ambas as tentativas do mesmo item. Manter ritmo neutro e sem entonação de agrupamento.
+                </p>
+              </div>
+              <div class="reader-col">
+                <h4>Conversão e Estratificação Normativa</h4>
+                <p>
+                  Escore Bruto convertido para Escore Padrão ponderado por faixa etária e escolaridade.
+                </p>
+                <div class="score-scale">
+                  <div class="lbl">
+                    <span>Faixa Percentil: <b>Pc 9–24</b></span>
+                    <span>Classificação: <b>Médio Inferior</b></span>
+                  </div>
+                  <div class="scale-track">
+                    <div class="scale-fill"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCENE 4: BRAND OUTRO (15.5s - 20.0s) -->
+      <section class="scene" id="scene-4">
+        <div class="s4-wrap">
+          <div class="s4-brand">
+            <img src="assets/logo.svg" alt="NeuroAcervo" />
+            <span>NeuroAcervo</span>
+          </div>
+          <p class="s4-tagline">
+            "Avaliação neuropsicológica com método, num só acervo."
+          </p>
+          <div class="s4-badge">Edição 2026 · Uso Profissional</div>
+          <div class="s4-cta">
+            <span>Conheça os planos · neuroacervo.com.br</span>
+            <span class="arr">→</span>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- GSAP Master Animation Timeline -->
+    <script>
+      const tl = gsap.timeline({ paused: true });
+
+      // ── SCENE 1 (0.0s -> 4.5s) ──
+      tl.to("#scene-1", { opacity: 1, duration: 0.4, ease: "power2.out" }, 0.1)
+        .fromTo("#scene-1 .s1-copy > *", { opacity: 0, y: 30 }, { opacity: 1, y: 0, stagger: 0.12, duration: 0.8, ease: "power3.out" }, 0.2)
+        .fromTo("#scene-1 .s1-art", { opacity: 0, scale: 0.94 }, { opacity: 1, scale: 1, duration: 0.9, ease: "power3.out" }, 0.4)
+        .fromTo("#s1-curve", { strokeDasharray: 600, strokeDashoffset: 600 }, { strokeDashoffset: 0, duration: 1.8, ease: "power2.inOut" }, 0.6)
+        .to("#scene-1", { opacity: 0, y: -20, duration: 0.4, ease: "power2.in" }, 4.1);
+
+      // ── SCENE 2 (4.5s -> 9.5s) ──
+      tl.to("#scene-2", { opacity: 1, duration: 0.4, ease: "power2.out" }, 4.5)
+        .fromTo("#scene-2 .s2-header", { opacity: 0, y: 25 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 4.6)
+        .fromTo("#scene-2 .pillar-card", { opacity: 0, y: 40, scale: 0.95 }, { opacity: 1, y: 0, scale: 1, stagger: 0.15, duration: 0.8, ease: "back.out(1.2)" }, 4.8)
+        .to("#scene-2", { opacity: 0, y: -20, duration: 0.4, ease: "power2.in" }, 9.1);
+
+      // ── SCENE 3 (9.5s -> 15.5s) ──
+      tl.to("#scene-3", { opacity: 1, duration: 0.4, ease: "power2.out" }, 9.5)
+        .fromTo("#scene-3 .s3-head", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 9.6)
+        .fromTo("#scene-3 .reader-mockup", { opacity: 0, scale: 0.92, y: 30 }, { opacity: 1, scale: 1, y: 0, duration: 0.8, ease: "power3.out" }, 9.8)
+        .fromTo("#scene-3 .scale-fill", { width: "0%" }, { width: "35%", duration: 1.2, ease: "power2.out" }, 10.6)
+        .to("#scene-3", { opacity: 0, y: -20, duration: 0.4, ease: "power2.in" }, 15.1);
+
+      // ── SCENE 4 (15.5s -> 20.0s) ──
+      tl.to("#scene-4", { opacity: 1, duration: 0.5, ease: "power2.out" }, 15.5)
+        .fromTo("#scene-4 .s4-brand", { opacity: 0, scale: 0.85, y: 25 }, { opacity: 1, scale: 1, y: 0, duration: 0.8, ease: "back.out(1.4)" }, 15.7)
+        .fromTo("#scene-4 .s4-tagline", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 16.2)
+        .fromTo("#scene-4 .s4-badge", { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.5, ease: "power2.out" }, 16.7)
+        .fromTo("#scene-4 .s4-cta", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 17.2)
+        .to("#root", { opacity: 0.98, duration: 2.8 }, 17.2); // Hold stable until 20s
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
