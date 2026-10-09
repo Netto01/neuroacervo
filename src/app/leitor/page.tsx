@@ -25,6 +25,93 @@ interface PageData {
   drawn?: number;
 }
 
+interface PdfPageItemProps {
+  pageNum: number;
+  pdfDoc: any;
+  zoom: number;
+  watermarkText: string;
+}
+
+function PdfPageItem({ pageNum, pdfDoc, zoom, watermarkText }: PdfPageItemProps) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const renderTaskRef = useRef<any>(null);
+  const [pageSize, setPageSize] = useState<{ width: number; height: number }>({
+    width: Math.round(794 * zoom),
+    height: Math.round(1123 * zoom),
+  });
+
+  useEffect(() => {
+    if (!pdfDoc || !canvasRef.current) return;
+    const canvas = canvasRef.current;
+    let isCancelled = false;
+
+    pdfDoc.getPage(pageNum).then((page: any) => {
+      if (isCancelled || !canvas) return;
+
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const unscaledViewport = page.getViewport({ scale: 1 });
+      const targetWidth = 794 * zoom;
+      const scale = (targetWidth / unscaledViewport.width) * dpr;
+      const viewport = page.getViewport({ scale });
+
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      setPageSize({
+        width: Math.round(viewport.width / dpr),
+        height: Math.round(viewport.height / dpr),
+      });
+
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        if (renderTaskRef.current) {
+          try {
+            renderTaskRef.current.cancel();
+          } catch {}
+        }
+        const task = page.render({ canvasContext: ctx, viewport });
+        renderTaskRef.current = task;
+        task.promise.catch((e: any) => {
+          if (e?.name !== 'RenderingCancelledException') {
+            console.warn(`Erro renderizando página ${pageNum}:`, e);
+          }
+        });
+      }
+    }).catch(console.error);
+
+    return () => {
+      isCancelled = true;
+      if (renderTaskRef.current) {
+        try {
+          renderTaskRef.current.cancel();
+        } catch {}
+      }
+    };
+  }, [pdfDoc, pageNum, zoom]);
+
+  return (
+    <div
+      className="pw"
+      data-page={pageNum}
+      role="img"
+      aria-label={`Página ${pageNum}`}
+      style={{
+        width: `${pageSize.width}px`,
+        height: `${pageSize.height}px`,
+        position: 'relative',
+        ['--z' as any]: zoom,
+      } as any}
+    >
+      <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block' }} />
+      <span className="num">{pageNum}</span>
+      <div className="wm" aria-hidden="true">
+        <span>{watermarkText}</span>
+        <span>{watermarkText}</span>
+        <span>{watermarkText}</span>
+      </div>
+    </div>
+  );
+}
+
 function LeitorContent() {
   const searchParams = useSearchParams();
   const { materials, currentUser, favorites, toggleFavorite } = useNeuro();
@@ -81,28 +168,17 @@ function LeitorContent() {
       return;
     }
 
-    // Se é uma URL direta do Cloudflare R2, passa pelo proxy da API para evitar bloqueios de CORS no PDF.js
-    if (raw.includes('.r2.dev') || raw.includes('.r2.cloudflarestorage.com')) {
-      setPdfUrl(`/api/materiais/pdf?url=${encodeURIComponent(raw)}`);
-      return;
-    }
+    const publicR2 = (process.env.NEXT_PUBLIC_R2_PUBLIC_URL || 'https://pub-46b7a58b503e44bdb8e86a63a0cf51ba.r2.dev').replace(/\/+$/, '');
 
-    // Se é uma rota de API já formatada
-    if (raw.startsWith('/api/materiais/pdf')) {
+    // Se é uma URL HTTP/HTTPS direta (ex: Cloudflare R2 com CDN e CORS aberto)
+    if (raw.startsWith('http://') || raw.startsWith('https://')) {
       setPdfUrl(raw);
       return;
     }
 
-    // Se é uma URL HTTP/HTTPS externa genérica
-    if (raw.startsWith('http://') || raw.startsWith('https://')) {
-      // Tenta carregar via proxy para garantir CORS aberto
-      setPdfUrl(`/api/materiais/pdf?url=${encodeURIComponent(raw)}`);
-      return;
-    }
-
-    // Se é uma chave de arquivo ou nome de arquivo que pode estar no R2
+    // Se é apenas o nome/chave do arquivo no R2 (ex: guia-pratico-wisc-iv-4.pdf)
     if (raw.toLowerCase().endsWith('.pdf') && !raw.startsWith('/')) {
-      setPdfUrl(`/api/materiais/pdf?key=${encodeURIComponent(raw)}`);
+      setPdfUrl(`${publicR2}/${raw}`);
       return;
     }
 
@@ -162,8 +238,8 @@ function LeitorContent() {
   // Referências
   const viewerRef = useRef<HTMLDivElement>(null);
   const pagesWrapRef = useRef<HTMLDivElement>(null);
-  const canvasRefs = useRef<(HTMLCanvasElement | null)[]>([]);
   const pdfDocRef = useRef<any>(null);
+  const [pdfDoc, setPdfDoc] = useState<any>(null);
   const [sections, setSections] = useState<TocItem[]>([]);
   const [demoPages, setDemoPages] = useState<PageData[]>([]);
 
@@ -305,10 +381,11 @@ function LeitorContent() {
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
     let isCancelled = false;
-    pdfjsLib.getDocument({ url: pdfUrl }).promise
+    pdfjsLib.getDocument({ url: pdfUrl, withCredentials: false }).promise
       .then((doc: any) => {
         if (isCancelled) return;
         pdfDocRef.current = doc;
+        setPdfDoc(doc);
         setTotalPages(doc.numPages);
         setTimeout(handleFitWidth, 50);
 
@@ -331,36 +408,14 @@ function LeitorContent() {
         });
       })
       .catch((err: any) => {
-        console.warn('Não foi possível carregar o arquivo binário do PDF via PDF.js, exibindo demonstração estruturada.', err);
-        setPdfUrl(null);
+        console.error('Erro ao carregar o arquivo binário do PDF via PDF.js:', err);
+        setPdfDoc(null);
       });
 
     return () => {
       isCancelled = true;
     };
   }, [pdfUrl, pdfJsLoaded]);
-
-  // Renderizar páginas do PDF.js
-  useEffect(() => {
-    if (!pdfDocRef.current) return;
-    const doc = pdfDocRef.current;
-
-    for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
-      const canvas = canvasRefs.current[pageNum - 1];
-      if (!canvas) continue;
-
-      doc.getPage(pageNum).then((page: any) => {
-        const dpr = Math.min(window.devicePixelRatio || 1, 2);
-        const vp = page.getViewport({ scale: (794 / page.getViewport({ scale: 1 }).width) * zoom * dpr });
-        canvas.width = vp.width;
-        canvas.height = vp.height;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          page.render({ canvasContext: ctx, viewport: vp });
-        }
-      }).catch(() => {});
-    }
-  }, [zoom, totalPages, pdfUrl]);
 
   // Ajustar largura (Fit to screen)
   const handleFitWidth = () => {
@@ -655,30 +710,23 @@ function LeitorContent() {
           onScroll={handleScroll}
         >
           <div className="pages" ref={pagesWrapRef}>
-            {pdfUrl ? (
-              // Modo PDF nativo via PDF.js
+            {pdfUrl && pdfDoc ? (
+              // Modo PDF real renderizado via PDF.js
               Array.from({ length: totalPages }).map((_, i) => (
-                <div 
-                  key={i} 
-                  className="pw" 
-                  data-page={i + 1}
-                  role="img" 
-                  aria-label={`Página ${i + 1}`}
-                  style={{
-                    width: `${Math.round(794 * zoom)}px`,
-                    height: `${Math.round(1123 * zoom)}px`,
-                    ['--z' as any]: zoom
-                  } as any}
-                >
-                  <canvas ref={(el) => { canvasRefs.current[i] = el; }} />
-                  <span className="num">{i + 1}</span>
-                  <div className="wm" aria-hidden="true">
-                    <span>{watermarkText}</span>
-                    <span>{watermarkText}</span>
-                    <span>{watermarkText}</span>
-                  </div>
-                </div>
+                <PdfPageItem
+                  key={`page-${i + 1}`}
+                  pageNum={i + 1}
+                  pdfDoc={pdfDoc}
+                  zoom={zoom}
+                  watermarkText={watermarkText}
+                />
               ))
+            ) : pdfUrl && !pdfDoc ? (
+              // Carregando documento real do acervo
+              <div style={{ textAlign: 'center', padding: '80px 20px', color: 'var(--ink-mute)', fontFamily: 'var(--mono)', fontSize: '13px' }}>
+                <div style={{ width: 28, height: 28, border: '3px solid var(--accent-strong)', borderTopColor: 'transparent', borderRadius: '50%', margin: '0 auto 16px', animation: 'spin 0.8s linear infinite' }} />
+                <div>Carregando documento oficial do acervo…</div>
+              </div>
             ) : (
               // Modo Demonstração / Guia Estruturado em HTML
               demoPages.map((page, i) => (
