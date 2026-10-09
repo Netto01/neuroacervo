@@ -309,58 +309,41 @@ export default function AdminMateriaisPage() {
     showToast('Enviando arquivo para o Cloudflare R2...');
 
     try {
-      // 1. Tentar upload direto via Presigned URL (suporta arquivos de qualquer tamanho sem limite da Vercel)
-      try {
-        const preRes = await fetch('/api/admin/upload-r2/presigned', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            fileName: file.name,
-            contentType: file.type || 'application/octet-stream',
-          }),
-        });
-
-        if (preRes.ok) {
-          const preJson = await preRes.json();
-          if (preJson.success && preJson.uploadUrl) {
-            const uploadRes = await fetch(preJson.uploadUrl, {
-              method: 'PUT',
-              body: file,
-              headers: {
-                'Content-Type': file.type || 'application/octet-stream',
-              },
-            });
-
-            if (uploadRes.ok) {
-              setFormDownloadUrl(preJson.publicUrl);
-              setFormArquivoNome(file.name);
-              setFormFileSize(formatBytes(file.size));
-              setUploadR2Error('');
-              showToast('Arquivo enviado para o Cloudflare R2 com sucesso!');
-              setIsUploadingR2(false);
-              return;
-            }
-          }
-        }
-      } catch (presignedErr) {
-        console.warn('Tentativa via presigned URL falhou, tentando rota direta...', presignedErr);
-      }
-
-      // 2. Fallback: upload multipart padrão via servidor
-      const data = new FormData();
-      data.append('file', file);
-
-      const res = await fetch('/api/admin/upload-r2', {
+      // 1. Obter URL pré-assinada do servidor para upload direto ao R2 (sem limite de 4.5MB da Vercel)
+      const preRes = await fetch('/api/admin/upload-r2/presigned', {
         method: 'POST',
-        body: data,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fileName: file.name,
+          contentType: file.type || 'application/octet-stream',
+        }),
       });
 
-      if (!res.ok) {
-        if (res.status === 413) {
-          throw new Error('O arquivo excede o limite de 4.5 MB do servidor da Vercel.');
+      if (preRes.ok) {
+        const preJson = await preRes.json();
+        if (preJson.success && preJson.uploadUrl) {
+          const uploadRes = await fetch(preJson.uploadUrl, {
+            method: 'PUT',
+            body: file,
+          });
+
+          if (uploadRes.ok) {
+            setFormDownloadUrl(preJson.publicUrl);
+            setFormArquivoNome(file.name);
+            setFormFileSize(formatBytes(file.size));
+            setUploadR2Error('');
+            showToast('Arquivo enviado para o Cloudflare R2 com sucesso!');
+            setIsUploadingR2(false);
+            return;
+          } else {
+            const errTxt = await uploadRes.text().catch(() => '');
+            throw new Error(`Falha no upload direto para o R2 (status ${uploadRes.status}): ${errTxt || uploadRes.statusText}`);
+          }
         }
-        const text = await res.text();
-        let errMsg = `Erro ${res.status}`;
+      } else {
+        // Se a rota presigned falhou, ler a mensagem do servidor
+        const text = await preRes.text();
+        let errMsg = `Erro ${preRes.status} no servidor de autenticação do R2`;
         try {
           const parsed = JSON.parse(text);
           if (parsed.error) errMsg = parsed.error;
@@ -369,19 +352,6 @@ export default function AdminMateriaisPage() {
         }
         throw new Error(errMsg);
       }
-
-      const json = await res.json();
-      if (!json.success) {
-        throw new Error(json.error || 'Erro no upload para o Cloudflare R2.');
-      }
-
-      setFormDownloadUrl(json.url);
-      setFormArquivoNome(file.name);
-      if (json.sizeFormatted) {
-        setFormFileSize(json.sizeFormatted);
-      }
-      setUploadR2Error('');
-      showToast('Arquivo enviado para o Cloudflare R2 com sucesso!');
     } catch (err: any) {
       console.error('Erro no upload R2:', err);
       const errMsg = err?.message || 'Falha ao conectar com Cloudflare R2.';

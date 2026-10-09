@@ -42,7 +42,6 @@ export async function POST(req: NextRequest) {
     const command = new PutObjectCommand({
       Bucket: R2_BUCKET,
       Key: key,
-      ContentType: contentType,
     });
 
     const uploadUrl = await getSignedUrl(r2Client, command, { expiresIn: 3600 });
