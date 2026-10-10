@@ -19,6 +19,17 @@ const TIPOS: Record<string, { nome: string; ico: string; bg: string; cor: string
   interativo: { nome: 'Recurso interativo', ico: 'i-cards', bg: 'bg-interativo', cor: 'var(--ink)' }
 };
 
+const DEFAULT_FUNCOES: string[] = [
+  'Atenção',
+  'Memória',
+  'Funções executivas',
+  'Linguagem',
+  'Habilidades visuoespaciais',
+  'Inteligência',
+  'Aspectos socioemocionais',
+  'Geral'
+];
+
 interface MaterialAdminItem {
   id?: string;
   t: string;
@@ -136,7 +147,7 @@ export default function AdminPage() {
   const [formPlano, setFormPlano] = useState<'Consulta' | 'Estudo' | 'Prática'>('Consulta');
   const [formDesc, setFormDesc] = useState('');
   const [formPopulacao, setFormPopulacao] = useState<string[]>(['adulto']);
-  const [formFuncao, setFormFuncao] = useState('Geral');
+  const [formFuncao, setFormFuncao] = useState('');
   const [formSelo, setFormSelo] = useState('novo');
   const [formArquivoNome, setFormArquivoNome] = useState('Escolher arquivo');
   const [formSumario, setFormSumario] = useState('');
@@ -153,6 +164,13 @@ export default function AdminPage() {
   const [toastText, setToastText] = useState('');
   const [toastVisible, setToastVisible] = useState(false);
   const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const funcoesSugeridas = useMemo(() => {
+    const custom = materials
+      .map((m) => m.funcao?.trim())
+      .filter((f): f is string => Boolean(f && !DEFAULT_FUNCOES.includes(f)));
+    return Array.from(new Set([...DEFAULT_FUNCOES, ...custom]));
+  }, [materials]);
 
   const showToast = (msg: string) => {
     if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
@@ -584,7 +602,7 @@ export default function AdminPage() {
     setFormPlano('Consulta');
     setFormDesc('');
     setFormPopulacao(['adulto']);
-    setFormFuncao('Geral');
+    setFormFuncao('');
     setFormSelo('novo');
     setFormArquivoNome('Escolher arquivo');
     setFormSumario('');
@@ -603,7 +621,7 @@ export default function AdminPage() {
     setFormPlano(item.plano);
     setFormDesc(item.desc || '');
     setFormPopulacao(item.populacao || ['adulto']);
-    setFormFuncao(item.funcao || 'Geral');
+    setFormFuncao(item.funcao || '');
     setFormSelo(item.selo || 'novo');
     setFormArquivoNome(item.arquivoNome || 'Substituir arquivo');
     setFormSumario(item.sumario || '');
@@ -656,7 +674,7 @@ export default function AdminPage() {
         description: formDesc,
         type: dbType,
         age_groups: formPopulacao,
-        clinical_utility: formFuncao,
+        clinical_utility: formFuncao.trim() || 'Geral',
         domains: formPlano === 'Prática' ? ['pratica'] : formPlano === 'Estudo' ? ['estudo'] : ['consulta'],
         download_format: 'PDF',
         download_size: '1.5 MB',
@@ -1968,20 +1986,20 @@ export default function AdminPage() {
             <div className="f2">
               <div className="f">
                 <label htmlFor="m-func">Função cognitiva</label>
-                <select
+                <input
                   id="m-func"
+                  type="text"
+                  list="m-func-list"
+                  placeholder="Ex: Atenção, Memória, Funções executivas..."
                   value={formFuncao}
                   onChange={(e) => setFormFuncao(e.target.value)}
-                >
-                  <option>Geral</option>
-                  <option>Atenção</option>
-                  <option>Memória</option>
-                  <option>Funções executivas</option>
-                  <option>Linguagem</option>
-                  <option>Habilidades visuoespaciais</option>
-                  <option>Inteligência</option>
-                  <option>Aspectos socioemocionais</option>
-                </select>
+                  autoComplete="off"
+                />
+                <datalist id="m-func-list">
+                  {funcoesSugeridas.map((item) => (
+                    <option key={item} value={item} />
+                  ))}
+                </datalist>
               </div>
 
               <div className="f">
