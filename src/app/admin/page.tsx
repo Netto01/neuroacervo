@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { useNeuro } from '@/context/NeuroContext';
+import { BatchUploadModal } from '@/components/admin/BatchUploadModal';
 import './admin.css';
 
 // ── Categorias de Materiais e Configurações ──
@@ -103,6 +104,7 @@ export default function AdminPage() {
   const [adminAccounts, setAdminAccounts] = useState<AssinanteItem[]>([]);
   const [loadingData, setLoadingData] = useState<boolean>(true);
   const [isSavingMat, setIsSavingMat] = useState<boolean>(false);
+  const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
 
   // Stripe Live Metrics State
   const [stripeStats, setStripeStats] = useState<StripeStatsState>({
@@ -918,6 +920,19 @@ export default function AdminPage() {
                   <span>Abrir Stripe</span>
                   <span className="arrow"><svg className="ico sm"><use href="#i-arrow"/></svg></span>
                 </a>
+                <button
+                  className="btn-ghost"
+                  type="button"
+                  onClick={() => setIsBatchModalOpen(true)}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <svg className="ico sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '15px', height: '15px' }}>
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                  <span>Upload em lote</span>
+                </button>
                 <button className="btn" type="button" onClick={openNewForm}>
                   <span>Novo material</span>
                   <span className="arrow"><svg className="ico sm"><use href="#i-arrow"/></svg></span>
@@ -1207,7 +1222,20 @@ export default function AdminPage() {
                 <span className="label">Conteúdo</span>
                 <h1 id="h-mat"><em>Materiais</em><span className="dot">.</span></h1>
               </div>
-              <div className="actions">
+              <div className="actions" style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  className="btn-ghost"
+                  type="button"
+                  onClick={() => setIsBatchModalOpen(true)}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <svg className="ico sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '15px', height: '15px' }}>
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                  <span>Upload em lote</span>
+                </button>
                 <button className="btn" type="button" onClick={openNewForm}>
                   <span>Novo material</span>
                   <span><svg className="ico sm"><use href="#i-arrow"/></svg></span>
@@ -2251,6 +2279,19 @@ export default function AdminPage() {
         <svg className="ico"><use href="#i-check"/></svg>
         <span id="toast-t">{toastText}</span>
       </div>
+
+      {/* ── MODAL UPLOAD EM LOTE ── */}
+      <BatchUploadModal
+        isOpen={isBatchModalOpen}
+        onClose={() => setIsBatchModalOpen(false)}
+        onSuccess={async (count) => {
+          await fetchAllAdminData();
+          refreshMaterials?.();
+          showToast(`${count} ${count === 1 ? 'material adicionado' : 'materiais adicionados'} com sucesso!`);
+        }}
+        defaultFuncoes={DEFAULT_FUNCOES}
+        existingFuncoes={materials.map((m) => m.funcao || '').filter(Boolean)}
+      />
     </div>
   );
 }
