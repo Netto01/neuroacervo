@@ -6,6 +6,12 @@
       "sourceType": "github",
       "skillPath": "skills/brag/SKILL.md",
       "computedHash": "0283ba10ca4ad7f370ae0634e27b0acaaf4acd41f8cd534b61043bdc8d3e2840"
+    },
+    "security-audit": {
+      "source": "cloudflare/security-audit-skill",
+      "sourceType": "github",
+      "skillPath": "skills/security-audit/SKILL.md",
+      "computedHash": "98b97aad2873b3b9a8e064007c25e7827b493ba27fda8bfbdb41dab586767973"
     }
   }
 }

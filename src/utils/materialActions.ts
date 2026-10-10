@@ -1,4 +1,5 @@
 import { AGE_LABELS } from '@/data/neuroData';
+import { escapeHtml } from '@/utils/security';
 
 export interface DownloadableMaterial {
   id: string;
@@ -74,12 +75,22 @@ export async function downloadMaterialFile(material: DownloadableMaterial): Prom
 }
 
 function generatePrintableDocument(material: DownloadableMaterial, fileName: string): void {
+  const safeTitle = escapeHtml(material.title);
+  const safeSubtitle = material.subtitle ? escapeHtml(material.subtitle) : '';
+  const safeUtility = escapeHtml(material.clinicalUtility || 'Avaliação Neuropsicológica');
+  const safeTargetPop = escapeHtml(material.targetPopulation || material.ageGroups?.map(a => AGE_LABELS[a] || a).join(', ') || 'Clínico');
+  const safeFormat = escapeHtml(material.downloadFormat || 'PDF');
+  const safeSize = escapeHtml(material.downloadSize || '1.5 MB');
+  const safeRegulation = material.satepsiRestricted ? 'Privativo (SATEPSI)' : 'Uso Multiprofissional Livre';
+  const safeDesc = escapeHtml(material.description || 'Guia prático de cabeceira com parâmetros técnicos para administração e laudo.');
+  const safeAuthor = material.authorReference ? escapeHtml(material.authorReference) : '';
+
   const printableContent = `
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
-  <title>${material.title} - NeuroAcervo</title>
+  <title>${safeTitle} - NeuroAcervo</title>
   <style>
     @media print {
       body { margin: 10mm; font-size: 11pt; }
@@ -105,31 +116,31 @@ function generatePrintableDocument(material: DownloadableMaterial, fileName: str
 <body>
   <div class="header-bar">
     <span class="tag">NeuroAcervo • Guia Clínico</span>
-    <h1>${material.title}</h1>
-    ${material.subtitle ? `<div class="subtitle">${material.subtitle}</div>` : ''}
+    <h1>${safeTitle}</h1>
+    ${safeSubtitle ? `<div class="subtitle">${safeSubtitle}</div>` : ''}
   </div>
 
   <div class="meta-grid">
     <div class="meta-cell">
       <b>Utilidade Clínica</b>
-      <span>${material.clinicalUtility || 'Avaliação Neuropsicológica'}</span>
+      <span>${safeUtility}</span>
     </div>
     <div class="meta-cell">
       <b>Público-Alvo</b>
-      <span>${material.targetPopulation || material.ageGroups?.map(a => AGE_LABELS[a] || a).join(', ') || 'Clínico'}</span>
+      <span>${safeTargetPop}</span>
     </div>
     <div class="meta-cell">
       <b>Formato & Arquivo</b>
-      <span>${material.downloadFormat || 'PDF'} (${material.downloadSize || '1.5 MB'})</span>
+      <span>${safeFormat} (${safeSize})</span>
     </div>
     <div class="meta-cell">
       <b>Regulamentação</b>
-      <span>${material.satepsiRestricted ? 'Privativo (SATEPSI)' : 'Uso Multiprofissional Livre'}</span>
+      <span>${safeRegulation}</span>
     </div>
   </div>
 
   <div class="section-title">Descrição & Raciocínio Clínico</div>
-  <p class="desc">${material.description || 'Guia prático de cabeceira com parâmetros técnicos para administração e laudo.'}</p>
+  <p class="desc">${safeDesc}</p>
 
   ${material.keyInstructions && material.keyInstructions.length > 0 ? `
     <div class="section-title">Sumário do Guia & Diretrizes Técnicas</div>
@@ -137,15 +148,15 @@ function generatePrintableDocument(material: DownloadableMaterial, fileName: str
       ${material.keyInstructions.map((item, idx) => `
         <li class="instruction-item">
           <span class="num-pill">${String(idx + 1).padStart(2, '0')}</span>
-          <span>${item}</span>
+          <span>${escapeHtml(item)}</span>
         </li>
       `).join('')}
     </ul>
   ` : ''}
 
-  ${material.authorReference ? `
+  ${safeAuthor ? `
     <div class="section-title">Referência Técnica</div>
-    <p class="desc">${material.authorReference}</p>
+    <p class="desc">${safeAuthor}</p>
   ` : ''}
 
   <div class="footer-note">

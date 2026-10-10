@@ -322,7 +322,10 @@ export default function AdminPage() {
   const fetchStripeStats = async () => {
     setSyncingStripe(true);
     try {
-      const res = await fetch('/api/admin/stripe-stats');
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('/api/admin/stripe-stats', {
+        headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}
+      });
       const data = await res.json();
       if (data.configured) {
         setStripeStats({

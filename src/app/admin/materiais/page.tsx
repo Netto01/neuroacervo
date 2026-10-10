@@ -327,10 +327,16 @@ export default function AdminMateriaisPage() {
     showToast('Enviando arquivo para o Cloudflare R2...');
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const authHeaders: Record<string, string> = session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {};
+
       // 1. Obter URL pré-assinada do servidor para upload direto ao R2 (sem limite de 4.5MB da Vercel)
       const preRes = await fetch('/api/admin/upload-r2/presigned', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...authHeaders
+        },
         body: JSON.stringify({
           fileName: file.name,
           contentType: file.type || 'application/octet-stream',

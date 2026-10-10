@@ -112,13 +112,23 @@ export async function POST(req: Request) {
   const rawBody = await req.text();
   const signature = req.headers.get('stripe-signature');
 
+  if (!webhookSecret) {
+    console.error('STRIPE_WEBHOOK_SECRET não configurada no servidor.');
+    return NextResponse.json(
+      { error: 'STRIPE_WEBHOOK_SECRET não configurada no servidor.' },
+      { status: 500 }
+    );
+  }
+
+  if (!signature) {
+    return NextResponse.json(
+      { error: 'Cabeçalho stripe-signature ausente.' },
+      { status: 400 }
+    );
+  }
+
   try {
-    if (webhookSecret && signature) {
-      event = stripe.webhooks.constructEvent(rawBody, signature, webhookSecret);
-    } else {
-      // Modo flexível / desenvolvimento antes de cadastrar o segredo exato do webhook
-      event = JSON.parse(rawBody) as Stripe.Event;
-    }
+    event = stripe.webhooks.constructEvent(rawBody, signature, webhookSecret);
   } catch (err: unknown) {
     const e = err as Error;
     console.error('Falha na validação da assinatura do Webhook Stripe:', e.message);

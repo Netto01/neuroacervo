@@ -7,6 +7,7 @@ import Script from 'next/script';
 import { useNeuro } from '@/context/NeuroContext';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { AGE_LABELS, TYPE_LABELS } from '@/data/neuroData';
+import { escapeHtml } from '@/utils/security';
 import './leitor.css';
 
 interface TocItem {
@@ -290,18 +291,24 @@ function LeitorContent() {
             'V. Redação sugerida para o laudo neuropsicológico'
           ];
 
+      const safeTitle = escapeHtml(material.title);
+      const safeSubtitle = escapeHtml(material.subtitle || material.description);
+      const safeDescription = escapeHtml(material.description || 'Avalie o desempenho integrando os achados com os dados de escolaridade, idade, rotina funcional e queixas relatadas na anamnese.');
+      const safeType = escapeHtml(TYPE_LABELS[material.type]?.label || 'Guia Prático');
+      const safeAges = escapeHtml(material.ageGroups?.map(a => AGE_LABELS[a] || a).join(' · ') || 'Uso Clínico');
+
       const p1Cover: PageData = {
         w: 794,
         h: 1123,
         sheetTitle: 'Capa',
         sheetHtml: `
           <div class="sheet cover" style="--cat: var(--accent-strong)">
-            <div class="k">${TYPE_LABELS[material.type]?.label || 'Guia Prático'}</div>
-            <h1>${material.title}</h1>
-            <p>${material.subtitle || material.description}</p>
+            <div class="k">${safeType}</div>
+            <h1>${safeTitle}</h1>
+            <p>${safeSubtitle}</p>
             <div class="meta">
               <span>NeuroAcervo<br>Atualizado recentemente</span>
-              <span>${material.ageGroups?.map(a => AGE_LABELS[a] || a).join(' · ') || 'Uso Clínico'}</span>
+              <span>${safeAges}</span>
             </div>
           </div>
         `
@@ -313,11 +320,11 @@ function LeitorContent() {
         sheetTitle: 'Sumário',
         sheetHtml: `
           <div class="sheet">
-            <div class="run"><span>${material.title}</span><span>NeuroAcervo</span></div>
+            <div class="run"><span>${safeTitle}</span><span>NeuroAcervo</span></div>
             <h2>Sumário</h2>
             <ol class="tocp">
               ${items.map((item, idx) => `
-                <li><i>${String(idx + 1).padStart(2, '0')}.</i>${item}<span>${idx + 3}</span></li>
+                <li><i>${String(idx + 1).padStart(2, '0')}.</i>${escapeHtml(item)}<span>${idx + 3}</span></li>
               `).join('')}
             </ol>
             <div class="foot"><span>Material de apoio técnico • NeuroAcervo</span><span>2</span></div>
@@ -325,34 +332,37 @@ function LeitorContent() {
         `
       };
 
-      const contentPages: PageData[] = items.map((item, idx) => ({
-        w: 794,
-        h: 1123,
-        sheetTitle: item,
-        sheetHtml: `
-          <div class="sheet">
-            <div class="run"><span>${material.title}</span><span>NeuroAcervo</span></div>
-            <h2><span class="n">${String(idx + 1).padStart(2, '0')}.</span>${item}</h2>
-            <div class="box">
-              <b>Diretriz de Aplicação & Consulta de Cabeceira:</b>
-              <p style="margin: 8px 0 0;">Este módulo detalha os parâmetros e procedimentos padronizados para ${material.title.toLowerCase()}. Siga rigorosamente as instruções do manual oficial para garantir a validade psicométrica dos resultados.</p>
+      const contentPages: PageData[] = items.map((item, idx) => {
+        const safeItem = escapeHtml(item);
+        return {
+          w: 794,
+          h: 1123,
+          sheetTitle: item,
+          sheetHtml: `
+            <div class="sheet">
+              <div class="run"><span>${safeTitle}</span><span>NeuroAcervo</span></div>
+              <h2><span class="n">${String(idx + 1).padStart(2, '0')}.</span>${safeItem}</h2>
+              <div class="box">
+                <b>Diretriz de Aplicação & Consulta de Cabeceira:</b>
+                <p style="margin: 8px 0 0;">Este módulo detalha os parâmetros e procedimentos padronizados para ${safeTitle.toLowerCase()}. Siga rigorosamente as instruções do manual oficial para garantir a validade psicométrica dos resultados.</p>
+              </div>
+              <h3>Orientações Clínicas</h3>
+              <p>${safeDescription}</p>
+              <h3>Critérios & Observações</h3>
+              <ul>
+                <li>Registrar o tempo exato e anotar comportamentos qualitativos durante a tarefa.</li>
+                <li>Consultar a tabela de pontos de corte e normas estratificadas para a população brasileira.</li>
+                <li>Observar se o padrão sugere dificuldade primária de atenção, velocidade ou memória.</li>
+              </ul>
+              <div class="box" style="margin-top: 24px; background: #faf8f0; border-left-color: var(--accent);">
+                <b>Exemplo de redação para o laudo:</b>
+                <p style="margin: 6px 0 0; font-style: italic;">“Na aplicação do instrumento (${safeTitle}), observou-se desempenho correspondente aos critérios normativos esperados, sem indícios de rebaixamento funcional clinicamente significativo no domínio avaliado.”</p>
+              </div>
+              <div class="foot"><span>Material de apoio técnico • NeuroAcervo</span><span>${idx + 3}</span></div>
             </div>
-            <h3>Orientações Clínicas</h3>
-            <p>${material.description || 'Avalie o desempenho integrando os achados com os dados de escolaridade, idade, rotina funcional e queixas relatadas na anamnese.'}</p>
-            <h3>Critérios & Observações</h3>
-            <ul>
-              <li>Registrar o tempo exato e anotar comportamentos qualitativos durante a tarefa.</li>
-              <li>Consultar a tabela de pontos de corte e normas estratificadas para a população brasileira.</li>
-              <li>Observar se o padrão sugere dificuldade primária de atenção, velocidade ou memória.</li>
-            </ul>
-            <div class="box" style="margin-top: 24px; background: #faf8f0; border-left-color: var(--accent);">
-              <b>Exemplo de redação para o laudo:</b>
-              <p style="margin: 6px 0 0; font-style: italic;">“Na aplicação do instrumento (${material.title}), observou-se desempenho correspondente aos critérios normativos esperados, sem indícios de rebaixamento funcional clinicamente significativo no domínio avaliado.”</p>
-            </div>
-            <div class="foot"><span>Material de apoio técnico • NeuroAcervo</span><span>${idx + 3}</span></div>
-          </div>
-        `
-      }));
+          `
+        };
+      });
 
       const allDemo = [p1Cover, p2Toc, ...contentPages];
       setDemoPages(allDemo);

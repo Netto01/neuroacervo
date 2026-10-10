@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { r2Client, R2_BUCKET, R2_PUBLIC_URL } from '@/lib/r2';
+import { verifyAdminRequest } from '@/lib/serverAuth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -23,6 +24,11 @@ function sanitizeFileName(name: string): string {
 
 export async function POST(req: NextRequest) {
   try {
+    const authCheck = await verifyAdminRequest(req);
+    if (!authCheck.authorized) {
+      return authCheck.errorResponse!;
+    }
+
     if (!process.env.R2_ACCESS_KEY_ID || !process.env.R2_SECRET_ACCESS_KEY) {
       return NextResponse.json(
         { error: 'Credenciais do Cloudflare R2 não configuradas no servidor.' },

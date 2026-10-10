@@ -1,9 +1,15 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
+import { verifyAdminRequest } from '@/lib/serverAuth';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const authCheck = await verifyAdminRequest(req);
+  if (!authCheck.authorized) {
+    return authCheck.errorResponse!;
+  }
+
   const secretKey = process.env.STRIPE_SECRET_KEY?.trim();
 
   if (!secretKey) {
