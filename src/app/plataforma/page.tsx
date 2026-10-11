@@ -75,7 +75,7 @@ const getTypeConfig = (type?: string) => {
 
 function DashboardInner() {
   const router = useRouter();
-  const { materials, modules, favorites, toggleFavorite, currentUser, logout, isLoadingUser } = useNeuro();
+  const { materials, modules, favorites, completedLessons, toggleFavorite, currentUser, logout, isLoadingUser } = useNeuro();
 
   const [activeTab, setActiveTab] = useState<'inicio' | 'biblioteca' | 'aulas' | 'recursos' | 'pasta'>('inicio');
   const [busca, setBusca] = useState('');
@@ -411,7 +411,7 @@ function DashboardInner() {
                 <span>materiais abertos este mês</span>
               </div>
               <div className="stat">
-                <b>0</b>
+                <b>{completedLessons?.length || 0}</b>
                 <span>aulas concluídas</span>
               </div>
               <div className="stat">
