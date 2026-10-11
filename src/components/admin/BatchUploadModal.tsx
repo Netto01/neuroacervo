@@ -2,11 +2,24 @@
 
 import React, { useState, useRef, useMemo } from 'react';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
-import { UploadCloud, CheckCircle2, AlertCircle, Trash2, X, RefreshCw, Layers } from 'lucide-react';
+import {
+  UploadCloud,
+  CheckCircle2,
+  AlertCircle,
+  Trash2,
+  X,
+  RefreshCw,
+  Layers,
+  Link2,
+  ExternalLink,
+  FileText
+} from 'lucide-react';
 
 export interface BatchFileItem {
   id: string;
-  file: File;
+  file?: File;
+  fileName: string;
+  existingUrl?: string;
   title: string;
   plano: 'Consulta' | 'Estudo' | 'Prática';
   funcao: string;
@@ -33,6 +46,11 @@ const TIPOS_CONFIG = [
   { id: 'aula', label: 'Aula' },
   { id: 'interativo', label: 'Recurso interativo' }
 ];
+
+const DEFAULT_R2_BASE = (
+  process.env.NEXT_PUBLIC_R2_PUBLIC_URL ||
+  'https://pub-46b7a58b503e44bdb8e86a63a0cf51ba.r2.dev'
+).replace(/\/+$/, '');
 
 function formatBytes(bytes: number): string {
   if (bytes === 0) return '0 B';
@@ -61,6 +79,10 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
   existingFuncoes
 }) => {
   const [selectedTipo, setSelectedTipo] = useState('guia');
+  const [inputMode, setInputMode] = useState<'upload' | 'links'>('upload');
+  const [pastedLinksText, setPastedLinksText] = useState('');
+  const [isParsingLinks, setIsParsingLinks] = useState(false);
+
   const [defaultPlano, setDefaultPlano] = useState<'Consulta' | 'Estudo' | 'Prática'>('Consulta');
   const [defaultFuncao, setDefaultFuncao] = useState('');
   const [items, setItems] = useState<BatchFileItem[]>([]);
@@ -75,13 +97,15 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
 
   if (!isOpen) return null;
 
+  // 1. Manipulador para seleção de arquivos locais
   const handleFilesSelected = (fileList: FileList | null) => {
     if (!fileList || fileList.length === 0) return;
     setGlobalError('');
 
     const newItems: BatchFileItem[] = Array.from(fileList).map((file, idx) => ({
-      id: `${Date.now()}-${idx}-${Math.random().toString(36).slice(2, 6)}`,
+      id: `file-${Date.now()}-${idx}-${Math.random().toString(36).slice(2, 6)}`,
       file,
+      fileName: file.name,
       title: cleanTitleFromFileName(file.name),
       plano: defaultPlano,
       funcao: defaultFuncao,
@@ -91,6 +115,78 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
 
     setItems((prev) => [...prev, ...newItems]);
     if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  // 2. Manipulador para parsing de links colados do R2
+  const handleProcessLinks = async () => {
+    const rawLines = pastedLinksText
+      .split('\n')
+      .map((l) => l.trim())
+      .filter((l) => l.length > 0);
+
+    if (rawLines.length === 0) {
+      setGlobalError('Cole ao menos um link ou chave do R2 no campo de texto.');
+      return;
+    }
+
+    setGlobalError('');
+    setIsParsingLinks(true);
+
+    try {
+      const parsedItems: BatchFileItem[] = [];
+
+      for (let idx = 0; idx < rawLines.length; idx++) {
+        const line = rawLines[idx];
+        let fullUrl = line;
+
+        // Se for relativo ou apenas a chave/caminho, prefixar com a URL pública do R2
+        if (!fullUrl.startsWith('http://') && !fullUrl.startsWith('https://')) {
+          fullUrl = `${DEFAULT_R2_BASE}/${fullUrl.replace(/^\/+/, '')}`;
+        }
+
+        // Extrai o nome do arquivo da URL
+        const cleanPath = fullUrl.split('?')[0].split('#')[0];
+        const segments = cleanPath.split('/');
+        const rawFileName = decodeURIComponent(
+          segments[segments.length - 1] || `material-${idx + 1}.pdf`
+        );
+        const title = cleanTitleFromFileName(rawFileName);
+
+        // Tenta obter tamanho real do arquivo de forma assíncrona
+        let sizeFormatted = '1.5 MB';
+        try {
+          const headRes = await fetch(fullUrl, { method: 'HEAD', mode: 'cors' });
+          const cl = headRes.headers.get('content-length');
+          if (cl) {
+            const bytes = parseInt(cl, 10);
+            if (!isNaN(bytes) && bytes > 0) {
+              sizeFormatted = formatBytes(bytes);
+            }
+          }
+        } catch {
+          // Mantém fallback caso ocorra bloqueio de CORS ou offline
+        }
+
+        parsedItems.push({
+          id: `link-${Date.now()}-${idx}-${Math.random().toString(36).slice(2, 6)}`,
+          fileName: rawFileName,
+          existingUrl: fullUrl,
+          title,
+          plano: defaultPlano,
+          funcao: defaultFuncao,
+          sizeFormatted,
+          status: 'pending'
+        });
+      }
+
+      setItems((prev) => [...prev, ...parsedItems]);
+      setPastedLinksText('');
+    } catch (err: any) {
+      console.error('Erro ao processar links do R2:', err);
+      setGlobalError(err.message || 'Falha ao processar links informados.');
+    } finally {
+      setIsParsingLinks(false);
+    }
   };
 
   const handleApplyToAll = () => {
@@ -115,9 +211,10 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
     );
   };
 
+  // 3. Processamento em lote (Upload se necessário + Upsert no Supabase)
   const handleStartBatch = async (status: 'publicado' | 'rascunho') => {
     if (items.length === 0) {
-      setGlobalError('Nenhum arquivo na fila para upload.');
+      setGlobalError('Nenhum item na fila para processar.');
       return;
     }
 
@@ -149,68 +246,83 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
 
         setCurrentProcessingIndex(i);
 
-        // 1. Upload para Cloudflare R2
-        setItems((prev) =>
-          prev.map((it, idx) => (idx === i ? { ...it, status: 'uploading' } : it))
-        );
+        let downloadUrl = item.existingUrl || '';
 
-        let downloadUrl = '';
+        // Se for arquivo local, faz o upload para o Cloudflare R2
+        if (!downloadUrl && item.file) {
+          setItems((prev) =>
+            prev.map((it, idx) => (idx === i ? { ...it, status: 'uploading' } : it))
+          );
 
-        try {
-          const preRes = await fetch('/api/admin/upload-r2/presigned', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              ...authHeaders
-            },
-            body: JSON.stringify({
-              fileName: item.file.name,
-              contentType: item.file.type || 'application/octet-stream'
-            })
-          });
+          try {
+            const preRes = await fetch('/api/admin/upload-r2/presigned', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                ...authHeaders
+              },
+              body: JSON.stringify({
+                fileName: item.file.name,
+                contentType: item.file.type || 'application/octet-stream'
+              })
+            });
 
-          if (!preRes.ok) {
-            const errTxt = await preRes.text();
-            throw new Error(`Falha no servidor R2 (${preRes.status}): ${errTxt}`);
+            if (!preRes.ok) {
+              const errTxt = await preRes.text();
+              throw new Error(`Falha no servidor R2 (${preRes.status}): ${errTxt}`);
+            }
+
+            const preJson = await preRes.json();
+            if (!preJson.success || !preJson.uploadUrl) {
+              throw new Error(preJson.error || 'URL de upload R2 não retornada');
+            }
+
+            const uploadRes = await fetch(preJson.uploadUrl, {
+              method: 'PUT',
+              body: item.file
+            });
+
+            if (!uploadRes.ok) {
+              throw new Error(`Erro ao enviar bytes para o R2 (${uploadRes.status})`);
+            }
+
+            downloadUrl = preJson.publicUrl || '';
+          } catch (uploadErr: any) {
+            console.error(`Erro no upload do arquivo ${item.fileName}:`, uploadErr);
+            setItems((prev) =>
+              prev.map((it, idx) =>
+                idx === i
+                  ? { ...it, status: 'error', errorMessage: uploadErr.message || 'Falha no envio R2' }
+                  : it
+              )
+            );
+            continue;
           }
+        }
 
-          const preJson = await preRes.json();
-          if (!preJson.success || !preJson.uploadUrl) {
-            throw new Error(preJson.error || 'URL de upload R2 não retornada');
-          }
-
-          const uploadRes = await fetch(preJson.uploadUrl, {
-            method: 'PUT',
-            body: item.file
-          });
-
-          if (!uploadRes.ok) {
-            throw new Error(`Erro ao enviar bytes para o R2 (${uploadRes.status})`);
-          }
-
-          downloadUrl = preJson.publicUrl || '';
-        } catch (uploadErr: any) {
-          console.error(`Erro no upload do arquivo ${item.file.name}:`, uploadErr);
+        if (!downloadUrl) {
           setItems((prev) =>
             prev.map((it, idx) =>
               idx === i
-                ? { ...it, status: 'error', errorMessage: uploadErr.message || 'Falha no envio R2' }
+                ? { ...it, status: 'error', errorMessage: 'Nenhum link ou arquivo fornecido' }
                 : it
             )
           );
           continue;
         }
 
-        // 2. Salvar no Supabase
+        // Gravação no Supabase
         setItems((prev) =>
           prev.map((it, idx) => (idx === i ? { ...it, status: 'saving' } : it))
         );
 
         try {
           const targetId = `mat-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+          const formatExt = (item.fileName || '').toLowerCase();
+
           const payload = {
             id: targetId,
-            title: item.title.trim() || cleanTitleFromFileName(item.file.name),
+            title: item.title.trim() || cleanTitleFromFileName(item.fileName),
             description: '',
             type: dbType,
             age_groups: ['adulto'],
@@ -221,11 +333,11 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                 : item.plano === 'Estudo'
                 ? ['estudo']
                 : ['consulta'],
-            download_format: item.file.name.toLowerCase().endsWith('.docx')
+            download_format: formatExt.endsWith('.docx')
               ? 'DOCX'
-              : item.file.name.toLowerCase().endsWith('.mp4')
+              : formatExt.endsWith('.mp4')
               ? 'MP4'
-              : item.file.name.toLowerCase().endsWith('.xlsx')
+              : formatExt.endsWith('.xlsx')
               ? 'XLSX'
               : 'PDF',
             download_size: item.sizeFormatted,
@@ -249,7 +361,7 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
           setItems((prev) =>
             prev.map((it, idx) =>
               idx === i
-                ? { ...it, status: 'error', errorMessage: dbErr.message || 'Falha ao salvar no banco' }
+                ? { ...it, status: 'error', errorMessage: dbErr.message || 'Erro ao gravar no Supabase' }
                 : it
             )
           );
@@ -260,40 +372,64 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
         await onSuccess(successCount);
       }
     } catch (err: any) {
-      setGlobalError(err.message || 'Erro inesperado durante o processamento do lote.');
+      setGlobalError(err.message || 'Erro inesperado durante a execução do lote.');
     } finally {
       setIsProcessing(false);
       setCurrentProcessingIndex(-1);
     }
   };
 
-  const completedCount = items.filter((i) => i.status === 'done').length;
+  const completedCount = items.filter((it) => it.status === 'done').length;
   const progressPercent = items.length > 0 ? Math.round((completedCount / items.length) * 100) : 0;
 
   return (
-    <div className="adm-root">
-      <div className={`scrim ${isOpen ? 'on' : ''}`} onClick={() => !isProcessing && onClose()} />
+    <div
+      className="drawer-overlay on"
+      style={{
+        position: 'fixed',
+        inset: 0,
+        backgroundColor: 'rgba(21, 20, 15, 0.45)',
+        backdropFilter: 'blur(4px)',
+        zIndex: 9999,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px'
+      }}
+    >
       <aside
-        className={`drawer ${isOpen ? 'on' : ''}`}
-        style={{ width: 'min(780px, 100vw)', zIndex: 75 }}
-        aria-label="Upload de Materiais em Lote"
+        className="drawer on"
+        style={{
+          position: 'relative',
+          width: '100%',
+          maxWidth: '840px',
+          maxHeight: '92vh',
+          borderRadius: '20px',
+          boxShadow: '0 24px 60px rgba(0,0,0,0.22)',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          background: 'var(--paper)'
+        }}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="batch-modal-title"
       >
-        {/* Top Header */}
-        <div className="d-top">
+        {/* Header */}
+        <div className="d-head">
           <div>
-            <h2>
-              Upload em <em>Lote</em>
+            <span className="label">Administração do Acervo</span>
+            <h2 id="batch-modal-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span>Upload e Cadastro em Lote</span>
+              <span className="dot">.</span>
             </h2>
-            <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--ink-mute)' }}>
-              Suba múltiplos arquivos simultaneamente para o mesmo tipo de material.
-            </p>
           </div>
           <button
             type="button"
             className="d-close"
             onClick={() => !isProcessing && onClose()}
-            disabled={isProcessing}
             aria-label="Fechar"
+            disabled={isProcessing}
           >
             <X size={18} />
           </button>
@@ -302,7 +438,16 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
         {/* Body Content */}
         <div className="d-body" style={{ gap: '20px' }}>
           {globalError && (
-            <div style={{ padding: '12px 14px', borderRadius: '12px', background: '#fcebe9', border: '1px solid #f2aba4', color: '#a8261d', fontSize: '13px' }}>
+            <div
+              style={{
+                padding: '12px 14px',
+                borderRadius: '12px',
+                background: '#fcebe9',
+                border: '1px solid #f2aba4',
+                color: '#a8261d',
+                fontSize: '13px'
+              }}
+            >
               <b>Atenção:</b> {globalError}
             </div>
           )}
@@ -324,38 +469,161 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
             </select>
           </div>
 
-          {/* 2. Área de Upload Múltiplo (Drag & Drop) */}
-          <div className="f">
-            <label>Arquivos para Envio (.pdf, .docx, .xlsx, .mp4)</label>
-            <label
-              className="drop"
+          {/* 2. Alternador de Abas: Upload de Arquivos vs Colar Links do R2 */}
+          <div
+            style={{
+              display: 'flex',
+              gap: '8px',
+              borderBottom: '1px solid var(--line)',
+              paddingBottom: '12px'
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setInputMode('upload')}
+              disabled={isProcessing}
               style={{
-                padding: '28px',
-                border: '2px dashed var(--line)',
-                background: 'var(--bone)',
-                cursor: isProcessing ? 'not-allowed' : 'pointer'
+                padding: '8px 16px',
+                borderRadius: '10px',
+                border: 'none',
+                background: inputMode === 'upload' ? 'var(--ink)' : 'var(--bone)',
+                color: inputMode === 'upload' ? 'var(--paper)' : 'var(--ink)',
+                fontWeight: 600,
+                fontSize: '13px',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '7px',
+                transition: 'all .15s ease'
               }}
             >
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                accept=".pdf,.docx,.xlsx,.mp4"
-                disabled={isProcessing}
-                onChange={(e) => handleFilesSelected(e.target.files)}
-                style={{ position: 'absolute', width: 1, height: 1, opacity: 0 }}
-              />
-              <UploadCloud size={32} style={{ color: 'var(--accent-strong)' }} />
-              <b style={{ fontSize: '15px' }}>Clique aqui ou arraste múltiplos arquivos</b>
-              <span>Selecione vários arquivos segurando Shift ou Ctrl</span>
-            </label>
+              <UploadCloud size={15} />
+              <span>Enviar arquivos do computador</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setInputMode('links')}
+              disabled={isProcessing}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '10px',
+                border: 'none',
+                background: inputMode === 'links' ? 'var(--ink)' : 'var(--bone)',
+                color: inputMode === 'links' ? 'var(--paper)' : 'var(--ink)',
+                fontWeight: 600,
+                fontSize: '13px',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '7px',
+                transition: 'all .15s ease'
+              }}
+            >
+              <Link2 size={15} />
+              <span>Colar links do Cloudflare R2</span>
+            </button>
           </div>
+
+          {/* Modo A: Upload Local (Drag & Drop) */}
+          {inputMode === 'upload' && (
+            <div className="f">
+              <label>Arquivos para Envio (.pdf, .docx, .xlsx, .mp4)</label>
+              <label
+                className="drop"
+                style={{
+                  padding: '28px',
+                  border: '2px dashed var(--line)',
+                  background: 'var(--bone)',
+                  cursor: isProcessing ? 'not-allowed' : 'pointer'
+                }}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  accept=".pdf,.docx,.xlsx,.mp4"
+                  disabled={isProcessing}
+                  onChange={(e) => handleFilesSelected(e.target.files)}
+                  style={{ position: 'absolute', width: 1, height: 1, opacity: 0 }}
+                />
+                <UploadCloud size={32} style={{ color: 'var(--accent-strong)' }} />
+                <b style={{ fontSize: '15px' }}>Clique aqui ou arraste múltiplos arquivos</b>
+                <span>Selecione vários arquivos segurando Shift ou Ctrl</span>
+              </label>
+            </div>
+          )}
+
+          {/* Modo B: Colar Links do R2 */}
+          {inputMode === 'links' && (
+            <div className="f">
+              <label htmlFor="batch-links-textarea">
+                Cole os links ou chaves do Cloudflare R2 (um por linha)
+              </label>
+              <textarea
+                id="batch-links-textarea"
+                rows={5}
+                disabled={isProcessing || isParsingLinks}
+                value={pastedLinksText}
+                onChange={(e) => setPastedLinksText(e.target.value)}
+                placeholder={`https://pub-...r2.dev/materiais/guia-tdah.pdf\nhttps://pub-...r2.dev/materiais/modelo-laudo-tea.docx\nou apenas chaves: materiais/teste-memoria.pdf`}
+                style={{
+                  fontFamily: 'var(--mono, monospace)',
+                  fontSize: '12.5px',
+                  lineHeight: '1.6',
+                  padding: '12px',
+                  borderRadius: '10px'
+                }}
+              />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
+                <span style={{ fontSize: '11px', color: 'var(--ink-faint)' }}>
+                  Aceita URLs completas ou chaves relativas (completadas com o domínio público configurado).
+                </span>
+                <button
+                  type="button"
+                  onClick={handleProcessLinks}
+                  disabled={isProcessing || isParsingLinks || !pastedLinksText.trim()}
+                  className="btn"
+                  style={{
+                    padding: '6px 14px',
+                    fontSize: '12px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <RefreshCw size={13} className={isParsingLinks ? 'animate-spin' : ''} />
+                  <span>{isParsingLinks ? 'Processando links...' : 'Adicionar links à fila'}</span>
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* 3. Barra de Configuração Rápida em Massa */}
           {items.length > 0 && (
-            <div style={{ padding: '16px', borderRadius: '14px', background: 'rgba(21,20,15,0.03)', border: '1px solid var(--line)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                <span style={{ font: '600 12px/1 var(--sans)', letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--ink)' }}>
+            <div
+              style={{
+                padding: '16px',
+                borderRadius: '14px',
+                background: 'rgba(21,20,15,0.03)',
+                border: '1px solid var(--line)'
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: '12px'
+                }}
+              >
+                <span
+                  style={{
+                    font: '600 12px/1 var(--sans)',
+                    letterSpacing: '.08em',
+                    textTransform: 'uppercase',
+                    color: 'var(--ink)'
+                  }}
+                >
                   Preenchimento Rápido para a Fila
                 </span>
                 <button
@@ -382,7 +650,9 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
 
               <div className="f2">
                 <div className="f">
-                  <label htmlFor="quick-plano" style={{ fontSize: '11px' }}>Plano Padrão</label>
+                  <label htmlFor="quick-plano" style={{ fontSize: '11px' }}>
+                    Plano Padrão
+                  </label>
                   <select
                     id="quick-plano"
                     value={defaultPlano}
@@ -396,7 +666,9 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                 </div>
 
                 <div className="f">
-                  <label htmlFor="quick-func" style={{ fontSize: '11px' }}>Função Cognitiva Padrão</label>
+                  <label htmlFor="quick-func" style={{ fontSize: '11px' }}>
+                    Função Cognitiva Padrão
+                  </label>
                   <input
                     id="quick-func"
                     type="text"
@@ -421,12 +693,37 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
 
           {/* 4. Barra de Progresso Global durante Envio */}
           {isProcessing && (
-            <div style={{ padding: '14px', borderRadius: '12px', background: 'var(--ink)', color: 'var(--paper)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '13px', fontWeight: 600 }}>
-                <span>Processando arquivos ({completedCount}/{items.length})...</span>
+            <div
+              style={{
+                padding: '14px',
+                borderRadius: '12px',
+                background: 'var(--ink)',
+                color: 'var(--paper)'
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  marginBottom: '8px',
+                  fontSize: '13px',
+                  fontWeight: 600
+                }}
+              >
+                <span>
+                  Processando itens ({completedCount}/{items.length})...
+                </span>
                 <span>{progressPercent}%</span>
               </div>
-              <div style={{ width: '100%', height: '8px', borderRadius: '4px', background: 'rgba(255,255,255,0.2)', overflow: 'hidden' }}>
+              <div
+                style={{
+                  width: '100%',
+                  height: '8px',
+                  borderRadius: '4px',
+                  background: 'rgba(255,255,255,0.2)',
+                  overflow: 'hidden'
+                }}
+              >
                 <div
                   style={{
                     width: `${progressPercent}%`,
@@ -442,15 +739,34 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
           {/* 5. Lista de Arquivos da Fila com Edição Individual */}
           {items.length > 0 && (
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                <label style={{ font: '600 11px/1.3 var(--sans)', letterSpacing: '.16em', textTransform: 'uppercase' }}>
-                  Arquivos na Fila ({items.length})
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '10px'
+                }}
+              >
+                <label
+                  style={{
+                    font: '600 11px/1.3 var(--sans)',
+                    letterSpacing: '.16em',
+                    textTransform: 'uppercase'
+                  }}
+                >
+                  Itens na Fila ({items.length})
                 </label>
                 {!isProcessing && (
                   <button
                     type="button"
                     onClick={() => setItems([])}
-                    style={{ background: 'none', border: 'none', color: '#a8261d', fontSize: '12px', cursor: 'pointer' }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#a8261d',
+                      fontSize: '12px',
+                      cursor: 'pointer'
+                    }}
                   >
                     Limpar fila
                   </button>
@@ -464,43 +780,136 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                     style={{
                       padding: '14px 16px',
                       borderRadius: '14px',
-                      background: item.status === 'done' ? '#f0f9f1' : item.status === 'error' ? '#fdf2f1' : 'var(--bone)',
-                      border: `1px solid ${item.status === 'done' ? '#bce3c5' : item.status === 'error' ? '#f5c6c2' : 'var(--line)'}`,
+                      background:
+                        item.status === 'done'
+                          ? '#f0f9f1'
+                          : item.status === 'error'
+                          ? '#fdf2f1'
+                          : 'var(--bone)',
+                      border: `1px solid ${
+                        item.status === 'done'
+                          ? '#bce3c5'
+                          : item.status === 'error'
+                          ? '#f5c6c2'
+                          : 'var(--line)'
+                      }`,
                       display: 'grid',
                       gap: '10px'
                     }}
                   >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
-                        <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--ink-mute)' }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          minWidth: 0
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontSize: '12px',
+                            fontWeight: 700,
+                            color: 'var(--ink-mute)'
+                          }}
+                        >
                           #{idx + 1}
                         </span>
-                        <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink)' }} className="truncate" title={item.file.name}>
-                          {item.file.name}
+                        <span
+                          style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink)' }}
+                          className="truncate"
+                          title={item.fileName}
+                        >
+                          {item.fileName}
                         </span>
-                        <span style={{ fontSize: '11px', color: 'var(--ink-mute)', whiteSpace: 'nowrap' }}>
-                          ({item.sizeFormatted})
-                        </span>
+                        {item.existingUrl ? (
+                          <span
+                            style={{
+                              fontSize: '10.5px',
+                              background: 'rgba(21,20,15,0.06)',
+                              padding: '2px 7px',
+                              borderRadius: '4px',
+                              color: 'var(--ink-mute)',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                            title={item.existingUrl}
+                          >
+                            <Link2 size={11} /> Link R2
+                          </span>
+                        ) : (
+                          <span
+                            style={{
+                              fontSize: '11px',
+                              color: 'var(--ink-mute)',
+                              whiteSpace: 'nowrap'
+                            }}
+                          >
+                            ({item.sizeFormatted})
+                          </span>
+                        )}
                       </div>
 
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         {item.status === 'done' && (
-                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: '#2f6b31', fontWeight: 600 }}>
+                          <span
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              fontSize: '12px',
+                              color: '#2f6b31',
+                              fontWeight: 600
+                            }}
+                          >
                             <CheckCircle2 size={16} /> Concluído
                           </span>
                         )}
                         {item.status === 'uploading' && (
-                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--accent-strong)' }}>
+                          <span
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              fontSize: '12px',
+                              color: 'var(--accent-strong)'
+                            }}
+                          >
                             <RefreshCw size={14} className="animate-spin" /> Enviando ao R2...
                           </span>
                         )}
                         {item.status === 'saving' && (
-                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--accent-strong)' }}>
+                          <span
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              fontSize: '12px',
+                              color: 'var(--accent-strong)'
+                            }}
+                          >
                             <Layers size={14} /> Gravando no banco...
                           </span>
                         )}
                         {item.status === 'error' && (
-                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: '#a8261d', fontWeight: 600 }} title={item.errorMessage}>
+                          <span
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              fontSize: '12px',
+                              color: '#a8261d',
+                              fontWeight: 600
+                            }}
+                            title={item.errorMessage}
+                          >
                             <AlertCircle size={16} /> Falhou
                           </span>
                         )}
@@ -509,8 +918,14 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                           <button
                             type="button"
                             onClick={() => handleRemoveItem(item.id)}
-                            style={{ background: 'none', border: 'none', color: 'var(--ink-mute)', cursor: 'pointer', padding: '4px' }}
-                            title="Remover arquivo da fila"
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              color: 'var(--ink-mute)',
+                              cursor: 'pointer',
+                              padding: '4px'
+                            }}
+                            title="Remover item da fila"
                           >
                             <Trash2 size={16} />
                           </button>
@@ -519,7 +934,13 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                     </div>
 
                     {/* Campos Individuais: Título, Plano e Função */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1.8fr 1fr 1fr', gap: '10px' }}>
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: '1.8fr 1fr 1fr',
+                        gap: '10px'
+                      }}
+                    >
                       <div>
                         <input
                           type="text"
@@ -535,7 +956,9 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                         <select
                           value={item.plano}
                           disabled={isProcessing || item.status === 'done'}
-                          onChange={(e) => handleUpdateItem(item.id, { plano: e.target.value as any })}
+                          onChange={(e) =>
+                            handleUpdateItem(item.id, { plano: e.target.value as any })
+                          }
                           style={{ fontSize: '13px', padding: '8px 10px' }}
                         >
                           <option value="Consulta">Consulta</option>
@@ -551,7 +974,9 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                           placeholder="Função cognitiva..."
                           value={item.funcao}
                           disabled={isProcessing || item.status === 'done'}
-                          onChange={(e) => handleUpdateItem(item.id, { funcao: e.target.value })}
+                          onChange={(e) =>
+                            handleUpdateItem(item.id, { funcao: e.target.value })
+                          }
                           style={{ fontSize: '13px', padding: '8px 10px' }}
                           autoComplete="off"
                         />
@@ -571,7 +996,10 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
         </div>
 
         {/* Footer Actions */}
-        <div className="d-foot" style={{ background: 'var(--paper)', display: 'flex', gap: '10px' }}>
+        <div
+          className="d-foot"
+          style={{ background: 'var(--paper)', display: 'flex', gap: '10px' }}
+        >
           <button
             type="button"
             className="btn"
@@ -587,7 +1015,13 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
             className="btn"
             disabled={isProcessing || items.length === 0}
             onClick={() => handleStartBatch('rascunho')}
-            style={{ flex: 1.2, justifyContent: 'center', background: 'var(--bone)', color: 'var(--ink)', borderColor: 'var(--line)' }}
+            style={{
+              flex: 1.2,
+              justifyContent: 'center',
+              background: 'var(--bone)',
+              color: 'var(--ink)',
+              borderColor: 'var(--line)'
+            }}
           >
             Salvar como Rascunho ({items.length})
           </button>
@@ -599,7 +1033,7 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
             onClick={() => handleStartBatch('publicado')}
             style={{ flex: 1.4, justifyContent: 'center' }}
           >
-            {isProcessing ? 'Enviando Lote...' : `Publicar Todos (${items.length})`}
+            {isProcessing ? 'Processando Lote...' : `Publicar Todos (${items.length})`}
           </button>
         </div>
       </aside>
