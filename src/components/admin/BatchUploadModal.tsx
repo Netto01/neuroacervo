@@ -11,7 +11,8 @@ import {
   RefreshCw,
   Layers,
   Link2,
-  ExternalLink,
+  ChevronDown,
+  ChevronUp,
   FileText
 } from 'lucide-react';
 
@@ -21,9 +22,15 @@ export interface BatchFileItem {
   fileName: string;
   existingUrl?: string;
   title: string;
+  tipo: string;
   plano: 'Consulta' | 'Estudo' | 'Prática';
   funcao: string;
+  desc: string;
+  populacao: string[];
+  selo: string;
+  sumario: string;
   sizeFormatted: string;
+  isExpanded?: boolean;
   status: 'pending' | 'uploading' | 'saving' | 'done' | 'error';
   errorMessage?: string;
 }
@@ -45,6 +52,13 @@ const TIPOS_CONFIG = [
   { id: 'pdf', label: 'PDF e artigo' },
   { id: 'aula', label: 'Aula' },
   { id: 'interativo', label: 'Recurso interativo' }
+];
+
+const POPULACOES_CONFIG = [
+  { id: 'infantil', label: 'Infantil' },
+  { id: 'adolescente', label: 'Adolescente' },
+  { id: 'adulto', label: 'Adulto' },
+  { id: 'idoso', label: 'Idoso' }
 ];
 
 const DEFAULT_R2_BASE = (
@@ -71,6 +85,29 @@ function cleanTitleFromFileName(name: string): string {
   return cleaned ? cleaned.charAt(0).toUpperCase() + cleaned.slice(1) : name;
 }
 
+function mapTipoToDbType(tipo: string): string {
+  switch (tipo) {
+    case 'guia':
+      return 'guia_rapido';
+    case 'laudo':
+      return 'modelo_laudo';
+    case 'anamnese':
+      return 'entrevista_anamnese';
+    case 'compendio':
+      return 'compendio_estudo';
+    case 'instrumento':
+      return 'instrumento_rastreio';
+    case 'pdf':
+      return 'guia_rapido';
+    case 'aula':
+      return 'compendio_estudo';
+    case 'interativo':
+      return 'instrumento_rastreio';
+    default:
+      return 'guia_rapido';
+  }
+}
+
 export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
   isOpen,
   onClose,
@@ -83,12 +120,22 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
   const [pastedLinksText, setPastedLinksText] = useState('');
   const [isParsingLinks, setIsParsingLinks] = useState(false);
 
+  // Defaults para preenchimento rápido
   const [defaultPlano, setDefaultPlano] = useState<'Consulta' | 'Estudo' | 'Prática'>('Consulta');
   const [defaultFuncao, setDefaultFuncao] = useState('');
+  const [defaultDesc, setDefaultDesc] = useState('');
+  const [defaultPopulacao, setDefaultPopulacao] = useState<string[]>(['adulto']);
+  const [defaultSelo, setDefaultSelo] = useState('novo');
+  const [defaultSumario, setDefaultSumario] = useState('');
+  const [showQuickAdvanced, setShowQuickAdvanced] = useState(false);
+
+  // Fila de itens e execução
   const [items, setItems] = useState<BatchFileItem[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentProcessingIndex, setCurrentProcessingIndex] = useState<number>(-1);
   const [globalError, setGlobalError] = useState('');
+  const [legalConfirmed, setLegalConfirmed] = useState(false);
+  const [legalError, setLegalError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const funcoesSugeridas = useMemo(() => {
@@ -97,7 +144,7 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
 
   if (!isOpen) return null;
 
-  // 1. Manipulador para seleção de arquivos locais
+  // 1. Arquivos locais adicionados
   const handleFilesSelected = (fileList: FileList | null) => {
     if (!fileList || fileList.length === 0) return;
     setGlobalError('');
@@ -107,9 +154,15 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
       file,
       fileName: file.name,
       title: cleanTitleFromFileName(file.name),
+      tipo: selectedTipo,
       plano: defaultPlano,
       funcao: defaultFuncao,
+      desc: defaultDesc,
+      populacao: [...defaultPopulacao],
+      selo: defaultSelo,
+      sumario: defaultSumario,
       sizeFormatted: formatBytes(file.size),
+      isExpanded: false,
       status: 'pending'
     }));
 
@@ -117,7 +170,7 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  // 2. Manipulador para parsing de links colados do R2
+  // 2. Links do R2 adicionados
   const handleProcessLinks = async () => {
     const rawLines = pastedLinksText
       .split('\n')
@@ -139,12 +192,10 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
         const line = rawLines[idx];
         let fullUrl = line;
 
-        // Se for relativo ou apenas a chave/caminho, prefixar com a URL pública do R2
         if (!fullUrl.startsWith('http://') && !fullUrl.startsWith('https://')) {
           fullUrl = `${DEFAULT_R2_BASE}/${fullUrl.replace(/^\/+/, '')}`;
         }
 
-        // Extrai o nome do arquivo da URL
         const cleanPath = fullUrl.split('?')[0].split('#')[0];
         const segments = cleanPath.split('/');
         const rawFileName = decodeURIComponent(
@@ -152,7 +203,6 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
         );
         const title = cleanTitleFromFileName(rawFileName);
 
-        // Tenta obter tamanho real do arquivo de forma assíncrona
         let sizeFormatted = '1.5 MB';
         try {
           const headRes = await fetch(fullUrl, { method: 'HEAD', mode: 'cors' });
@@ -164,7 +214,7 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
             }
           }
         } catch {
-          // Mantém fallback caso ocorra bloqueio de CORS ou offline
+          // fallback padrão
         }
 
         parsedItems.push({
@@ -172,9 +222,15 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
           fileName: rawFileName,
           existingUrl: fullUrl,
           title,
+          tipo: selectedTipo,
           plano: defaultPlano,
           funcao: defaultFuncao,
+          desc: defaultDesc,
+          populacao: [...defaultPopulacao],
+          selo: defaultSelo,
+          sumario: defaultSumario,
           sizeFormatted,
+          isExpanded: false,
           status: 'pending'
         });
       }
@@ -189,14 +245,24 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
     }
   };
 
+  // 3. Aplicar defaults a todos os itens da fila
   const handleApplyToAll = () => {
     setItems((prev) =>
       prev.map((item) => ({
         ...item,
+        tipo: selectedTipo,
         plano: defaultPlano,
-        funcao: defaultFuncao
+        funcao: defaultFuncao,
+        desc: defaultDesc,
+        populacao: [...defaultPopulacao],
+        selo: defaultSelo,
+        sumario: defaultSumario
       }))
     );
+  };
+
+  const handleToggleExpandAll = (expand: boolean) => {
+    setItems((prev) => prev.map((item) => ({ ...item, isExpanded: expand })));
   };
 
   const handleRemoveItem = (id: string) => {
@@ -211,25 +277,21 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
     );
   };
 
-  // 3. Processamento em lote (Upload se necessário + Upsert no Supabase)
+  // 4. Executar lote
   const handleStartBatch = async (status: 'publicado' | 'rascunho') => {
     if (items.length === 0) {
       setGlobalError('Nenhum item na fila para processar.');
       return;
     }
 
+    if (status === 'publicado' && !legalConfirmed) {
+      setLegalError(true);
+      return;
+    }
+
     setIsProcessing(true);
     setGlobalError('');
     let successCount = 0;
-
-    const dbType =
-      selectedTipo === 'guia' ? 'guia_rapido' :
-      selectedTipo === 'laudo' ? 'modelo_laudo' :
-      selectedTipo === 'anamnese' ? 'entrevista_anamnese' :
-      selectedTipo === 'compendio' ? 'compendio_estudo' :
-      selectedTipo === 'instrumento' ? 'instrumento_rastreio' :
-      selectedTipo === 'pdf' ? 'guia_rapido' :
-      selectedTipo === 'aula' ? 'compendio_estudo' : 'instrumento_rastreio';
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -319,13 +381,14 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
         try {
           const targetId = `mat-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
           const formatExt = (item.fileName || '').toLowerCase();
+          const dbType = mapTipoToDbType(item.tipo || selectedTipo);
 
           const payload = {
             id: targetId,
             title: item.title.trim() || cleanTitleFromFileName(item.fileName),
-            description: '',
+            description: item.desc || '',
             type: dbType,
-            age_groups: ['adulto'],
+            age_groups: item.populacao && item.populacao.length > 0 ? item.populacao : ['adulto'],
             clinical_utility: item.funcao.trim() || 'Geral',
             domains:
               item.plano === 'Prática'
@@ -342,8 +405,8 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
               : 'PDF',
             download_size: item.sizeFormatted,
             download_url: downloadUrl,
-            key_instructions: [],
-            is_featured: false,
+            key_instructions: item.sumario ? item.sumario.split('\n').filter(Boolean) : [],
+            is_featured: item.selo === 'novo',
             published_at: status === 'publicado' ? new Date().toISOString() : null
           };
 
@@ -381,6 +444,7 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
 
   const completedCount = items.filter((it) => it.status === 'done').length;
   const progressPercent = items.length > 0 ? Math.round((completedCount / items.length) * 100) : 0;
+  const allExpanded = items.length > 0 && items.every((it) => it.isExpanded);
 
   return (
     <div
@@ -402,8 +466,8 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
         style={{
           position: 'relative',
           width: '100%',
-          maxWidth: '840px',
-          maxHeight: '92vh',
+          maxWidth: '920px',
+          maxHeight: '94vh',
           borderRadius: '20px',
           boxShadow: '0 24px 60px rgba(0,0,0,0.22)',
           display: 'flex',
@@ -420,7 +484,7 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
           <div>
             <span className="label">Administração do Acervo</span>
             <h2 id="batch-modal-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span>Upload e Cadastro em Lote</span>
+              <span>Upload e Cadastro Completo em Lote</span>
               <span className="dot">.</span>
             </h2>
           </div>
@@ -436,7 +500,7 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
         </div>
 
         {/* Body Content */}
-        <div className="d-body" style={{ gap: '20px' }}>
+        <div className="d-body" style={{ gap: '20px', overflowY: 'auto' }}>
           {globalError && (
             <div
               style={{
@@ -454,7 +518,7 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
 
           {/* 1. Seleção do Tipo de Material do Lote */}
           <div className="f">
-            <label htmlFor="batch-tipo">Tipo do Lote (Aplica-se a todos)</label>
+            <label htmlFor="batch-tipo">Tipo Base do Lote (Padrão para novos itens)</label>
             <select
               id="batch-tipo"
               value={selectedTipo}
@@ -561,7 +625,7 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
               </label>
               <textarea
                 id="batch-links-textarea"
-                rows={5}
+                rows={4}
                 disabled={isProcessing || isParsingLinks}
                 value={pastedLinksText}
                 onChange={(e) => setPastedLinksText(e.target.value)}
@@ -576,7 +640,7 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
               />
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
                 <span style={{ fontSize: '11px', color: 'var(--ink-faint)' }}>
-                  Aceita URLs completas ou chaves relativas (completadas com o domínio público configurado).
+                  Aceita URLs completas ou chaves relativas. Título e tamanho são extraídos automaticamente.
                 </span>
                 <button
                   type="button"
@@ -598,7 +662,7 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
             </div>
           )}
 
-          {/* 3. Barra de Configuração Rápida em Massa */}
+          {/* 3. Painel de Preenchimento Rápido com Todos os Campos */}
           {items.length > 0 && (
             <div
               style={{
@@ -616,22 +680,28 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                   marginBottom: '12px'
                 }}
               >
-                <span
-                  style={{
-                    font: '600 12px/1 var(--sans)',
-                    letterSpacing: '.08em',
-                    textTransform: 'uppercase',
-                    color: 'var(--ink)'
-                  }}
-                >
-                  Preenchimento Rápido para a Fila
-                </span>
+                <div>
+                  <span
+                    style={{
+                      font: '600 12px/1 var(--sans)',
+                      letterSpacing: '.08em',
+                      textTransform: 'uppercase',
+                      color: 'var(--ink)'
+                    }}
+                  >
+                    Preenchimento Rápido / Aplicar a Todos
+                  </span>
+                  <p style={{ margin: '3px 0 0', fontSize: '11px', color: 'var(--ink-mute)' }}>
+                    Defina valores padrões e clique em aplicar para preencher todos os itens da fila de uma vez.
+                  </p>
+                </div>
+
                 <button
                   type="button"
                   onClick={handleApplyToAll}
                   disabled={isProcessing}
                   style={{
-                    padding: '6px 12px',
+                    padding: '6px 14px',
                     borderRadius: '8px',
                     border: '1px solid var(--line)',
                     background: 'var(--paper)',
@@ -644,14 +714,15 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                   }}
                 >
                   <RefreshCw size={13} />
-                  Aplicar Plano e Função a Todos
+                  Aplicar tudo a todos da fila
                 </button>
               </div>
 
-              <div className="f2">
+              {/* Linha 1: Plano, Função e Selo */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr 1fr', gap: '10px', marginBottom: '10px' }}>
                 <div className="f">
                   <label htmlFor="quick-plano" style={{ fontSize: '11px' }}>
-                    Plano Padrão
+                    Plano Mínimo Padrão
                   </label>
                   <select
                     id="quick-plano"
@@ -680,6 +751,98 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                     autoComplete="off"
                   />
                 </div>
+
+                <div className="f">
+                  <label htmlFor="quick-selo" style={{ fontSize: '11px' }}>
+                    Selo Padrão
+                  </label>
+                  <select
+                    id="quick-selo"
+                    value={defaultSelo}
+                    disabled={isProcessing}
+                    onChange={(e) => setDefaultSelo(e.target.value)}
+                  >
+                    <option value="novo">Novo</option>
+                    <option value="atualizado">Atualizado</option>
+                    <option value="">Sem selo</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* População Padrão */}
+              <div style={{ marginBottom: '10px' }}>
+                <label style={{ fontSize: '11px', display: 'block', marginBottom: '4px', fontWeight: 600 }}>
+                  População Padrão
+                </label>
+                <div className="chks" style={{ display: 'flex', gap: '12px' }}>
+                  {POPULACOES_CONFIG.map((pop) => (
+                    <label key={pop.id} style={{ fontSize: '12px', display: 'inline-flex', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
+                      <input
+                        type="checkbox"
+                        checked={defaultPopulacao.includes(pop.id)}
+                        disabled={isProcessing}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setDefaultPopulacao([...defaultPopulacao, pop.id]);
+                          } else {
+                            setDefaultPopulacao(defaultPopulacao.filter((p) => p !== pop.id));
+                          }
+                        }}
+                      />
+                      {pop.label}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Botão de Alternar Campos Avançados no Preenchimento Rápido */}
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setShowQuickAdvanced(!showQuickAdvanced)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    fontSize: '11.5px',
+                    color: 'var(--accent-strong)',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: 0
+                  }}
+                >
+                  {showQuickAdvanced ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                  <span>{showQuickAdvanced ? 'Ocultar Descrição e Sumário padrões' : 'Configurar Descrição curta e Sumário padrões'}</span>
+                </button>
+
+                {showQuickAdvanced && (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '10px' }}>
+                    <div className="f">
+                      <label htmlFor="quick-desc" style={{ fontSize: '11px' }}>Descrição curta padrão</label>
+                      <textarea
+                        id="quick-desc"
+                        rows={2}
+                        value={defaultDesc}
+                        disabled={isProcessing}
+                        placeholder="Aparece no card da biblioteca..."
+                        onChange={(e) => setDefaultDesc(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="f">
+                      <label htmlFor="quick-sum" style={{ fontSize: '11px' }}>Sumário padrão (tópicos por linha)</label>
+                      <textarea
+                        id="quick-sum"
+                        rows={2}
+                        value={defaultSumario}
+                        disabled={isProcessing}
+                        placeholder={'Material necessário\nInstruções\nInterpretação'}
+                        onChange={(e) => setDefaultSumario(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -736,7 +899,7 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
             </div>
           )}
 
-          {/* 5. Lista de Arquivos da Fila com Edição Individual */}
+          {/* 5. Lista de Arquivos da Fila com Edição Completa */}
           {items.length > 0 && (
             <div>
               <div
@@ -747,15 +910,36 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                   marginBottom: '10px'
                 }}
               >
-                <label
-                  style={{
-                    font: '600 11px/1.3 var(--sans)',
-                    letterSpacing: '.16em',
-                    textTransform: 'uppercase'
-                  }}
-                >
-                  Itens na Fila ({items.length})
-                </label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <label
+                    style={{
+                      font: '600 11px/1.3 var(--sans)',
+                      letterSpacing: '.16em',
+                      textTransform: 'uppercase'
+                    }}
+                  >
+                    Itens na Fila ({items.length})
+                  </label>
+
+                  <button
+                    type="button"
+                    onClick={() => handleToggleExpandAll(!allExpanded)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      fontSize: '12px',
+                      color: 'var(--accent-strong)',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                  >
+                    {allExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                    <span>{allExpanded ? 'Recolher todos os detalhes' : 'Expandir todos os detalhes'}</span>
+                  </button>
+                </div>
+
                 {!isProcessing && (
                   <button
                     type="button"
@@ -794,9 +978,10 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                           : 'var(--line)'
                       }`,
                       display: 'grid',
-                      gap: '10px'
+                      gap: '12px'
                     }}
                   >
+                    {/* Linha de Cabeçalho do Card */}
                     <div
                       style={{
                         display: 'flex',
@@ -914,6 +1099,28 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                           </span>
                         )}
 
+                        {/* Botão Expandir / Recolher Detalhes */}
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateItem(item.id, { isExpanded: !item.isExpanded })}
+                          style={{
+                            background: 'var(--paper)',
+                            border: '1px solid var(--line)',
+                            borderRadius: '6px',
+                            padding: '4px 8px',
+                            fontSize: '11px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            color: 'var(--ink)'
+                          }}
+                        >
+                          {item.isExpanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                          <span>{item.isExpanded ? 'Recolher' : 'Todos os campos'}</span>
+                        </button>
+
                         {!isProcessing && (
                           <button
                             type="button"
@@ -933,11 +1140,11 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                       </div>
                     </div>
 
-                    {/* Campos Individuais: Título, Plano e Função */}
+                    {/* Linha Principal de Campos Compactos: Título, Tipo, Plano e Função */}
                     <div
                       style={{
                         display: 'grid',
-                        gridTemplateColumns: '1.8fr 1fr 1fr',
+                        gridTemplateColumns: '1.6fr 1fr 1fr 1fr',
                         gap: '10px'
                       }}
                     >
@@ -950,6 +1157,21 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                           onChange={(e) => handleUpdateItem(item.id, { title: e.target.value })}
                           style={{ fontSize: '13px', padding: '8px 10px' }}
                         />
+                      </div>
+
+                      <div>
+                        <select
+                          value={item.tipo}
+                          disabled={isProcessing || item.status === 'done'}
+                          onChange={(e) => handleUpdateItem(item.id, { tipo: e.target.value })}
+                          style={{ fontSize: '13px', padding: '8px 10px' }}
+                        >
+                          {TIPOS_CONFIG.map((t) => (
+                            <option key={t.id} value={t.id}>
+                              {t.label}
+                            </option>
+                          ))}
+                        </select>
                       </div>
 
                       <div>
@@ -983,6 +1205,89 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                       </div>
                     </div>
 
+                    {/* Detalhes Expandidos: População, Selo, Descrição Curta e Sumário */}
+                    {item.isExpanded && (
+                      <div
+                        style={{
+                          paddingTop: '12px',
+                          borderTop: '1px dashed var(--line)',
+                          display: 'grid',
+                          gap: '12px',
+                          background: 'rgba(255,255,255,0.4)',
+                          padding: '12px',
+                          borderRadius: '10px'
+                        }}
+                      >
+                        {/* População e Selo */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1.8fr 1fr', gap: '12px' }}>
+                          <div>
+                            <label style={{ fontSize: '11px', display: 'block', marginBottom: '4px', fontWeight: 600 }}>
+                              População
+                            </label>
+                            <div className="chks" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                              {POPULACOES_CONFIG.map((pop) => (
+                                <label key={pop.id} style={{ fontSize: '12px', display: 'inline-flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+                                  <input
+                                    type="checkbox"
+                                    checked={item.populacao.includes(pop.id)}
+                                    disabled={isProcessing || item.status === 'done'}
+                                    onChange={(e) => {
+                                      const nextPop = e.target.checked
+                                        ? [...item.populacao, pop.id]
+                                        : item.populacao.filter((p) => p !== pop.id);
+                                      handleUpdateItem(item.id, { populacao: nextPop });
+                                    }}
+                                  />
+                                  {pop.label}
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="f">
+                            <label style={{ fontSize: '11px' }}>Selo</label>
+                            <select
+                              value={item.selo}
+                              disabled={isProcessing || item.status === 'done'}
+                              onChange={(e) => handleUpdateItem(item.id, { selo: e.target.value })}
+                              style={{ fontSize: '12.5px', padding: '6px 10px' }}
+                            >
+                              <option value="novo">Novo</option>
+                              <option value="atualizado">Atualizado</option>
+                              <option value="">Sem selo</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        {/* Descrição e Sumário */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                          <div className="f">
+                            <label style={{ fontSize: '11px' }}>Descrição curta (até 2 linhas)</label>
+                            <textarea
+                              rows={2}
+                              placeholder="Descrição para o card na biblioteca..."
+                              value={item.desc}
+                              disabled={isProcessing || item.status === 'done'}
+                              onChange={(e) => handleUpdateItem(item.id, { desc: e.target.value })}
+                              style={{ fontSize: '12.5px', padding: '8px' }}
+                            />
+                          </div>
+
+                          <div className="f">
+                            <label style={{ fontSize: '11px' }}>Sumário (um tópico por linha)</label>
+                            <textarea
+                              rows={2}
+                              placeholder={'Material necessário\nInstruções de aplicação\nInterpretação'}
+                              value={item.sumario}
+                              disabled={isProcessing || item.status === 'done'}
+                              onChange={(e) => handleUpdateItem(item.id, { sumario: e.target.value })}
+                              style={{ fontSize: '12.5px', padding: '8px' }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {item.errorMessage && (
                       <div style={{ fontSize: '11px', color: '#a8261d', marginTop: '2px' }}>
                         Erro: {item.errorMessage}
@@ -995,46 +1300,86 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
           )}
         </div>
 
-        {/* Footer Actions */}
+        {/* Footer Actions com Confirmação Legal Global */}
         <div
           className="d-foot"
-          style={{ background: 'var(--paper)', display: 'flex', gap: '10px' }}
+          style={{
+            background: 'var(--paper)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px',
+            borderTop: '1px solid var(--line)'
+          }}
         >
-          <button
-            type="button"
-            className="btn"
-            onClick={() => !isProcessing && onClose()}
-            disabled={isProcessing}
-            style={{ flex: 1, justifyContent: 'center' }}
-          >
-            Cancelar
-          </button>
-
-          <button
-            type="button"
-            className="btn"
-            disabled={isProcessing || items.length === 0}
-            onClick={() => handleStartBatch('rascunho')}
+          {/* Confirmação Legal Global */}
+          <label
+            className={`legal ${legalError ? 'err' : ''}`}
             style={{
-              flex: 1.2,
-              justifyContent: 'center',
-              background: 'var(--bone)',
-              color: 'var(--ink)',
-              borderColor: 'var(--line)'
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '9px',
+              cursor: 'pointer',
+              margin: 0
             }}
           >
-            Salvar como Rascunho ({items.length})
-          </button>
+            <input
+              type="checkbox"
+              id="batch-legal"
+              checked={legalConfirmed}
+              disabled={isProcessing}
+              onChange={(e) => {
+                setLegalConfirmed(e.target.checked);
+                setLegalError(false);
+              }}
+              style={{ marginTop: '2px' }}
+            />
+            <span style={{ fontSize: '12px', lineHeight: 1.4, color: 'var(--ink)' }}>
+              <b>Confirmo que todos os materiais deste lote são de autoria própria</b> e não reproduzem itens, folhas de registro, tabelas normativas ou trechos de testes psicológicos restritos.
+            </span>
+          </label>
+          {legalError && (
+            <span style={{ color: '#a8261d', fontSize: '12px', marginTop: '-6px' }}>
+              Você deve confirmar a autoria dos materiais para publicá-los no lote.
+            </span>
+          )}
 
-          <button
-            type="button"
-            className="btn btn-primary"
-            disabled={isProcessing || items.length === 0}
-            onClick={() => handleStartBatch('publicado')}
-            style={{ flex: 1.4, justifyContent: 'center' }}
-          >
-            {isProcessing ? 'Processando Lote...' : `Publicar Todos (${items.length})`}
-          </button>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button
+              type="button"
+              className="btn"
+              onClick={() => !isProcessing && onClose()}
+              disabled={isProcessing}
+              style={{ flex: 1, justifyContent: 'center' }}
+            >
+              Cancelar
+            </button>
+
+            <button
+              type="button"
+              className="btn"
+              disabled={isProcessing || items.length === 0}
+              onClick={() => handleStartBatch('rascunho')}
+              style={{
+                flex: 1.2,
+                justifyContent: 'center',
+                background: 'var(--bone)',
+                color: 'var(--ink)',
+                borderColor: 'var(--line)'
+              }}
+            >
+              Salvar como Rascunho ({items.length})
+            </button>
+
+            <button
+              type="button"
+              className="btn btn-primary"
+              disabled={isProcessing || items.length === 0}
+              onClick={() => handleStartBatch('publicado')}
+              style={{ flex: 1.4, justifyContent: 'center' }}
+            >
+              {isProcessing ? 'Processando Lote...' : `Publicar Todos (${items.length})`}
+            </button>
+          </div>
         </div>
       </aside>
     </div>
