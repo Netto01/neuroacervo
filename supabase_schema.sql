@@ -52,6 +52,18 @@ CREATE POLICY "Usuários podem atualizar seu próprio perfil"
   ON public.profiles FOR UPDATE 
   USING (auth.uid() = id);
 
+-- Função auxiliar SECURITY DEFINER para checar se o usuário atual é admin sem recursão de RLS
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM public.profiles
+    WHERE id = auth.uid()
+      AND (role = 'admin' OR user_type = 'admin')
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE SET search_path = public;
+
 -- Proteger colunas sensíveis (role, plan, billing_cycle) contra auto-elevação de privilégios
 CREATE OR REPLACE FUNCTION public.protect_sensitive_profile_columns()
 RETURNS TRIGGER AS $$
@@ -59,25 +71,25 @@ BEGIN
   IF current_setting('request.jwt.claim.role', true) <> 'service_role' THEN
     -- Apenas usuários que já são admins confirmados podem alterar role
     IF NEW.role IS DISTINCT FROM OLD.role THEN
-      IF NOT EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND (role = 'admin' OR user_type = 'admin')) THEN
+      IF NOT public.is_admin() THEN
         NEW.role := OLD.role;
       END IF;
     END IF;
     -- Apenas admins podem alterar plano diretamente sem webhook de pagamento
     IF NEW.plan IS DISTINCT FROM OLD.plan THEN
-      IF NOT EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND (role = 'admin' OR user_type = 'admin')) THEN
+      IF NOT public.is_admin() THEN
         NEW.plan := OLD.plan;
       END IF;
     END IF;
     IF NEW.billing_cycle IS DISTINCT FROM OLD.billing_cycle THEN
-      IF NOT EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND (role = 'admin' OR user_type = 'admin')) THEN
+      IF NOT public.is_admin() THEN
         NEW.billing_cycle := OLD.billing_cycle;
       END IF;
     END IF;
   END IF;
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 DROP TRIGGER IF EXISTS trg_protect_profile_columns ON public.profiles;
 CREATE TRIGGER trg_protect_profile_columns
@@ -88,12 +100,7 @@ CREATE TRIGGER trg_protect_profile_columns
 DROP POLICY IF EXISTS "Admins podem visualizar todos os perfis" ON public.profiles;
 CREATE POLICY "Admins podem visualizar todos os perfis" 
   ON public.profiles FOR SELECT 
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles 
-      WHERE id = auth.uid() AND (role = 'admin' OR user_type = 'admin')
-    )
-  );
+  USING (public.is_admin());
 
 
 -- 3. Tabela de Materiais, Instrumentos e Laudos
@@ -148,34 +155,19 @@ DROP POLICY IF EXISTS "Admins podem inserir materiais" ON public.materials;
 CREATE POLICY "Admins podem inserir materiais" 
   ON public.materials FOR INSERT 
   TO authenticated 
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM public.profiles 
-      WHERE id = auth.uid() AND (role = 'admin' OR user_type = 'admin')
-    )
-  );
+  WITH CHECK (public.is_admin());
 
 DROP POLICY IF EXISTS "Admins podem atualizar materiais" ON public.materials;
 CREATE POLICY "Admins podem atualizar materiais" 
   ON public.materials FOR UPDATE 
   TO authenticated 
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles 
-      WHERE id = auth.uid() AND (role = 'admin' OR user_type = 'admin')
-    )
-  );
+  USING (public.is_admin());
 
 DROP POLICY IF EXISTS "Admins podem excluir materiais" ON public.materials;
 CREATE POLICY "Admins podem excluir materiais" 
   ON public.materials FOR DELETE 
   TO authenticated 
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles 
-      WHERE id = auth.uid() AND (role = 'admin' OR user_type = 'admin')
-    )
-  );
+  USING (public.is_admin());
 
 
 -- 4. Tabela de Módulos de Videoaulas
