@@ -777,7 +777,7 @@ function DashboardInner() {
                   <dt>População</dt>
                   <dd>{popStr}</dd>
 
-                  <dt>Função cognitiva</dt>
+                  <dt>O que pretende avaliar</dt>
                   <dd>{activeDrawerMaterial.clinicalUtility || domainsStr}</dd>
 
                   {activeDrawerMaterial.authorReference && (

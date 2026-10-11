@@ -796,7 +796,7 @@ function LeitorContent() {
                 <dt>Tipo</dt><dd>{TYPE_LABELS[material.type]?.label || 'Guia Prático'}</dd>
                 <dt>Formato</dt><dd>{material.downloadFormat} · {totalPages} páginas</dd>
                 <dt>População</dt><dd>{material.ageGroups?.map(a => AGE_LABELS[a] || a).join(', ') || 'Clínico'}</dd>
-                <dt>Função cognitiva</dt><dd>{material.clinicalUtility || 'Neuropsicologia'}</dd>
+                <dt>O que pretende avaliar</dt><dd>{material.clinicalUtility || 'Neuropsicologia'}</dd>
                 <dt>Tamanho</dt><dd>{material.downloadSize}</dd>
                 <dt>Autoria</dt><dd>{material.authorReference || 'Equipe NeuroAcervo'}</dd>
               </dl>

@@ -803,7 +803,7 @@ function BibliotecaInner() {
                   <dd>{itemAberto.formato} · {itemAberto.tamanho}</dd>
                   <dt>População</dt>
                   <dd>{itemAberto.pop.map(p => POP[p] || p).join(', ')}</dd>
-                  <dt>Função cognitiva</dt>
+                  <dt>O que pretende avaliar</dt>
                   <dd>{itemAberto.func || 'Geral'}</dd>
                   <dt>Atualizado</dt>
                   <dd>{formatDateBR(itemAberto.data)}</dd>

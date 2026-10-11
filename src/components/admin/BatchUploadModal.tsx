@@ -673,7 +673,7 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                 </div>
 
                 <div className="f">
-                  <label htmlFor="quick-func">Função Cognitiva</label>
+                  <label htmlFor="quick-func">O que pretende avaliar</label>
                   <input
                     id="quick-func"
                     type="text"
@@ -1084,7 +1084,7 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                         <input
                           type="text"
                           list="batch-func-list"
-                          placeholder="Função cognitiva..."
+                          placeholder="O que pretende avaliar..."
                           value={item.funcao}
                           disabled={isProcessing || item.status === 'done'}
                           onChange={(e) =>

@@ -2016,7 +2016,7 @@ export default function AdminPage() {
 
             <div className="f2">
               <div className="f">
-                <label htmlFor="m-func">Função cognitiva</label>
+                <label htmlFor="m-func">O que pretende avaliar</label>
                 <input
                   id="m-func"
                   type="text"
