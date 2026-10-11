@@ -12,8 +12,7 @@ import {
   Layers,
   Link2,
   ChevronDown,
-  ChevronUp,
-  FileText
+  ChevronUp
 } from 'lucide-react';
 
 export interface BatchFileItem {
@@ -448,71 +447,57 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
 
   return (
     <div
-      className="drawer-overlay on"
-      style={{
-        position: 'fixed',
-        inset: 0,
-        backgroundColor: 'rgba(21, 20, 15, 0.45)',
-        backdropFilter: 'blur(4px)',
-        zIndex: 9999,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '20px'
+      className={`batch-overlay ${isOpen ? 'on' : ''}`}
+      onClick={(e) => {
+        if (e.target === e.currentTarget && !isProcessing) {
+          onClose();
+        }
       }}
     >
       <aside
-        className="drawer on"
-        style={{
-          position: 'relative',
-          width: '100%',
-          maxWidth: '920px',
-          maxHeight: '94vh',
-          borderRadius: '20px',
-          boxShadow: '0 24px 60px rgba(0,0,0,0.22)',
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
-          background: 'var(--paper)'
-        }}
+        className="batch-dialog"
         role="dialog"
         aria-modal="true"
         aria-labelledby="batch-modal-title"
       >
-        {/* Header */}
-        <div className="d-head">
-          <div>
+        {/* Header Elegante Padronizado com NeuroAcervo */}
+        <div className="batch-header">
+          <div className="batch-header-title">
             <span className="label">Administração do Acervo</span>
-            <h2 id="batch-modal-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span>Upload e Cadastro Completo em Lote</span>
-              <span className="dot">.</span>
+            <h2 id="batch-modal-title">
+              Upload e Cadastro <em>em Lote</em><span className="dot">.</span>
             </h2>
           </div>
           <button
             type="button"
-            className="d-close"
+            className="batch-close"
             onClick={() => !isProcessing && onClose()}
             aria-label="Fechar"
             disabled={isProcessing}
+            title="Fechar"
           >
-            <X size={18} />
+            <X size={17} strokeWidth={2.2} />
           </button>
         </div>
 
-        {/* Body Content */}
-        <div className="d-body" style={{ gap: '20px', overflowY: 'auto' }}>
+        {/* Body Content com Scroll Suave */}
+        <div className="batch-body">
           {globalError && (
             <div
               style={{
-                padding: '12px 14px',
+                padding: '12px 16px',
                 borderRadius: '12px',
                 background: '#fcebe9',
                 border: '1px solid #f2aba4',
                 color: '#a8261d',
-                fontSize: '13px'
+                fontSize: '13px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
               }}
             >
-              <b>Atenção:</b> {globalError}
+              <AlertCircle size={16} style={{ flexShrink: 0 }} />
+              <span><b>Atenção:</b> {globalError}</span>
             </div>
           )}
 
@@ -533,33 +518,13 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
             </select>
           </div>
 
-          {/* 2. Alternador de Abas: Upload de Arquivos vs Colar Links do R2 */}
-          <div
-            style={{
-              display: 'flex',
-              gap: '8px',
-              borderBottom: '1px solid var(--line)',
-              paddingBottom: '12px'
-            }}
-          >
+          {/* 2. Alternador de Abas com Segmented Control Estilizado */}
+          <div className="batch-tabs">
             <button
               type="button"
               onClick={() => setInputMode('upload')}
               disabled={isProcessing}
-              style={{
-                padding: '8px 16px',
-                borderRadius: '10px',
-                border: 'none',
-                background: inputMode === 'upload' ? 'var(--ink)' : 'var(--bone)',
-                color: inputMode === 'upload' ? 'var(--paper)' : 'var(--ink)',
-                fontWeight: 600,
-                fontSize: '13px',
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '7px',
-                transition: 'all .15s ease'
-              }}
+              className={`batch-tab-btn ${inputMode === 'upload' ? 'active' : ''}`}
             >
               <UploadCloud size={15} />
               <span>Enviar arquivos do computador</span>
@@ -568,20 +533,7 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
               type="button"
               onClick={() => setInputMode('links')}
               disabled={isProcessing}
-              style={{
-                padding: '8px 16px',
-                borderRadius: '10px',
-                border: 'none',
-                background: inputMode === 'links' ? 'var(--ink)' : 'var(--bone)',
-                color: inputMode === 'links' ? 'var(--paper)' : 'var(--ink)',
-                fontWeight: 600,
-                fontSize: '13px',
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '7px',
-                transition: 'all .15s ease'
-              }}
+              className={`batch-tab-btn ${inputMode === 'links' ? 'active' : ''}`}
             >
               <Link2 size={15} />
               <span>Colar links do Cloudflare R2</span>
@@ -595,9 +547,7 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
               <label
                 className="drop"
                 style={{
-                  padding: '28px',
-                  border: '2px dashed var(--line)',
-                  background: 'var(--bone)',
+                  padding: '30px 24px',
                   cursor: isProcessing ? 'not-allowed' : 'pointer'
                 }}
               >
@@ -608,11 +558,10 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                   accept=".pdf,.docx,.xlsx,.mp4"
                   disabled={isProcessing}
                   onChange={(e) => handleFilesSelected(e.target.files)}
-                  style={{ position: 'absolute', width: 1, height: 1, opacity: 0 }}
                 />
                 <UploadCloud size={32} style={{ color: 'var(--accent-strong)' }} />
                 <b style={{ fontSize: '15px' }}>Clique aqui ou arraste múltiplos arquivos</b>
-                <span>Selecione vários arquivos segurando Shift ou Ctrl</span>
+                <span>Selecione vários arquivos segurando Shift ou Ctrl no explorador</span>
               </label>
             </div>
           )}
@@ -629,17 +578,15 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                 disabled={isProcessing || isParsingLinks}
                 value={pastedLinksText}
                 onChange={(e) => setPastedLinksText(e.target.value)}
-                placeholder={`https://pub-...r2.dev/materiais/guia-tdah.pdf\nhttps://pub-...r2.dev/materiais/modelo-laudo-tea.docx\nou apenas chaves: materiais/teste-memoria.pdf`}
+                placeholder={`https://pub-...r2.dev/materiais/guia-tdah.pdf\nhttps://pub-...r2.dev/materiais/modelo-laudo-tea.docx\nou chaves relativas: materiais/teste-memoria.pdf`}
                 style={{
                   fontFamily: 'var(--mono, monospace)',
                   fontSize: '12.5px',
-                  lineHeight: '1.6',
-                  padding: '12px',
-                  borderRadius: '10px'
+                  lineHeight: '1.6'
                 }}
               />
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
-                <span style={{ fontSize: '11px', color: 'var(--ink-faint)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
+                <span className="hint">
                   Aceita URLs completas ou chaves relativas. Título e tamanho são extraídos automaticamente.
                 </span>
                 <button
@@ -648,14 +595,14 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                   disabled={isProcessing || isParsingLinks || !pastedLinksText.trim()}
                   className="btn"
                   style={{
-                    padding: '6px 14px',
-                    fontSize: '12px',
+                    padding: '8px 16px',
+                    fontSize: '12.5px',
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '6px'
                   }}
                 >
-                  <RefreshCw size={13} className={isParsingLinks ? 'animate-spin' : ''} />
+                  <RefreshCw size={13} className={isParsingLinks ? 'spin' : ''} />
                   <span>{isParsingLinks ? 'Processando links...' : 'Adicionar links à fila'}</span>
                 </button>
               </div>
@@ -664,35 +611,28 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
 
           {/* 3. Painel de Preenchimento Rápido com Todos os Campos */}
           {items.length > 0 && (
-            <div
-              style={{
-                padding: '16px',
-                borderRadius: '14px',
-                background: 'rgba(21,20,15,0.03)',
-                border: '1px solid var(--line)'
-              }}
-            >
+            <div className="batch-quick-box">
               <div
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  marginBottom: '12px'
+                  gap: '12px'
                 }}
               >
                 <div>
                   <span
                     style={{
-                      font: '600 12px/1 var(--sans)',
-                      letterSpacing: '.08em',
+                      font: '600 11.5px/1 var(--sans)',
+                      letterSpacing: '.12em',
                       textTransform: 'uppercase',
                       color: 'var(--ink)'
                     }}
                   >
                     Preenchimento Rápido / Aplicar a Todos
                   </span>
-                  <p style={{ margin: '3px 0 0', fontSize: '11px', color: 'var(--ink-mute)' }}>
-                    Defina valores padrões e clique em aplicar para preencher todos os itens da fila de uma vez.
+                  <p style={{ margin: '3px 0 0', font: '400 12px/1.4 var(--body)', color: 'var(--ink-mute)' }}>
+                    Preencha os valores padrão e clique em aplicar para configurar todos os itens da fila de uma só vez.
                   </p>
                 </div>
 
@@ -700,30 +640,26 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                   type="button"
                   onClick={handleApplyToAll}
                   disabled={isProcessing}
+                  className="btn-ghost"
                   style={{
-                    padding: '6px 14px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--line)',
-                    background: 'var(--paper)',
+                    padding: '7px 14px',
                     fontSize: '12px',
                     fontWeight: 600,
-                    cursor: 'pointer',
-                    display: 'flex',
+                    display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '6px'
+                    gap: '6px',
+                    flexShrink: 0
                   }}
                 >
                   <RefreshCw size={13} />
-                  Aplicar tudo a todos da fila
+                  <span>Aplicar tudo a todos</span>
                 </button>
               </div>
 
               {/* Linha 1: Plano, Função e Selo */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr 1fr', gap: '10px', marginBottom: '10px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.3fr 1fr', gap: '12px' }}>
                 <div className="f">
-                  <label htmlFor="quick-plano" style={{ fontSize: '11px' }}>
-                    Plano Mínimo Padrão
-                  </label>
+                  <label htmlFor="quick-plano">Plano Mínimo</label>
                   <select
                     id="quick-plano"
                     value={defaultPlano}
@@ -737,9 +673,7 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                 </div>
 
                 <div className="f">
-                  <label htmlFor="quick-func" style={{ fontSize: '11px' }}>
-                    Função Cognitiva Padrão
-                  </label>
+                  <label htmlFor="quick-func">Função Cognitiva</label>
                   <input
                     id="quick-func"
                     type="text"
@@ -753,9 +687,7 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                 </div>
 
                 <div className="f">
-                  <label htmlFor="quick-selo" style={{ fontSize: '11px' }}>
-                    Selo Padrão
-                  </label>
+                  <label htmlFor="quick-selo">Selo</label>
                   <select
                     id="quick-selo"
                     value={defaultSelo}
@@ -770,13 +702,13 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
               </div>
 
               {/* População Padrão */}
-              <div style={{ marginBottom: '10px' }}>
-                <label style={{ fontSize: '11px', display: 'block', marginBottom: '4px', fontWeight: 600 }}>
-                  População Padrão
+              <div>
+                <label style={{ font: '600 11px/1.3 var(--sans)', letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--ink)', display: 'block', marginBottom: '8px' }}>
+                  População
                 </label>
-                <div className="chks" style={{ display: 'flex', gap: '12px' }}>
+                <div className="chks">
                   {POPULACOES_CONFIG.map((pop) => (
-                    <label key={pop.id} style={{ fontSize: '12px', display: 'inline-flex', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
+                    <label key={pop.id}>
                       <input
                         type="checkbox"
                         checked={defaultPopulacao.includes(pop.id)}
@@ -789,13 +721,13 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                           }
                         }}
                       />
-                      {pop.label}
+                      <span>{pop.label}</span>
                     </label>
                   ))}
                 </div>
               </div>
 
-              {/* Botão de Alternar Campos Avançados no Preenchimento Rápido */}
+              {/* Toggle de Campos Avançados */}
               <div>
                 <button
                   type="button"
@@ -803,7 +735,8 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                   style={{
                     background: 'none',
                     border: 'none',
-                    fontSize: '11.5px',
+                    fontSize: '12px',
+                    fontWeight: 600,
                     color: 'var(--accent-strong)',
                     cursor: 'pointer',
                     display: 'inline-flex',
@@ -812,14 +745,14 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                     padding: 0
                   }}
                 >
-                  {showQuickAdvanced ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                  {showQuickAdvanced ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                   <span>{showQuickAdvanced ? 'Ocultar Descrição e Sumário padrões' : 'Configurar Descrição curta e Sumário padrões'}</span>
                 </button>
 
                 {showQuickAdvanced && (
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '10px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '10px' }}>
                     <div className="f">
-                      <label htmlFor="quick-desc" style={{ fontSize: '11px' }}>Descrição curta padrão</label>
+                      <label htmlFor="quick-desc">Descrição curta padrão</label>
                       <textarea
                         id="quick-desc"
                         rows={2}
@@ -831,7 +764,7 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                     </div>
 
                     <div className="f">
-                      <label htmlFor="quick-sum" style={{ fontSize: '11px' }}>Sumário padrão (tópicos por linha)</label>
+                      <label htmlFor="quick-sum">Sumário padrão (tópicos por linha)</label>
                       <textarea
                         id="quick-sum"
                         rows={2}
@@ -858,32 +791,34 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
           {isProcessing && (
             <div
               style={{
-                padding: '14px',
-                borderRadius: '12px',
+                padding: '16px 20px',
+                borderRadius: '16px',
                 background: 'var(--ink)',
-                color: 'var(--paper)'
+                color: 'var(--paper)',
+                boxShadow: '0 8px 24px rgba(21, 20, 15, 0.2)'
               }}
             >
               <div
                 style={{
                   display: 'flex',
                   justifyContent: 'space-between',
-                  marginBottom: '8px',
-                  fontSize: '13px',
+                  alignItems: 'center',
+                  marginBottom: '10px',
+                  fontSize: '13.5px',
                   fontWeight: 600
                 }}
               >
                 <span>
                   Processando itens ({completedCount}/{items.length})...
                 </span>
-                <span>{progressPercent}%</span>
+                <span style={{ font: '600 13px/1 var(--mono)' }}>{progressPercent}%</span>
               </div>
               <div
                 style={{
                   width: '100%',
-                  height: '8px',
-                  borderRadius: '4px',
-                  background: 'rgba(255,255,255,0.2)',
+                  height: '7px',
+                  borderRadius: '999px',
+                  background: 'rgba(255,255,255,0.18)',
                   overflow: 'hidden'
                 }}
               >
@@ -907,15 +842,16 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  marginBottom: '10px'
+                  marginBottom: '12px'
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                   <label
                     style={{
-                      font: '600 11px/1.3 var(--sans)',
-                      letterSpacing: '.16em',
-                      textTransform: 'uppercase'
+                      font: '700 11.5px/1.3 var(--sans)',
+                      letterSpacing: '.14em',
+                      textTransform: 'uppercase',
+                      color: 'var(--ink)'
                     }}
                   >
                     Itens na Fila ({items.length})
@@ -928,6 +864,7 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                       background: 'none',
                       border: 'none',
                       fontSize: '12px',
+                      fontWeight: 600,
                       color: 'var(--accent-strong)',
                       cursor: 'pointer',
                       display: 'inline-flex',
@@ -936,7 +873,7 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                     }}
                   >
                     {allExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                    <span>{allExpanded ? 'Recolher todos os detalhes' : 'Expandir todos os detalhes'}</span>
+                    <span>{allExpanded ? 'Recolher todos' : 'Expandir todos'}</span>
                   </button>
                 </div>
 
@@ -949,6 +886,7 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                       border: 'none',
                       color: '#a8261d',
                       fontSize: '12px',
+                      fontWeight: 600,
                       cursor: 'pointer'
                     }}
                   >
@@ -961,80 +899,31 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                 {items.map((item, idx) => (
                   <div
                     key={item.id}
-                    style={{
-                      padding: '14px 16px',
-                      borderRadius: '14px',
-                      background:
-                        item.status === 'done'
-                          ? '#f0f9f1'
-                          : item.status === 'error'
-                          ? '#fdf2f1'
-                          : 'var(--bone)',
-                      border: `1px solid ${
-                        item.status === 'done'
-                          ? '#bce3c5'
-                          : item.status === 'error'
-                          ? '#f5c6c2'
-                          : 'var(--line)'
-                      }`,
-                      display: 'grid',
-                      gap: '12px'
-                    }}
+                    className={`batch-card ${item.status === 'done' ? 'done' : item.status === 'error' ? 'error' : ''}`}
                   >
                     {/* Linha de Cabeçalho do Card */}
-                    <div
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center'
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          minWidth: 0
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontSize: '12px',
-                            fontWeight: 700,
-                            color: 'var(--ink-mute)'
-                          }}
-                        >
+                    <div className="batch-card-top">
+                      <div className="batch-card-info">
+                        <span className="batch-badge-idx">
                           #{idx + 1}
                         </span>
                         <span
-                          style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink)' }}
-                          className="truncate"
+                          className="batch-filename"
                           title={item.fileName}
                         >
                           {item.fileName}
                         </span>
                         {item.existingUrl ? (
-                          <span
-                            style={{
-                              fontSize: '10.5px',
-                              background: 'rgba(21,20,15,0.06)',
-                              padding: '2px 7px',
-                              borderRadius: '4px',
-                              color: 'var(--ink-mute)',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '4px'
-                            }}
-                            title={item.existingUrl}
-                          >
+                          <span className="batch-tag-r2" title={item.existingUrl}>
                             <Link2 size={11} /> Link R2
                           </span>
                         ) : (
                           <span
                             style={{
-                              fontSize: '11px',
+                              fontSize: '11.5px',
                               color: 'var(--ink-mute)',
-                              whiteSpace: 'nowrap'
+                              whiteSpace: 'nowrap',
+                              fontFamily: 'var(--mono)'
                             }}
                           >
                             ({item.sizeFormatted})
@@ -1062,12 +951,13 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                             style={{
                               display: 'inline-flex',
                               alignItems: 'center',
-                              gap: '4px',
+                              gap: '5px',
                               fontSize: '12px',
-                              color: 'var(--accent-strong)'
+                              color: 'var(--accent-strong)',
+                              fontWeight: 500
                             }}
                           >
-                            <RefreshCw size={14} className="animate-spin" /> Enviando ao R2...
+                            <RefreshCw size={13} className="spin" /> Enviando ao R2...
                           </span>
                         )}
                         {item.status === 'saving' && (
@@ -1075,9 +965,10 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                             style={{
                               display: 'inline-flex',
                               alignItems: 'center',
-                              gap: '4px',
+                              gap: '5px',
                               fontSize: '12px',
-                              color: 'var(--accent-strong)'
+                              color: 'var(--accent-strong)',
+                              fontWeight: 500
                             }}
                           >
                             <Layers size={14} /> Gravando no banco...
@@ -1106,14 +997,14 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                           style={{
                             background: 'var(--paper)',
                             border: '1px solid var(--line)',
-                            borderRadius: '6px',
-                            padding: '4px 8px',
-                            fontSize: '11px',
+                            borderRadius: '8px',
+                            padding: '5px 10px',
+                            fontSize: '11.5px',
                             fontWeight: 600,
                             cursor: 'pointer',
                             display: 'inline-flex',
                             alignItems: 'center',
-                            gap: '4px',
+                            gap: '5px',
                             color: 'var(--ink)'
                           }}
                         >
@@ -1130,7 +1021,10 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                               border: 'none',
                               color: 'var(--ink-mute)',
                               cursor: 'pointer',
-                              padding: '4px'
+                              padding: '5px',
+                              borderRadius: '6px',
+                              display: 'grid',
+                              placeItems: 'center'
                             }}
                             title="Remover item da fila"
                           >
@@ -1155,7 +1049,6 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                           value={item.title}
                           disabled={isProcessing || item.status === 'done'}
                           onChange={(e) => handleUpdateItem(item.id, { title: e.target.value })}
-                          style={{ fontSize: '13px', padding: '8px 10px' }}
                         />
                       </div>
 
@@ -1164,7 +1057,6 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                           value={item.tipo}
                           disabled={isProcessing || item.status === 'done'}
                           onChange={(e) => handleUpdateItem(item.id, { tipo: e.target.value })}
-                          style={{ fontSize: '13px', padding: '8px 10px' }}
                         >
                           {TIPOS_CONFIG.map((t) => (
                             <option key={t.id} value={t.id}>
@@ -1181,7 +1073,6 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                           onChange={(e) =>
                             handleUpdateItem(item.id, { plano: e.target.value as any })
                           }
-                          style={{ fontSize: '13px', padding: '8px 10px' }}
                         >
                           <option value="Consulta">Consulta</option>
                           <option value="Estudo">Estudo</option>
@@ -1199,7 +1090,6 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                           onChange={(e) =>
                             handleUpdateItem(item.id, { funcao: e.target.value })
                           }
-                          style={{ fontSize: '13px', padding: '8px 10px' }}
                           autoComplete="off"
                         />
                       </div>
@@ -1209,24 +1099,24 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                     {item.isExpanded && (
                       <div
                         style={{
-                          paddingTop: '12px',
+                          paddingTop: '14px',
                           borderTop: '1px dashed var(--line)',
                           display: 'grid',
-                          gap: '12px',
-                          background: 'rgba(255,255,255,0.4)',
-                          padding: '12px',
-                          borderRadius: '10px'
+                          gap: '14px',
+                          background: 'rgba(255,255,255,0.45)',
+                          padding: '14px 16px',
+                          borderRadius: '12px'
                         }}
                       >
                         {/* População e Selo */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1.8fr 1fr', gap: '12px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '14px' }}>
                           <div>
-                            <label style={{ fontSize: '11px', display: 'block', marginBottom: '4px', fontWeight: 600 }}>
+                            <label style={{ font: '600 11px/1.3 var(--sans)', letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--ink)', display: 'block', marginBottom: '8px' }}>
                               População
                             </label>
-                            <div className="chks" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                            <div className="chks">
                               {POPULACOES_CONFIG.map((pop) => (
-                                <label key={pop.id} style={{ fontSize: '12px', display: 'inline-flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+                                <label key={pop.id}>
                                   <input
                                     type="checkbox"
                                     checked={item.populacao.includes(pop.id)}
@@ -1238,19 +1128,18 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                                       handleUpdateItem(item.id, { populacao: nextPop });
                                     }}
                                   />
-                                  {pop.label}
+                                  <span>{pop.label}</span>
                                 </label>
                               ))}
                             </div>
                           </div>
 
                           <div className="f">
-                            <label style={{ fontSize: '11px' }}>Selo</label>
+                            <label>Selo</label>
                             <select
                               value={item.selo}
                               disabled={isProcessing || item.status === 'done'}
                               onChange={(e) => handleUpdateItem(item.id, { selo: e.target.value })}
-                              style={{ fontSize: '12.5px', padding: '6px 10px' }}
                             >
                               <option value="novo">Novo</option>
                               <option value="atualizado">Atualizado</option>
@@ -1260,28 +1149,26 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                         </div>
 
                         {/* Descrição e Sumário */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
                           <div className="f">
-                            <label style={{ fontSize: '11px' }}>Descrição curta (até 2 linhas)</label>
+                            <label>Descrição curta (aparece no card)</label>
                             <textarea
                               rows={2}
                               placeholder="Descrição para o card na biblioteca..."
                               value={item.desc}
                               disabled={isProcessing || item.status === 'done'}
                               onChange={(e) => handleUpdateItem(item.id, { desc: e.target.value })}
-                              style={{ fontSize: '12.5px', padding: '8px' }}
                             />
                           </div>
 
                           <div className="f">
-                            <label style={{ fontSize: '11px' }}>Sumário (um tópico por linha)</label>
+                            <label>Sumário (tópicos por linha)</label>
                             <textarea
                               rows={2}
                               placeholder={'Material necessário\nInstruções de aplicação\nInterpretação'}
                               value={item.sumario}
                               disabled={isProcessing || item.status === 'done'}
                               onChange={(e) => handleUpdateItem(item.id, { sumario: e.target.value })}
-                              style={{ fontSize: '12.5px', padding: '8px' }}
                             />
                           </div>
                         </div>
@@ -1289,8 +1176,9 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                     )}
 
                     {item.errorMessage && (
-                      <div style={{ fontSize: '11px', color: '#a8261d', marginTop: '2px' }}>
-                        Erro: {item.errorMessage}
+                      <div style={{ fontSize: '12px', color: '#a8261d', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <AlertCircle size={14} />
+                        <span><b>Erro:</b> {item.errorMessage}</span>
                       </div>
                     )}
                   </div>
@@ -1301,23 +1189,11 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
         </div>
 
         {/* Footer Actions com Confirmação Legal Global */}
-        <div
-          className="d-foot"
-          style={{
-            background: 'var(--paper)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '12px',
-            borderTop: '1px solid var(--line)'
-          }}
-        >
+        <div className="batch-footer">
           {/* Confirmação Legal Global */}
           <label
             className={`legal ${legalError ? 'err' : ''}`}
             style={{
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: '9px',
               cursor: 'pointer',
               margin: 0
             }}
@@ -1331,9 +1207,8 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
                 setLegalConfirmed(e.target.checked);
                 setLegalError(false);
               }}
-              style={{ marginTop: '2px' }}
             />
-            <span style={{ fontSize: '12px', lineHeight: 1.4, color: 'var(--ink)' }}>
+            <span>
               <b>Confirmo que todos os materiais deste lote são de autoria própria</b> e não reproduzem itens, folhas de registro, tabelas normativas ou trechos de testes psicológicos restritos.
             </span>
           </label>
@@ -1346,7 +1221,7 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
           <div style={{ display: 'flex', gap: '10px' }}>
             <button
               type="button"
-              className="btn"
+              className="btn-ghost"
               onClick={() => !isProcessing && onClose()}
               disabled={isProcessing}
               style={{ flex: 1, justifyContent: 'center' }}
@@ -1356,14 +1231,13 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
 
             <button
               type="button"
-              className="btn"
+              className="btn-ghost"
               disabled={isProcessing || items.length === 0}
               onClick={() => handleStartBatch('rascunho')}
               style={{
                 flex: 1.2,
                 justifyContent: 'center',
                 background: 'var(--bone)',
-                color: 'var(--ink)',
                 borderColor: 'var(--line)'
               }}
             >
@@ -1372,12 +1246,12 @@ export const BatchUploadModal: React.FC<BatchUploadModalProps> = ({
 
             <button
               type="button"
-              className="btn btn-primary"
+              className="btn"
               disabled={isProcessing || items.length === 0}
               onClick={() => handleStartBatch('publicado')}
               style={{ flex: 1.4, justifyContent: 'center' }}
             >
-              {isProcessing ? 'Processando Lote...' : `Publicar Todos (${items.length})`}
+              <span>{isProcessing ? 'Processando Lote...' : `Publicar Todos (${items.length})`}</span>
             </button>
           </div>
         </div>
