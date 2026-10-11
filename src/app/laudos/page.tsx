@@ -362,6 +362,8 @@ export default function LaudosPage() {
                     <dd>{activeMaterial.downloadSize}</dd>
                   </>
                 )}
+                <dt>Função cognitiva</dt>
+                <dd>{activeMaterial.clinicalUtility || (activeMaterial.domains && activeMaterial.domains.length > 0 ? activeMaterial.domains.join(', ') : 'Geral')}</dd>
                 {activeMaterial.authorReference && (
                   <>
                     <dt>Estruturação</dt>

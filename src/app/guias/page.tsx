@@ -151,6 +151,8 @@ export default function GuiasPage() {
                     <dd>{activeMaterial.authorReference}</dd>
                   </>
                 )}
+                <dt>Função cognitiva</dt>
+                <dd>{activeMaterial.clinicalUtility || (activeMaterial.domains && activeMaterial.domains.length > 0 ? activeMaterial.domains.join(', ') : 'Geral')}</dd>
                 {activeMaterial.downloadFormat && (
                   <>
                     <dt>Formato</dt>

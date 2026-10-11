@@ -278,6 +278,8 @@ export default function MinhaPastaPage() {
                     <dd>{activeMaterial.targetPopulation}</dd>
                   </>
                 )}
+                <dt>Função cognitiva</dt>
+                <dd>{activeMaterial.clinicalUtility || (activeMaterial.domains && activeMaterial.domains.length > 0 ? activeMaterial.domains.join(', ') : 'Geral')}</dd>
                 {activeMaterial.downloadFormat && (
                   <>
                     <dt>Formato</dt>

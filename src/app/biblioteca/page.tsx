@@ -155,8 +155,8 @@ function BibliotecaInner() {
         mappedPop = ['adulto'];
       }
 
-      let mappedFunc = 'Geral';
-      if (m.domains && m.domains.length > 0) {
+      let mappedFunc = m.clinicalUtility?.trim() || '';
+      if (!mappedFunc && m.domains && m.domains.length > 0) {
         const d = m.domains[0];
         if (d === 'atencao') mappedFunc = 'Atenção';
         else if (d === 'memoria') mappedFunc = 'Memória';
@@ -166,6 +166,7 @@ function BibliotecaInner() {
         else if (d === 'inteligencia') mappedFunc = 'Inteligência';
         else if (d === 'humor_comportamento') mappedFunc = 'Aspectos socioemocionais';
       }
+      if (!mappedFunc) mappedFunc = 'Geral';
 
       return {
         id: m.id,
@@ -802,8 +803,8 @@ function BibliotecaInner() {
                   <dd>{itemAberto.formato} · {itemAberto.tamanho}</dd>
                   <dt>População</dt>
                   <dd>{itemAberto.pop.map(p => POP[p] || p).join(', ')}</dd>
-                  <dt>Função</dt>
-                  <dd>{itemAberto.func}</dd>
+                  <dt>Função cognitiva</dt>
+                  <dd>{itemAberto.func || 'Geral'}</dd>
                   <dt>Atualizado</dt>
                   <dd>{formatDateBR(itemAberto.data)}</dd>
                 </dl>
