@@ -93,7 +93,7 @@ function AulasInner() {
           <p>
             Seu plano atual no perfil é <b>{planInfo.nome}</b>. O módulo de videoaulas com raciocínio diagnóstico e estudos de caso clínicos faz parte dos planos <b>Estudo</b> e <b>Prática</b>.
           </p>
-          <Link className="btn" href="/#planos" style={{ marginTop: '8px' }}>
+          <Link className="btn" href="/plataforma/upgrade?plano=estudo" style={{ marginTop: '8px' }}>
             <span>Fazer upgrade para o Plano Estudo</span>
             <svg className="ico sm"><use href="#i-arrow"/></svg>
           </Link>

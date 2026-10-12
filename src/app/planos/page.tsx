@@ -53,13 +53,13 @@ function PlanosInner() {
     }
   }, [paramPlano, paramCiclo, currentUser]);
 
-  // Se não estiver logado, redireciona para entrar. Se já for ativo ou admin, vai para plataforma.
+  // Se não estiver logado, redireciona para entrar. Se já for ativo ou admin, vai para a tela interna de upgrade.
   useEffect(() => {
     if (!isLoadingUser) {
       if (!currentUser) {
         router.push('/entrar');
       } else if (currentUser.role === 'admin' || currentUser.subscriptionStatus === 'active') {
-        router.push('/plataforma');
+        router.push('/plataforma/upgrade');
       }
     }
   }, [isLoadingUser, currentUser, router]);

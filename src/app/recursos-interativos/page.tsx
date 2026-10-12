@@ -146,7 +146,7 @@ function RecursosInterativosInner() {
           <p>
             Seu plano atual no perfil é <b>{planInfo.nome}</b>. O Cronômetro Clínico com contagem de erros, o Baralho de Funções Executivas e as Histórias Temáticas fazem parte do plano <b>Prática</b>.
           </p>
-          <Link className="btn" href="/#planos" style={{ marginTop: '8px' }}>
+          <Link className="btn" href="/plataforma/upgrade?plano=pratica" style={{ marginTop: '8px' }}>
             <span>Fazer upgrade para o Plano Prática</span>
             <svg className="ico sm"><use href="#i-arrow"/></svg>
           </Link>

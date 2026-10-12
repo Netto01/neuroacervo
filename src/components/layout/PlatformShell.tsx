@@ -17,7 +17,8 @@ export type PlatformPageId =
   | 'guias' 
   | 'laudos' 
   | 'anamnese' 
-  | 'compendios';
+  | 'compendios'
+  | 'upgrade';
 
 interface PlatformShellProps {
   activePage: PlatformPageId;

@@ -503,7 +503,7 @@ function DashboardInner() {
                 <span className="cnt">{materials.filter(m => m.type === 'tabela_normativa').length} itens</span>
               </Link>
               <Link 
-                href={nivelAtual >= 2 ? "/aulas" : "/#planos"}
+                href={nivelAtual >= 2 ? "/aulas" : "/plataforma/upgrade?plano=estudo"}
                 className="cat" 
               >
                 <span className="mark bg-aula"><svg className="ico"><use href="#i-aula"/></svg></span>
@@ -532,7 +532,7 @@ function DashboardInner() {
                 role="button" 
                 tabIndex={0} 
                 onClick={() => {
-                  if (nivelAtual < 3) router.push('/#planos');
+                  if (nivelAtual < 3) router.push('/plataforma/upgrade?plano=pratica');
                   else router.push('/recursos-interativos');
                 }}
               >
@@ -560,7 +560,7 @@ function DashboardInner() {
                 role="button"
                 tabIndex={0}
                 onClick={() => {
-                  if (nivelAtual < 3) router.push('/#planos');
+                  if (nivelAtual < 3) router.push('/plataforma/upgrade?plano=pratica');
                 }}
               >
                 <div className="tool-body" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -591,7 +591,7 @@ function DashboardInner() {
                 role="button"
                 tabIndex={0}
                 onClick={() => {
-                  if (nivelAtual < 3) router.push('/#planos');
+                  if (nivelAtual < 3) router.push('/plataforma/upgrade?plano=pratica');
                 }}
               >
                 <div className="tool-body" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>

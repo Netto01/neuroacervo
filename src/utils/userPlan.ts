@@ -66,7 +66,7 @@ export function resolveUserPlan(user: UserProfile | null): PlanAccessInfo {
       preco: 'R$ 39,90/mês',
       desc: 'Acesso a todos os materiais do plano Consulta mais aulas gravadas em módulos.',
       cta: 'Fazer upgrade para o Prática',
-      ctaHref: '/#planos',
+      ctaHref: '/plataforma/upgrade?plano=pratica',
       hasAulas: true,
       hasRecursos: false
     };
@@ -80,7 +80,7 @@ export function resolveUserPlan(user: UserProfile | null): PlanAccessInfo {
     preco: 'R$ 19,90/mês',
     desc: 'Todos os PDFs, guias rápidos de aplicação, modelos de laudo e compêndios para consulta.',
     cta: 'Fazer upgrade de plano',
-    ctaHref: '/#planos',
+    ctaHref: '/plataforma/upgrade',
     hasAulas: false,
     hasRecursos: false
   };
