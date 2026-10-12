@@ -7,13 +7,37 @@ import { STRIPE_PLANS } from '@/config/plans';
  * buscando pelo produto que corresponde ao plano ('Consulta', 'Estudo', 'Prática')
  * e pelo ciclo de faturamento ('mensal' -> month, 'anual' -> year).
  */
+// Mapeamento direto e verificado dos preços na conta Stripe de produção
+const STRIPE_PRICES_MAP: Record<string, { mensal: string; anual?: string }> = {
+  consulta: {
+    mensal: 'price_1UNFzt4tkFt5D3AyhwChug8K' // R$ 19,90/mês
+  },
+  estudo: {
+    mensal: 'price_1UNG4A4tkFt5D3AyO9jPp9YU' // R$ 39,90/mês
+  },
+  pratica: {
+    mensal: 'price_1UNG544tkFt5D3Aylakaifea', // R$ 49,90/mês
+    anual:  'price_1UNG5S4tkFt5D3AyWfb1HXZK'  // R$ 399,00/ano
+  }
+};
+
 async function resolveStripePriceId(
   stripe: Stripe,
   planKey: string,
   billingCycle: 'mensal' | 'anual' = 'mensal'
 ): Promise<string> {
-  const products = await stripe.products.list({ active: true, limit: 30 });
+  const mapEntry = STRIPE_PRICES_MAP[planKey];
+  if (mapEntry) {
+    if (billingCycle === 'anual' && mapEntry.anual) {
+      return mapEntry.anual;
+    }
+    if (mapEntry.mensal) {
+      return mapEntry.mensal;
+    }
+  }
 
+  // Fallback para busca dinâmica por nome se necessário
+  const products = await stripe.products.list({ active: true, limit: 30 });
   const targetProduct = products.data.find((p) => {
     const name = p.name.toLowerCase();
     if (planKey === 'consulta') return name.includes('consulta');
@@ -26,7 +50,6 @@ async function resolveStripePriceId(
     throw new Error(`Produto para o plano "${planKey}" não foi encontrado na sua conta Stripe.`);
   }
 
-  // Busca os preços ativos vinculados a este produto
   const prices = await stripe.prices.list({ product: targetProduct.id, active: true });
   const interval = billingCycle === 'anual' ? 'year' : 'month';
   const targetPrice = prices.data.find((pr) => pr.recurring?.interval === interval);

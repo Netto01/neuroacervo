@@ -80,7 +80,11 @@ function PlanosInner() {
   };
 
   const handleCheckout = async () => {
-    if (!currentUser || loading) return;
+    if (loading) return;
+    if (!currentUser?.email) {
+      router.push('/entrar');
+      return;
+    }
 
     setLoading(true);
 
@@ -100,11 +104,11 @@ function PlanosInner() {
       });
 
       const data = await res.json();
-      if (data?.url) {
+      if (res.ok && data?.url) {
         window.location.href = data.url;
         return;
       }
-      alert(data?.error || 'Não foi possível iniciar o checkout.');
+      alert(data?.error || `Erro (${res.status}): Não foi possível iniciar o checkout.`);
     } catch (err: unknown) {
       console.error('Erro ao redirecionar para o Stripe:', err);
       alert('Erro de conexão ao abrir a Stripe. Tente novamente.');
