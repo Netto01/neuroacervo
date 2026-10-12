@@ -324,14 +324,22 @@ function BibliotecaInner() {
                 <span className="n">{materials.length}</span>
               </Link>
               <Link href="/aulas">
-                <svg className="ico"><use href="#i-aula"/></svg>
+                <svg className="ico"><use href={!planInfo.hasAulas ? "#i-lock" : "#i-aula"}/></svg>
                 <span>Aulas</span>
-                <span className="n">{modules.reduce((acc, m) => acc + (m.lessons?.length || 0), 0)}</span>
+                {!planInfo.hasAulas ? (
+                  <span className="pill" style={{ opacity: 0.7, background: 'rgba(21,20,15,0.06)' }}>Estudo</span>
+                ) : (
+                  <span className="n">{modules.reduce((acc, m) => acc + (m.lessons?.length || 0), 0)}</span>
+                )}
               </Link>
               <Link href="/recursos-interativos">
-                <svg className="ico"><use href="#i-cards"/></svg>
+                <svg className="ico"><use href={!planInfo.hasRecursos ? "#i-lock" : "#i-cards"}/></svg>
                 <span>Recursos interativos</span>
-                <span className="pill">Novo</span>
+                {!planInfo.hasRecursos ? (
+                  <span className="pill" style={{ opacity: 0.7, background: 'rgba(21,20,15,0.06)' }}>Prática</span>
+                ) : (
+                  <span className="pill">Novo</span>
+                )}
               </Link>
               <Link href="/minha-pasta">
                 <svg className="ico"><use href="#i-folder"/></svg>
@@ -901,11 +909,11 @@ function BibliotecaInner() {
           <span>Biblioteca</span>
         </Link>
         <Link href="/aulas">
-          <svg className="ico"><use href="#i-aula"/></svg>
+          <svg className="ico"><use href={!planInfo.hasAulas ? "#i-lock" : "#i-aula"}/></svg>
           <span>Aulas</span>
         </Link>
         <Link href="/recursos-interativos">
-          <svg className="ico"><use href="#i-cards"/></svg>
+          <svg className="ico"><use href={!planInfo.hasRecursos ? "#i-lock" : "#i-cards"}/></svg>
           <span>Recursos</span>
         </Link>
         <Link href="/minha-pasta">

@@ -295,11 +295,11 @@ export const PlatformShell: React.FC<PlatformShellProps> = ({
           <span>Biblioteca</span>
         </Link>
         <Link href="/aulas" aria-current={activePage === 'aulas' ? 'page' : undefined}>
-          <svg className="ico"><use href="#i-aula"/></svg>
+          <svg className="ico"><use href={!planInfo.hasAulas ? "#i-lock" : "#i-aula"}/></svg>
           <span>Aulas</span>
         </Link>
         <Link href="/recursos-interativos" aria-current={activePage === 'recursos' ? 'page' : undefined}>
-          <svg className="ico"><use href="#i-cards"/></svg>
+          <svg className="ico"><use href={!planInfo.hasRecursos ? "#i-lock" : "#i-cards"}/></svg>
           <span>Recursos</span>
         </Link>
         <Link href="/minha-pasta" aria-current={activePage === 'pasta' ? 'page' : undefined}>

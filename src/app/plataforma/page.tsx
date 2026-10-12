@@ -712,11 +712,11 @@ function DashboardInner() {
           <span>Biblioteca</span>
         </Link>
         <Link href="/aulas">
-          <svg className="ico"><use href="#i-aula"/></svg>
+          <svg className="ico"><use href={!planInfo.hasAulas ? "#i-lock" : "#i-aula"}/></svg>
           <span>Aulas</span>
         </Link>
         <Link href="/recursos-interativos">
-          <svg className="ico"><use href="#i-cards"/></svg>
+          <svg className="ico"><use href={!planInfo.hasRecursos ? "#i-lock" : "#i-cards"}/></svg>
           <span>Recursos</span>
         </Link>
         <Link href="/minha-pasta">
