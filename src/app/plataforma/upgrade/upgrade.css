@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Inter+Tight:wght@500;700;800&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:ital,wght@1,500&display=swap');
+
 :root {
   --paper: #efe7d2;
   --bone: #f7f1de;
@@ -15,7 +17,9 @@
   --ft: 'Inter', system-ui, sans-serif;
 }
 
-.upgrade-root {
+.upgrade-body {
+  margin: 0;
+  padding: 0;
   background: var(--paper);
   color: var(--ink-soft);
   font-family: var(--ft);
@@ -24,7 +28,7 @@
   position: relative;
 }
 
-.upgrade-root::before {
+.upgrade-body::before {
   content: '';
   position: fixed;
   inset: 0;
@@ -38,7 +42,16 @@
   background-size: auto, auto, 300px 300px;
 }
 
-.upgrade-app {
+.upgrade-body a {
+  color: inherit;
+}
+
+.upgrade-body button {
+  font: inherit;
+  color: inherit;
+}
+
+.upgrade-body .app {
   position: relative;
   z-index: 1;
   display: grid;
@@ -47,7 +60,7 @@
 }
 
 /* ===== barra lateral ===== */
-.upgrade-app aside {
+.upgrade-body aside {
   position: sticky;
   top: 0;
   height: 100vh;
@@ -59,7 +72,7 @@
   box-sizing: border-box;
 }
 
-.upgrade-app .marca {
+.upgrade-body .marca {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -72,13 +85,13 @@
   text-decoration: none;
 }
 
-.upgrade-app .marca svg {
+.upgrade-body .marca svg {
   width: 20px;
   height: 26px;
   color: var(--ink);
 }
 
-.upgrade-app .grp {
+.upgrade-body .grp {
   font-family: var(--fm);
   font-size: 10.5px;
   letter-spacing: 0.16em;
@@ -87,7 +100,7 @@
   margin: 26px 10px 8px;
 }
 
-.upgrade-app .nav a {
+.upgrade-body .nav a {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -99,11 +112,11 @@
   transition: background 0.15s;
 }
 
-.upgrade-app .nav a:hover {
+.upgrade-body .nav a:hover {
   background: var(--bone);
 }
 
-.upgrade-app .nav svg {
+.upgrade-body .nav svg {
   flex: none;
   width: 18px;
   height: 18px;
@@ -115,14 +128,14 @@
   color: var(--ink-mute);
 }
 
-.upgrade-app .nav .ct {
+.upgrade-body .nav .ct {
   margin-left: auto;
   font-family: var(--fm);
   font-size: 11px;
   color: var(--ink-faint);
 }
 
-.upgrade-app .nav .tag {
+.upgrade-body .nav .tag {
   margin-left: auto;
   font-family: var(--fm);
   font-size: 9.5px;
@@ -134,11 +147,11 @@
   color: var(--accent-strong);
 }
 
-.upgrade-app .nav a.lock {
+.upgrade-body .nav a.lock {
   color: var(--ink-faint);
 }
 
-.upgrade-app .side-plano {
+.upgrade-body .side-plano {
   margin-top: auto;
   padding: 16px;
   border-radius: 16px;
@@ -146,7 +159,7 @@
   box-shadow: inset 0 0 0 1px var(--line);
 }
 
-.upgrade-app .side-plano small {
+.upgrade-body .side-plano small {
   font-family: var(--fm);
   font-size: 10px;
   letter-spacing: 0.14em;
@@ -154,7 +167,7 @@
   color: var(--ink-faint);
 }
 
-.upgrade-app .side-plano b {
+.upgrade-body .side-plano b {
   display: block;
   font-family: var(--fd);
   font-weight: 800;
@@ -164,7 +177,7 @@
   margin-top: 4px;
 }
 
-.upgrade-app .side-plano b em {
+.upgrade-body .side-plano b em {
   font-family: var(--fs);
   font-weight: 500;
   font-size: 14px;
@@ -172,7 +185,7 @@
   font-style: italic;
 }
 
-.upgrade-app .side-plano .bar {
+.upgrade-body .side-plano .bar {
   height: 6px;
   border-radius: 3px;
   background: rgba(21, 20, 15, 0.08);
@@ -180,7 +193,7 @@
   overflow: hidden;
 }
 
-.upgrade-app .side-plano .bar i {
+.upgrade-body .side-plano .bar i {
   display: block;
   height: 100%;
   background: var(--accent-strong);
@@ -188,13 +201,13 @@
   transition: width 0.3s ease;
 }
 
-.upgrade-app .side-plano p {
+.upgrade-body .side-plano p {
   margin: 0;
   font-size: 12px;
   color: var(--ink-mute);
 }
 
-.upgrade-app .eu {
+.upgrade-body .eu {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -203,7 +216,7 @@
   border-top: 1px solid var(--line);
 }
 
-.upgrade-app .eu .av {
+.upgrade-body .eu .av {
   flex: none;
   width: 36px;
   height: 36px;
@@ -216,12 +229,12 @@
   font-weight: 800;
 }
 
-.upgrade-app .eu div {
+.upgrade-body .eu div {
   min-width: 0;
   flex: 1;
 }
 
-.upgrade-app .eu b {
+.upgrade-body .eu b {
   display: block;
   font-family: var(--fd);
   font-weight: 700;
@@ -232,32 +245,35 @@
   text-overflow: ellipsis;
 }
 
-.upgrade-app .eu span {
+.upgrade-body .eu span {
   font-family: var(--fm);
   font-size: 10.5px;
   color: var(--ink-faint);
 }
 
-.upgrade-app .eu button {
+.upgrade-body .eu button {
   border: 0;
   background: transparent;
   cursor: pointer;
   color: var(--ink-mute);
   padding: 6px;
   border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.upgrade-app .eu button:hover {
+.upgrade-body .eu button:hover {
   background: var(--bone);
 }
 
 /* ===== topo ===== */
-.upgrade-app .main {
+.upgrade-body .main {
   min-width: 0;
   overflow-x: clip;
 }
 
-.upgrade-app .topbar {
+.upgrade-body .topbar {
   position: sticky;
   top: 0;
   z-index: 10;
@@ -268,9 +284,10 @@
   background: rgba(239, 231, 210, 0.85);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--line);
+  box-sizing: border-box;
 }
 
-.upgrade-app .busca {
+.upgrade-body .busca {
   flex: 1;
   max-width: 560px;
   display: flex;
@@ -284,7 +301,7 @@
   font-size: 14.5px;
 }
 
-.upgrade-app .busca svg {
+.upgrade-body .busca svg {
   width: 17px;
   height: 17px;
   fill: none;
@@ -292,7 +309,7 @@
   stroke-width: 2;
 }
 
-.upgrade-app .busca kbd {
+.upgrade-body .busca kbd {
   margin-left: auto;
   font-family: var(--fm);
   font-size: 11px;
@@ -301,7 +318,7 @@
   box-shadow: inset 0 0 0 1px var(--line);
 }
 
-.upgrade-app .data {
+.upgrade-body .data {
   margin-left: auto;
   font-family: var(--fm);
   font-size: 11px;
@@ -310,7 +327,7 @@
   color: var(--ink-faint);
 }
 
-.upgrade-app .sino {
+.upgrade-body .sino {
   position: relative;
   width: 40px;
   height: 40px;
@@ -321,7 +338,7 @@
   background: var(--bone);
 }
 
-.upgrade-app .sino svg {
+.upgrade-body .sino svg {
   width: 18px;
   height: 18px;
   fill: none;
@@ -329,7 +346,7 @@
   stroke-width: 1.8;
 }
 
-.upgrade-app .sino::after {
+.upgrade-body .sino::after {
   content: '';
   position: absolute;
   top: 9px;
@@ -341,21 +358,21 @@
 }
 
 /* ===== conteúdo ===== */
-.upgrade-app .wrap {
+.upgrade-body .wrap {
   max-width: 1140px;
   margin: 0 auto;
   padding: 44px 40px 70px;
   box-sizing: border-box;
 }
 
-.upgrade-app .hd {
+.upgrade-body .hd {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 30px;
-  align-items: end;
+  align-items: flex-end;
 }
 
-.upgrade-app .kick {
+.upgrade-body .kick {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -366,24 +383,24 @@
   color: var(--accent-strong);
 }
 
-.upgrade-app .kick::before {
+.upgrade-body .kick::before {
   content: '';
   width: 28px;
   height: 2px;
   background: currentColor;
 }
 
-.upgrade-app h1 {
+.upgrade-body h1 {
   font-family: var(--fd);
   font-weight: 800;
   font-size: clamp(36px, 4.4vw, 56px);
   letter-spacing: -0.05em;
-  line-height: 1.05;
+  line-height: 1;
   color: var(--ink);
   margin: 14px 0 0;
 }
 
-.upgrade-app h1 em {
+.upgrade-body h1 em {
   font-family: var(--fs);
   font-style: italic;
   font-weight: 500;
@@ -391,7 +408,7 @@
   color: var(--accent-strong);
 }
 
-.upgrade-app .hd p {
+.upgrade-body .hd p {
   margin: 14px 0 0;
   font-size: 16px;
   line-height: 1.6;
@@ -399,12 +416,12 @@
   max-width: 560px;
 }
 
-.upgrade-app .hd p b {
+.upgrade-body .hd p b {
   color: var(--ink);
 }
 
 /* trilha de planos */
-.upgrade-app .trilha {
+.upgrade-body .trilha {
   display: flex;
   align-items: center;
   gap: 0;
@@ -415,7 +432,7 @@
   box-shadow: inset 0 0 0 1px var(--line);
 }
 
-.upgrade-app .etapa {
+.upgrade-body .etapa {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -426,7 +443,7 @@
   white-space: nowrap;
 }
 
-.upgrade-app .etapa i {
+.upgrade-body .etapa i {
   width: 28px;
   height: 28px;
   border-radius: 50%;
@@ -437,21 +454,21 @@
   box-shadow: inset 0 0 0 2px var(--line);
 }
 
-.upgrade-app .etapa.feito {
+.upgrade-body .etapa.feito {
   color: var(--ink);
 }
 
-.upgrade-app .etapa.feito i {
+.upgrade-body .etapa.feito i {
   background: var(--accent-strong);
   color: #fff;
   box-shadow: none;
 }
 
-.upgrade-app .etapa.aqui i {
+.upgrade-body .etapa.aqui i {
   box-shadow: 0 0 0 4px rgba(47, 107, 49, 0.18);
 }
 
-.upgrade-app .etapa small {
+.upgrade-body .etapa small {
   display: block;
   font-family: var(--fm);
   font-weight: 500;
@@ -461,7 +478,7 @@
   color: var(--ink-faint);
 }
 
-.upgrade-app .linha {
+.upgrade-body .linha {
   flex: 1;
   height: 2px;
   margin: 0 14px;
@@ -469,12 +486,12 @@
   min-width: 20px;
 }
 
-.upgrade-app .linha.feito {
+.upgrade-body .linha.feito {
   background: var(--accent-strong);
 }
 
-/* alternador */
-.upgrade-app .ciclo {
+/* ===== ALTERNADOR DE CICLO (CORREÇÃO DE ALTURA E SLIDER) ===== */
+.upgrade-body .ciclo {
   position: relative;
   display: inline-grid;
   grid-template-columns: 1fr 1fr;
@@ -482,14 +499,18 @@
   border-radius: 999px;
   background: var(--bone);
   box-shadow: inset 0 0 0 1px var(--line);
+  align-self: flex-end;
+  height: 48px;
+  box-sizing: border-box;
 }
 
-.upgrade-app .ciclo button {
+.upgrade-body .ciclo button {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   border: 0;
   background: transparent;
-  padding: 10px 20px;
+  padding: 0 20px;
+  height: 38px;
   border-radius: 999px;
   font-family: var(--fd);
   font-weight: 700;
@@ -501,28 +522,36 @@
   gap: 8px;
   white-space: nowrap;
   transition: color 0.2s;
+  box-sizing: border-box;
 }
 
-.upgrade-app .ciclo button[aria-pressed='true'] {
+.upgrade-body .ciclo button[aria-pressed='true'] {
   color: var(--paper);
 }
 
-.upgrade-app .ciclo .thumb {
+.upgrade-body .ciclo button[aria-pressed='false'] {
+  color: var(--ink-soft);
+}
+
+.upgrade-body .ciclo .thumb {
   position: absolute;
   top: 5px;
   bottom: 5px;
   left: 5px;
   width: calc(50% - 5px);
+  height: 38px;
   border-radius: 999px;
   background: var(--ink);
   transition: transform 0.35s cubic-bezier(0.3, 1.4, 0.5, 1);
+  z-index: 1;
+  pointer-events: none;
 }
 
-.upgrade-app .ciclo[data-ciclo='anual'] .thumb {
+.upgrade-body .ciclo[data-ciclo='anual'] .thumb {
   transform: translateX(100%);
 }
 
-.upgrade-app .ciclo .eco {
+.upgrade-body .ciclo .eco {
   font-family: var(--fm);
   font-weight: 500;
   font-size: 10px;
@@ -535,7 +564,7 @@
 }
 
 /* cartões */
-.upgrade-app .planos {
+.upgrade-body .planos {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
@@ -543,7 +572,7 @@
   align-items: stretch;
 }
 
-.upgrade-app .plano {
+.upgrade-body .plano {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -551,21 +580,22 @@
   border-radius: 24px;
   padding: 28px 26px 24px;
   box-shadow: 0 5px 0 rgba(21, 20, 15, 0.06), 0 18px 34px rgba(21, 20, 15, 0.09), inset 0 0 0 1.5px var(--line);
+  box-sizing: border-box;
 }
 
-.upgrade-app .plano.atual {
+.upgrade-body .plano.atual {
   background: transparent;
   box-shadow: inset 0 0 0 2px var(--line);
 }
 
-.upgrade-app .plano.escuro {
+.upgrade-body .plano.escuro {
   background: var(--ink);
   color: var(--paper);
   box-shadow: 0 6px 0 rgba(21, 20, 15, 0.18), 0 24px 44px rgba(21, 20, 15, 0.26);
   transform: translateY(-10px);
 }
 
-.upgrade-app .carimbo {
+.upgrade-body .carimbo {
   position: absolute;
   top: -14px;
   left: 22px;
@@ -579,9 +609,10 @@
   color: var(--accent-strong);
   box-shadow: inset 0 0 0 1.5px var(--accent-strong);
   transform: rotate(-3deg);
+  z-index: 2;
 }
 
-.upgrade-app .tape {
+.upgrade-body .tape {
   position: absolute;
   top: -12px;
   left: 30px;
@@ -590,9 +621,10 @@
   background: var(--lime);
   opacity: 0.85;
   transform: rotate(-5deg);
+  z-index: 2;
 }
 
-.upgrade-app .selo {
+.upgrade-body .selo {
   position: absolute;
   top: -26px;
   right: -12px;
@@ -607,18 +639,19 @@
   font-family: var(--fd);
   font-weight: 800;
   font-size: 14px;
-  line-height: 1.1;
+  line-height: 1;
   transform: rotate(12deg);
   box-shadow: 0 10px 18px rgba(21, 20, 15, 0.25);
+  z-index: 3;
 }
 
-.upgrade-app .cab {
+.upgrade-body .cab {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.upgrade-app .ic {
+.upgrade-body .ic {
   width: 42px;
   height: 42px;
   border-radius: 12px;
@@ -627,7 +660,7 @@
   flex: none;
 }
 
-.upgrade-app .ic svg {
+.upgrade-body .ic svg {
   width: 22px;
   height: 22px;
   fill: none;
@@ -637,15 +670,15 @@
   stroke-linejoin: round;
 }
 
-.upgrade-app .escuro .ic {
+.upgrade-body .escuro .ic {
   background: var(--paper) !important;
 }
 
-.upgrade-app .escuro .ic svg {
+.upgrade-body .escuro .ic svg {
   stroke: var(--ink);
 }
 
-.upgrade-app .nome {
+.upgrade-body .nome {
   font-family: var(--fd);
   font-weight: 800;
   font-size: 25px;
@@ -653,11 +686,11 @@
   color: var(--ink);
 }
 
-.upgrade-app .escuro .nome {
+.upgrade-body .escuro .nome {
   color: var(--paper);
 }
 
-.upgrade-app .tipo {
+.upgrade-body .tipo {
   display: block;
   font-family: var(--fm);
   font-size: 10px;
@@ -666,11 +699,11 @@
   color: var(--ink-faint);
 }
 
-.upgrade-app .escuro .tipo {
+.upgrade-body .escuro .tipo {
   color: var(--lime);
 }
 
-.upgrade-app .desc {
+.upgrade-body .desc {
   font-size: 14px;
   line-height: 1.55;
   color: var(--ink-mute);
@@ -678,21 +711,21 @@
   min-height: 44px;
 }
 
-.upgrade-app .escuro .desc {
+.upgrade-body .escuro .desc {
   color: rgba(239, 231, 210, 0.7);
 }
 
-.upgrade-app .preco {
+.upgrade-body .preco {
   margin-top: 18px;
   padding-top: 18px;
   border-top: 1.5px dashed var(--line);
 }
 
-.upgrade-app .escuro .preco {
+.upgrade-body .escuro .preco {
   border-color: rgba(239, 231, 210, 0.18);
 }
 
-.upgrade-app .valor {
+.upgrade-body .valor {
   display: flex;
   align-items: baseline;
   gap: 5px;
@@ -702,20 +735,20 @@
   letter-spacing: -0.04em;
 }
 
-.upgrade-app .escuro .valor {
+.upgrade-body .escuro .valor {
   color: var(--paper);
 }
 
-.upgrade-app .valor small {
+.upgrade-body .valor small {
   font-size: 18px;
 }
 
-.upgrade-app .valor b {
+.upgrade-body .valor b {
   font-size: 44px;
   line-height: 1;
 }
 
-.upgrade-app .valor span {
+.upgrade-body .valor span {
   font-family: var(--ft);
   font-weight: 500;
   font-size: 13.5px;
@@ -723,11 +756,11 @@
   color: var(--ink-faint);
 }
 
-.upgrade-app .escuro .valor span {
+.upgrade-body .escuro .valor span {
   color: rgba(239, 231, 210, 0.6);
 }
 
-.upgrade-app .dif {
+.upgrade-body .dif {
   display: inline-flex;
   margin-top: 8px;
   font-size: 12.5px;
@@ -738,23 +771,23 @@
   font-weight: 600;
 }
 
-.upgrade-app .escuro .dif {
+.upgrade-body .escuro .dif {
   background: rgba(218, 254, 170, 0.14);
   color: var(--lime);
 }
 
-.upgrade-app .dif:empty {
+.upgrade-body .dif:empty {
   display: none;
 }
 
-.upgrade-app .inc {
+.upgrade-body .inc {
   list-style: none;
   margin: 18px 0 0;
   padding: 0;
   flex: 1;
 }
 
-.upgrade-app .inc li.base {
+.upgrade-body .inc li.base {
   font-family: var(--fm);
   font-size: 10.5px;
   letter-spacing: 0.12em;
@@ -763,11 +796,11 @@
   padding: 0 0 6px;
 }
 
-.upgrade-app .escuro .inc li.base {
+.upgrade-body .escuro .inc li.base {
   color: var(--lime);
 }
 
-.upgrade-app .inc li:not(.base) {
+.upgrade-body .inc li:not(.base) {
   display: flex;
   gap: 11px;
   align-items: flex-start;
@@ -776,7 +809,7 @@
   line-height: 1.45;
 }
 
-.upgrade-app .inc li:not(.base)::before {
+.upgrade-body .inc li:not(.base)::before {
   content: '';
   flex: none;
   width: 19px;
@@ -788,28 +821,28 @@
     center/13px no-repeat;
 }
 
-.upgrade-app .inc li.novo::before {
+.upgrade-body .inc li.novo::before {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='5' y='11' width='14' height='10' rx='2'/%3E%3Cpath d='M8 11V7a4 4 0 0 1 7.5-2'/%3E%3C/svg%3E");
 }
 
-.upgrade-app .escuro .inc li:not(.base)::before {
+.upgrade-body .escuro .inc li:not(.base)::before {
   background-color: var(--lime);
 }
 
-.upgrade-app .escuro .inc li.novo::before {
+.upgrade-body .escuro .inc li.novo::before {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2315140f' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='5' y='11' width='14' height='10' rx='2'/%3E%3Cpath d='M8 11V7a4 4 0 0 1 7.5-2'/%3E%3C/svg%3E");
 }
 
-.upgrade-app .inc b {
+.upgrade-body .inc b {
   color: var(--ink);
   font-weight: 600;
 }
 
-.upgrade-app .escuro .inc b {
+.upgrade-body .escuro .inc b {
   color: var(--paper);
 }
 
-.upgrade-app .cta {
+.upgrade-body .cta {
   margin-top: 20px;
   display: flex;
   align-items: center;
@@ -825,40 +858,41 @@
   font-size: 15px;
   background: var(--ink);
   color: var(--paper);
-  transition: transform 0.15s, opacity 0.2s;
+  transition: transform 0.15s;
+  box-sizing: border-box;
 }
 
-.upgrade-app .cta i {
+.upgrade-body .cta i {
   font-style: normal;
   transition: transform 0.2s;
 }
 
-.upgrade-app .cta:hover i {
+.upgrade-body .cta:hover i {
   transform: translateX(3px);
 }
 
-.upgrade-app .cta:active {
+.upgrade-body .cta:active {
   transform: scale(0.98);
 }
 
-.upgrade-app .escuro .cta {
+.upgrade-body .escuro .cta {
   background: var(--lime);
   color: var(--ink);
 }
 
-.upgrade-app .cta.inativo {
+.upgrade-body .cta.inativo {
   background: transparent;
   color: var(--ink-mute);
   box-shadow: inset 0 0 0 1.5px var(--line);
   cursor: default;
 }
 
-.upgrade-app .cta.inativo:active {
+.upgrade-body .cta.inativo:active {
   transform: none;
 }
 
 /* comparação */
-.upgrade-app .comp {
+.upgrade-body .comp {
   margin-top: 56px;
   border-radius: 22px;
   background: var(--bone);
@@ -866,7 +900,7 @@
   overflow: hidden;
 }
 
-.upgrade-app .comp h2 {
+.upgrade-body .comp h2 {
   font-family: var(--fd);
   font-weight: 800;
   font-size: 22px;
@@ -876,26 +910,26 @@
   padding: 22px 24px 6px;
 }
 
-.upgrade-app .comp table {
+.upgrade-body .comp table {
   width: 100%;
   border-collapse: collapse;
   font-size: 14px;
 }
 
-.upgrade-app .comp th,
-.upgrade-app .comp td {
+.upgrade-body .comp th,
+.upgrade-body .comp td {
   padding: 13px 16px;
   border-top: 1px solid var(--line);
   text-align: center;
 }
 
-.upgrade-app .comp th:first-child,
-.upgrade-app .comp td:first-child {
+.upgrade-body .comp th:first-child,
+.upgrade-body .comp td:first-child {
   text-align: left;
   padding-left: 24px;
 }
 
-.upgrade-app .comp thead th {
+.upgrade-body .comp thead th {
   border-top: 0;
   font-family: var(--fm);
   font-weight: 500;
@@ -905,15 +939,15 @@
   color: var(--ink-faint);
 }
 
-.upgrade-app .comp thead th.sel {
+.upgrade-body .comp thead th.sel {
   color: var(--accent-strong);
 }
 
-.upgrade-app .comp td.sel {
+.upgrade-body .comp td.sel {
   background: rgba(47, 107, 49, 0.05);
 }
 
-.upgrade-app .sim {
+.upgrade-body .sim {
   display: inline-grid;
   place-items: center;
   width: 22px;
@@ -923,22 +957,21 @@
   color: #fff;
   font-size: 12px;
   font-weight: 700;
-  margin: 0 auto;
 }
 
-.upgrade-app .nao {
+.upgrade-body .nao {
   color: var(--ink-faint);
 }
 
 /* rodapé */
-.upgrade-app .info {
+.upgrade-body .info {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   margin-top: 22px;
 }
 
-.upgrade-app .g {
+.upgrade-body .g {
   display: flex;
   gap: 12px;
   align-items: flex-start;
@@ -948,7 +981,7 @@
   box-shadow: inset 0 0 0 1px var(--line);
 }
 
-.upgrade-app .g i {
+.upgrade-body .g i {
   flex: none;
   width: 34px;
   height: 34px;
@@ -958,7 +991,7 @@
   place-items: center;
 }
 
-.upgrade-app .g svg {
+.upgrade-body .g svg {
   width: 18px;
   height: 18px;
   fill: none;
@@ -968,7 +1001,7 @@
   stroke-linejoin: round;
 }
 
-.upgrade-app .g b {
+.upgrade-body .g b {
   display: block;
   font-family: var(--fd);
   font-weight: 700;
@@ -976,7 +1009,7 @@
   color: var(--ink);
 }
 
-.upgrade-app .g span {
+.upgrade-body .g span {
   display: block;
   font-size: 13px;
   line-height: 1.45;
@@ -984,7 +1017,7 @@
   margin-top: 2px;
 }
 
-.upgrade-app .voltar {
+.upgrade-body .voltar {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -994,64 +1027,63 @@
   font-size: 14px;
   color: var(--ink-mute);
   text-decoration: none;
-  transition: color 0.15s;
 }
 
-.upgrade-app .voltar:hover {
+.upgrade-body .voltar:hover {
   color: var(--ink);
 }
 
 @media (max-width: 1100px) {
-  .upgrade-app .planos {
+  .upgrade-body .planos {
     grid-template-columns: 1fr;
     max-width: 540px;
   }
-  .upgrade-app .plano.escuro {
+  .upgrade-body .plano.escuro {
     transform: none;
   }
-  .upgrade-app .desc {
+  .upgrade-body .desc {
     min-height: 0;
   }
-  .upgrade-app .info {
+  .upgrade-body .info {
     grid-template-columns: 1fr;
   }
-  .upgrade-app .hd {
+  .upgrade-body .hd {
     grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 860px) {
-  .upgrade-app {
+  .upgrade-body .app {
     grid-template-columns: 1fr;
   }
-  .upgrade-app .hd .ciclo {
+  .upgrade-body .hd .ciclo {
     justify-self: start;
   }
-  .upgrade-app .ciclo button {
+  .upgrade-body .ciclo button {
     padding: 9px 14px;
   }
-  .upgrade-app aside {
+  .upgrade-body aside {
     display: none;
   }
-  .upgrade-app .topbar {
+  .upgrade-body .topbar {
     padding: 12px 16px;
   }
-  .upgrade-app .data {
+  .upgrade-body .data {
     display: none;
   }
-  .upgrade-app .wrap {
+  .upgrade-body .wrap {
     padding: 30px 16px 60px;
   }
-  .upgrade-app .trilha {
+  .upgrade-body .trilha {
     overflow-x: auto;
   }
-  .upgrade-app .comp {
+  .upgrade-body .comp {
     overflow-x: auto;
   }
-  .upgrade-app .comp table {
+  .upgrade-body .comp table {
     min-width: 560px;
   }
-  .upgrade-app .selo {
+  .upgrade-body .selo {
     right: 2px;
     width: 84px;
     height: 84px;
@@ -1060,7 +1092,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .upgrade-app * {
+  .upgrade-body * {
     transition: none !important;
   }
 }

@@ -179,7 +179,7 @@ function UpgradeInner() {
   const totalLessons = modules.reduce((acc, m) => acc + (m.lessons?.length || 0), 0);
 
   return (
-    <div className="upgrade-root">
+    <div className="upgrade-body">
       {/* Símbolo do Logo NeuroAcervo */}
       <svg width="0" height="0" style={{ position: 'absolute' }} aria-hidden="true">
         <symbol id="logo" viewBox="0 0 1344 1728">
@@ -190,7 +190,7 @@ function UpgradeInner() {
         </symbol>
       </svg>
 
-      <div className="upgrade-app">
+      <div className="app">
         {/* ===== BARRA LATERAL ===== */}
         <aside>
           <Link className="marca" href="/plataforma">
