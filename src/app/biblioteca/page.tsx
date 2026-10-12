@@ -346,6 +346,14 @@ function BibliotecaInner() {
                 <span>Minha pasta</span>
                 <span className="n">{favorites.length}</span>
               </Link>
+              <Link href="/plataforma/assinatura">
+                <svg className="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect width="20" height="14" x="2" y="5" rx="2" />
+                  <line x1="2" x2="22" y1="10" y2="10" />
+                </svg>
+                <span>Assinatura</span>
+                <span className="pill" style={{ opacity: 0.85, background: 'rgba(21,20,15,0.06)' }}>Gerenciar</span>
+              </Link>
             </nav>
           </div>
 
@@ -375,24 +383,43 @@ function BibliotecaInner() {
             <div className="k">Seu plano</div>
             <div className="v">{planInfo.nome} <em>· {planInfo.preco}</em></div>
             <p>{planInfo.desc}</p>
-            <Link href={planInfo.ctaHref}>
-              <span>{planInfo.cta}</span>
-              <svg className="ico sm"><use href="#i-arrow"/></svg>
-            </Link>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' }}>
+              <Link href="/plataforma/assinatura" style={{ fontWeight: 700, color: 'var(--accent-strong)' }}>
+                <span>Gerenciar assinatura</span>
+                <svg className="ico sm"><use href="#i-arrow"/></svg>
+              </Link>
+              {planInfo.tipo !== 'pratica' && currentUser?.role !== 'admin' && (
+                <Link href="/plataforma/upgrade" style={{ fontSize: '12px', color: 'var(--ink-mute)' }}>
+                  <span>Fazer upgrade de plano</span>
+                  <svg className="ico sm"><use href="#i-arrow"/></svg>
+                </Link>
+              )}
+              {currentUser?.role === 'admin' && (
+                <Link href="/admin" style={{ fontSize: '12px', color: 'var(--ink-mute)' }}>
+                  <span>Painel do Administrador</span>
+                  <svg className="ico sm"><use href="#i-arrow"/></svg>
+                </Link>
+              )}
+            </div>
           </div>
 
           <div className="user">
             <span className="avatar" aria-hidden="true">
               {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
             </span>
-            <div className="user-info">
+            <Link 
+              href="/plataforma/assinatura" 
+              className="user-info"
+              style={{ textDecoration: 'none', color: 'inherit' }}
+              title="Gerenciar assinatura e conta"
+            >
               <b title={currentUser?.name || currentUser?.email || 'Assinante'}>
                 {currentUser?.name || currentUser?.email || 'Assinante'}
               </b>
               <span title={currentUser?.crp ? (currentUser.crp.toUpperCase().startsWith('CRP') ? currentUser.crp : `CRP ${currentUser.crp}`) : (currentUser?.email || '')}>
                 {currentUser?.crp ? (currentUser.crp.toUpperCase().startsWith('CRP') ? currentUser.crp : `CRP ${currentUser.crp}`) : (currentUser?.email || '')}
               </span>
-            </div>
+            </Link>
             <button
               type="button"
               onClick={async () => {
