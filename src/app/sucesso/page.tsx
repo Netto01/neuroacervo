@@ -1,14 +1,41 @@
 'use client';
 
-import React, { Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { CheckCircle2, ArrowRight, ShieldCheck, Sparkles, BookOpen } from 'lucide-react';
+import { CheckCircle2, ArrowRight, ShieldCheck, Sparkles, BookOpen, Loader2 } from 'lucide-react';
 
 function SucessoContent() {
   const searchParams = useSearchParams();
   const plano = searchParams.get('plano') || 'Prática';
   const ciclo = searchParams.get('ciclo') || 'mensal';
+  const sessionId = searchParams.get('session_id');
+
+  const [verifying, setVerifying] = useState(Boolean(sessionId));
+  const [activated, setActivated] = useState(false);
+
+  useEffect(() => {
+    if (!sessionId) return;
+    const sId = sessionId;
+
+    let isMounted = true;
+    async function verifyAndActivate() {
+      try {
+        const res = await fetch(`/api/stripe/verify-session?session_id=${encodeURIComponent(sId)}`);
+        const data = await res.json();
+        if (isMounted && data?.success) {
+          setActivated(true);
+        }
+      } catch (err) {
+        console.error('Erro ao verificar sessão:', err);
+      } finally {
+        if (isMounted) setVerifying(false);
+      }
+    }
+
+    verifyAndActivate();
+    return () => { isMounted = false; };
+  }, [sessionId]);
 
   return (
     <div style={{
@@ -88,9 +115,20 @@ function SucessoContent() {
           fontSize: '15px',
           lineHeight: 1.6,
           color: '#5a5448',
-          margin: '0 0 28px'
+          margin: '0 0 28px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '8px'
         }}>
-          Sua assinatura do plano <b>{plano}</b> ({ciclo}) foi processada com sucesso via Stripe. Seu acesso completo já está ativo.
+          {verifying ? (
+            <>
+              <Loader2 size={16} className="animate-spin" style={{ color: '#2f6b31' }} />
+              <span>Confirmando liberação do seu acesso...</span>
+            </>
+          ) : (
+            <>Sua assinatura do plano <b>{plano}</b> ({ciclo}) foi processada com sucesso via Stripe. Seu acesso completo já está ativo.</>
+          )}
         </p>
 
         {/* Detalhes da Liberação */}
