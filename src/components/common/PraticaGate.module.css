@@ -1,0 +1,408 @@
+/* ================= COMPONENTE (CSS MODULE) ================= */
+.naGate {
+  --ink: #15140f;
+  --mute: #5a5448;
+  --faint: #7c7768;
+  --bone: #f7f1de;
+  --paper: #efe7d2;
+  --accent: #2f6b31;
+  --lime: #dafeaa;
+  --line: rgba(21, 20, 15, 0.12);
+  position: relative;
+  max-width: 640px;
+  margin: 36px auto;
+  padding: 40px 36px 32px;
+  border-radius: 26px;
+  text-align: center;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--bone) radial-gradient(rgba(21, 20, 15, 0.06) 1px, transparent 1.2px) 0 0 / 18px 18px;
+  box-shadow: inset 0 0 0 1px var(--line), 0 5px 0 rgba(21, 20, 15, 0.05), 0 18px 36px rgba(21, 20, 15, 0.10);
+  box-sizing: border-box;
+}
+
+.naGate * {
+  box-sizing: border-box;
+}
+
+.naGateTape {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  width: 96px;
+  height: 26px;
+  margin-left: -48px;
+  background: var(--lime);
+  opacity: 0.85;
+  transform: rotate(-4deg);
+}
+
+.naGateIcon {
+  position: relative;
+  width: 58px;
+  height: 58px;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: var(--ink);
+  display: grid;
+  place-items: center;
+}
+
+.naGateIcon::after {
+  content: '';
+  position: absolute;
+  inset: -7px;
+  border-radius: 50%;
+  border: 1.5px dashed rgba(47, 107, 49, 0.45);
+}
+
+.naGateIcon svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: var(--lime);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.naGateKick {
+  display: inline-block;
+  margin-top: 18px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.naGateTitle {
+  margin: 8px 0 0;
+  font-family: 'Inter Tight', system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 28px;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+  color: var(--ink);
+}
+
+.naGateTitle em {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-style: italic;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--accent);
+}
+
+.naGateDesc {
+  margin: 10px auto 0;
+  max-width: 440px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--mute);
+}
+
+.naGateDesc b {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.naGateList {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  max-width: 480px;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  gap: 10px;
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+}
+
+.naGateList li {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px var(--line), 0 4px 10px rgba(21, 20, 15, 0.05);
+}
+
+.naGateList li:nth-child(1) {
+  transform: rotate(-1.2deg);
+}
+
+.naGateList li:nth-child(2) {
+  transform: rotate(1.2deg);
+}
+
+.naGateIc {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+}
+
+.naGateIc svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: #fff;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.naGateList b {
+  display: block;
+  font-family: 'Inter Tight', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.naGateList small {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--faint);
+}
+
+.naGateLock {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: var(--faint);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.naGateOptsT {
+  margin: 28px 0 10px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.naGateOpts {
+  display: grid;
+  gap: 10px;
+  text-align: left;
+}
+
+.naGateOpt {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 16px 16px 18px;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px var(--line);
+  box-sizing: border-box;
+}
+
+.naGateOpt.destaque {
+  background: var(--ink);
+  color: var(--bone);
+  box-shadow: 0 10px 22px rgba(21, 20, 15, 0.18);
+}
+
+.naGateOptTxt {
+  flex: 1;
+  min-width: 0;
+}
+
+.naGateOptNome {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  font-family: 'Inter Tight', system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 17px;
+  letter-spacing: -0.02em;
+}
+
+.naGateTag {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-weight: 500;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--lime);
+  color: var(--ink);
+}
+
+.naGateTag.cinza {
+  background: rgba(21, 20, 15, 0.07);
+  color: var(--mute);
+}
+
+.naGateOptDesc {
+  display: block;
+  margin-top: 4px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--mute);
+}
+
+.naGateOpt.destaque .naGateOptDesc {
+  color: rgba(247, 241, 222, 0.7);
+}
+
+.naGateOptPreco {
+  display: block;
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.naGateOptPreco b {
+  font-family: 'Inter Tight', system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 15px;
+}
+
+.naGateOpt.destaque .naGateOptPreco {
+  color: var(--lime);
+}
+
+.naGateCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+  padding: 13px 14px 13px 22px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-family: 'Inter Tight', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  text-decoration: none;
+  transition: background 0.15s;
+  box-sizing: border-box;
+  flex: none;
+  margin: 0;
+}
+
+.naGateCta i {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--lime);
+  color: var(--ink);
+  display: grid;
+  place-items: center;
+  font-style: normal;
+  font-size: 14px;
+  transition: transform 0.2s;
+}
+
+.naGateCta:hover {
+  background: #245426;
+}
+
+.naGateCta:hover i {
+  transform: translateX(3px);
+}
+
+.naGateCta:focus-visible,
+.naGateLink:focus-visible {
+  outline: 3px solid var(--lime);
+  outline-offset: 3px;
+}
+
+.naGateOpt.destaque .naGateCta {
+  background: var(--lime);
+  color: var(--ink);
+}
+
+.naGateOpt.destaque .naGateCta i {
+  background: var(--ink);
+  color: var(--lime);
+}
+
+.naGateCta.sec {
+  background: transparent;
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1.5px var(--line);
+}
+
+.naGateCta.sec:hover {
+  background: var(--bone);
+}
+
+.naGateCta.sec i {
+  background: var(--ink);
+  color: var(--lime);
+}
+
+.naGateLink {
+  font-family: 'Inter Tight', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--mute);
+  text-underline-offset: 4px;
+  white-space: nowrap;
+}
+
+.naGateLink:hover {
+  color: var(--ink);
+}
+
+.naGateSub {
+  margin: 14px 0 0;
+  font-size: 12.5px;
+  color: var(--faint);
+}
+
+.naGateSub b {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.naGateSub .naGateLink {
+  font-size: 12.5px;
+}
+
+@media (max-width: 560px) {
+  .naGate {
+    padding: 34px 18px 26px;
+  }
+  .naGateTitle {
+    font-size: 23px;
+  }
+  .naGateList {
+    grid-template-columns: 1fr;
+  }
+  .naGateOpt {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .naGateOpt .naGateCta {
+    justify-content: center;
+  }
+  .naGateList li {
+    flex-direction: row;
+    align-items: center;
+    padding-right: 36px;
+    transform: none !important;
+  }
+}

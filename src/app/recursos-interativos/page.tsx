@@ -52,6 +52,7 @@ const HISTORIAS_TEMATICAS = [
 ];
 
 import { resolveUserPlan } from '@/utils/userPlan';
+import { PraticaGate } from '@/components/common/PraticaGate';
 
 function RecursosInterativosInner() {
   const { currentUser } = useNeuro();
@@ -138,19 +139,7 @@ function RecursosInterativosInner() {
       </div>
 
       {!planInfo.hasRecursos ? (
-        <div className="empty-state" style={{ marginTop: '32px' }}>
-          <span className="ring">
-            <svg className="ico"><use href="#i-lock"/></svg>
-          </span>
-          <h3>Recursos Interativos Disponíveis no Plano Prática</h3>
-          <p>
-            Seu plano atual no perfil é <b>{planInfo.nome}</b>. O Cronômetro Clínico com contagem de erros, o Baralho de Funções Executivas e as Histórias Temáticas fazem parte do plano <b>Prática</b>.
-          </p>
-          <Link className="btn" href="/plataforma/upgrade?plano=pratica" style={{ marginTop: '8px' }}>
-            <span>Fazer upgrade para o Plano Prática</span>
-            <svg className="ico sm"><use href="#i-arrow"/></svg>
-          </Link>
-        </div>
+        <PraticaGate />
       ) : (
         <>
           {/* Seletor de Ferramenta */}
