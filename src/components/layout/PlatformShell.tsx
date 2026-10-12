@@ -222,6 +222,16 @@ export const PlatformShell: React.FC<PlatformShellProps> = ({
               <span>{planInfo.cta}</span>
               <svg className="ico sm"><use href="#i-arrow"/></svg>
             </Link>
+            {planInfo.tipo !== 'pratica' && (
+              <div style={{ marginTop: '6px', textAlign: 'center' }}>
+                <Link 
+                  href="/plataforma/assinatura" 
+                  style={{ fontSize: '11.5px', color: 'var(--ink-mute)', textDecoration: 'underline', textUnderlineOffset: '3px' }}
+                >
+                  Minha assinatura
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Bloco de Usuário com Prevenção de Overflow */}
