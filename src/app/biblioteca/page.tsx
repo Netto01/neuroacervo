@@ -888,8 +888,11 @@ function BibliotecaInner() {
                     </button>
                   </>
                 ) : (
-                  <Link className="btn" href="/#planos">
-                    Ver planos <span><svg className="ico sm"><use href="#i-arrow"/></svg></span>
+                  <Link 
+                    className="btn" 
+                    href={`/plataforma/upgrade?plano=${t.plano === 'completo' ? 'pratica' : t.plano === 'aulas' ? 'estudo' : 'consulta'}`}
+                  >
+                    Fazer upgrade para {NOME_PLANO[t.plano]} <span><svg className="ico sm"><use href="#i-arrow"/></svg></span>
                   </Link>
                 )}
               </div>

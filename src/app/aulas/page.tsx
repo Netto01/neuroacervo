@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 
 import { resolveUserPlan } from '@/utils/userPlan';
+import { UpgradeGate } from '@/components/common/UpgradeGate';
 
 function AulasInner() {
   const { modules, materials, completedLessons, toggleLessonCompletion, currentUser } = useNeuro();
@@ -85,19 +86,7 @@ function AulasInner() {
       </div>
 
       {!planInfo.hasAulas ? (
-        <div className="empty-state" style={{ marginTop: '32px' }}>
-          <span className="ring">
-            <svg className="ico"><use href="#i-lock"/></svg>
-          </span>
-          <h3>Acesso às Videoaulas no Plano Estudo</h3>
-          <p>
-            Seu plano atual no perfil é <b>{planInfo.nome}</b>. O módulo de videoaulas com raciocínio diagnóstico e estudos de caso clínicos faz parte dos planos <b>Estudo</b> e <b>Prática</b>.
-          </p>
-          <Link className="btn" href="/plataforma/upgrade?plano=estudo" style={{ marginTop: '8px' }}>
-            <span>Fazer upgrade para o Plano Estudo</span>
-            <svg className="ico sm"><use href="#i-arrow"/></svg>
-          </Link>
-        </div>
+        <UpgradeGate targetPlan="estudo" />
       ) : modules.length === 0 ? (
         <div className="empty-state" style={{ marginTop: '32px' }}>
           <span className="ring">
