@@ -97,7 +97,8 @@ function mapStripeSubscriptionStatus(stripeStatus: Stripe.Subscription.Status): 
 }
 
 export async function POST(req: Request) {
-  const secretKey = process.env.STRIPE_SECRET_KEY;
+  const rawSecretKey = process.env.STRIPE_SECRET_KEY || '';
+  const secretKey = rawSecretKey.trim().replace(/^["']|["']$/g, '');
   if (!secretKey) {
     return NextResponse.json(
       { error: 'STRIPE_SECRET_KEY não configurada no servidor.' },
@@ -105,8 +106,13 @@ export async function POST(req: Request) {
     );
   }
 
-  const stripe = new Stripe(secretKey);
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  const stripe = new Stripe(secretKey, {
+    httpClient: Stripe.createFetchHttpClient(),
+    timeout: 30000,
+    maxNetworkRetries: 3
+  });
+  const rawWebhookSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
+  const webhookSecret = rawWebhookSecret.trim().replace(/^["']|["']$/g, '');
 
   let event: Stripe.Event;
   const rawBody = await req.text();

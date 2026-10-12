@@ -21,7 +21,11 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const stripe = new Stripe(secretKey);
+    const stripe = new Stripe(secretKey, {
+      httpClient: Stripe.createFetchHttpClient(),
+      timeout: 30000,
+      maxNetworkRetries: 3
+    });
 
     // 1. Obter todas as assinaturas ativas e trialing da Stripe
     const activeSubs: Stripe.Subscription[] = [];

@@ -65,7 +65,8 @@ async function resolveStripePriceId(
 
 export async function POST(req: Request) {
   try {
-    const secretKey = process.env.STRIPE_SECRET_KEY;
+    const rawSecretKey = process.env.STRIPE_SECRET_KEY || '';
+    const secretKey = rawSecretKey.trim().replace(/^["']|["']$/g, '');
     if (!secretKey) {
       return NextResponse.json(
         { error: 'STRIPE_SECRET_KEY não configurada no servidor.' },
@@ -83,7 +84,11 @@ export async function POST(req: Request) {
       );
     }
 
-    const stripe = new Stripe(secretKey);
+    const stripe = new Stripe(secretKey, {
+      httpClient: Stripe.createFetchHttpClient(),
+      timeout: 30000,
+      maxNetworkRetries: 3
+    });
 
     // Puxa o Price ID diretamente da API da Stripe no backend
     const priceId = await resolveStripePriceId(stripe, planKey, billingCycle);

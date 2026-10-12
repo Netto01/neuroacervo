@@ -5,7 +5,8 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const secretKey = process.env.STRIPE_SECRET_KEY;
+    const rawSecretKey = process.env.STRIPE_SECRET_KEY || '';
+    const secretKey = rawSecretKey.trim().replace(/^["']|["']$/g, '');
     if (!secretKey) {
       return NextResponse.json(
         { error: 'STRIPE_SECRET_KEY não configurada.' },
@@ -13,7 +14,11 @@ export async function GET() {
       );
     }
 
-    const stripe = new Stripe(secretKey);
+    const stripe = new Stripe(secretKey, {
+      httpClient: Stripe.createFetchHttpClient(),
+      timeout: 30000,
+      maxNetworkRetries: 3
+    });
     const products = await stripe.products.list({ active: true, limit: 20 });
 
     const plansData: any[] = [];
