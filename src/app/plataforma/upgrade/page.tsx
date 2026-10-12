@@ -5,7 +5,10 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useNeuro } from '@/context/NeuroContext';
 import { resolveUserPlan } from '@/utils/userPlan';
-import './upgrade.css';
+import s from './upgrade.module.css';
+
+const cx = (...names: (string | false | null | undefined)[]) =>
+  names.filter(Boolean).map(n => s[n as string] || '').join(' ');
 
 type PlanoKey = 'consulta' | 'estudo' | 'pratica';
 type CicloKey = 'mensal' | 'anual';
@@ -179,7 +182,7 @@ function UpgradeInner() {
   const totalLessons = modules.reduce((acc, m) => acc + (m.lessons?.length || 0), 0);
 
   return (
-    <div className="upgrade-body">
+    <div className={cx('upgrade-body')}>
       {/* Símbolo do Logo NeuroAcervo */}
       <svg width="0" height="0" style={{ position: 'absolute' }} aria-hidden="true">
         <symbol id="logo" viewBox="0 0 1344 1728">
@@ -190,16 +193,16 @@ function UpgradeInner() {
         </symbol>
       </svg>
 
-      <div className="app">
+      <div className={cx('app')}>
         {/* ===== BARRA LATERAL ===== */}
         <aside>
-          <Link className="marca" href="/plataforma">
+          <Link className={cx('marca')} href="/plataforma">
             <svg aria-hidden="true"><use href="#logo" /></svg>
             NeuroAcervo
           </Link>
 
-          <div className="grp">Acervo</div>
-          <nav className="nav">
+          <div className={cx('grp')}>Acervo</div>
+          <nav className={cx('nav')}>
             <Link href="/plataforma">
               <svg viewBox="0 0 24 24"><path d="M3 11 12 4l9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" /></svg>
               Início
@@ -207,9 +210,9 @@ function UpgradeInner() {
             <Link href="/biblioteca">
               <svg viewBox="0 0 24 24"><path d="M2 5h7a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H2zM22 5h-7a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h8z" /></svg>
               Biblioteca
-              <span className="ct">{materials.length}</span>
+              <span className={cx('ct')}>{materials.length}</span>
             </Link>
-            <Link href="/aulas" className={planInfo.hasAulas ? '' : 'lock'}>
+            <Link href="/aulas" className={planInfo.hasAulas ? '' : s.lock}>
               {planInfo.hasAulas ? (
                 <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><path d="M10 8.5v7l6-3.5z" /></svg>
               ) : (
@@ -217,12 +220,12 @@ function UpgradeInner() {
               )}
               Aulas
               {!planInfo.hasAulas ? (
-                <span className="tag">Estudo</span>
+                <span className={cx('tag')}>Estudo</span>
               ) : (
-                <span className="ct">{totalLessons}</span>
+                <span className={cx('ct')}>{totalLessons}</span>
               )}
             </Link>
-            <Link href="/recursos-interativos" className={planInfo.hasRecursos ? '' : 'lock'}>
+            <Link href="/recursos-interativos" className={planInfo.hasRecursos ? '' : s.lock}>
               {planInfo.hasRecursos ? (
                 <svg viewBox="0 0 24 24"><rect x="7" y="4" width="13" height="16" rx="2" /><path d="M4 7v11a2 2 0 0 0 2 2" /></svg>
               ) : (
@@ -230,20 +233,20 @@ function UpgradeInner() {
               )}
               Recursos interativos
               {!planInfo.hasRecursos ? (
-                <span className="tag">Prática</span>
+                <span className={cx('tag')}>Prática</span>
               ) : (
-                <span className="tag">Novo</span>
+                <span className={cx('tag')}>Novo</span>
               )}
             </Link>
             <Link href="/minha-pasta">
               <svg viewBox="0 0 24 24"><path d="M3 6a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z" /></svg>
               Minha pasta
-              <span className="ct">{favorites.length}</span>
+              <span className={cx('ct')}>{favorites.length}</span>
             </Link>
           </nav>
 
-          <div className="grp">Atalhos clínicos</div>
-          <nav className="nav">
+          <div className={cx('grp')}>Atalhos clínicos</div>
+          <nav className={cx('nav')}>
             <Link href="/guias">
               <svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z" /></svg>
               Guias rápidos
@@ -262,19 +265,19 @@ function UpgradeInner() {
             </Link>
           </nav>
 
-          <div className="side-plano">
+          <div className={cx('side-plano')}>
             <small>Seu plano</small>
             <b id="sideNome">
               {planoAtualObj.nome} <em>· R$ {brl(planoAtualObj.mensal)}/mês</em>
             </b>
-            <div className="bar">
+            <div className={cx('bar')}>
               <i style={{ width: `${((idxAtual + 1) / 3) * 100}%` }}></i>
             </div>
             <p>{idxAtual + 1} de 3 níveis do acervo liberados</p>
           </div>
 
-          <div className="eu">
-            <span className="av">
+          <div className={cx('eu')}>
+            <span className={cx('av')}>
               {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : 'A'}
             </span>
             <div>
@@ -302,9 +305,9 @@ function UpgradeInner() {
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               >
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
               </svg>
@@ -313,21 +316,21 @@ function UpgradeInner() {
         </aside>
 
         {/* ===== CONTEÚDO PRINCIPAL ===== */}
-        <div className="main">
+        <div className={cx('main')}>
           {/* TOPO */}
-          <div className="topbar">
-            <div className="busca">
+          <div className={cx('topbar')}>
+            <div className={cx('busca')}>
               <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></svg>
               <span>Buscar teste, função ou tema</span>
               <kbd>/</kbd>
             </div>
-            <span className="data">{hoje}</span>
-            <span className="sino">
+            <span className={cx('data')}>{hoje}</span>
+            <span className={cx('sino')}>
               <svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10 21a2 2 0 0 0 4 0" /></svg>
             </span>
           </div>
 
-          <div className="wrap">
+          <div className={cx('wrap')}>
             {errorMsg && (
               <div style={{
                 backgroundColor: '#ffebeb',
@@ -344,9 +347,9 @@ function UpgradeInner() {
             )}
 
             {/* HEADER */}
-            <div className="hd">
+            <div className={cx('hd')}>
               <div>
-                <div className="kick">Assinatura</div>
+                <div className={cx('kick')}>Assinatura</div>
                 <h1>
                   {idxAtual === 2 ? (
                     <>Você está no <em>Prática</em>.<br />O acervo completo é seu.</>
@@ -360,8 +363,8 @@ function UpgradeInner() {
               </div>
 
               {/* Alternador de Ciclo */}
-              <div className="ciclo" data-ciclo={ciclo} role="group" aria-label="Ciclo de cobrança">
-                <span className="thumb"></span>
+              <div className={cx('ciclo')} data-ciclo={ciclo} role="group" aria-label="Ciclo de cobrança">
+                <span className={cx('thumb')}></span>
                 <button
                   type="button"
                   data-v="mensal"
@@ -376,23 +379,20 @@ function UpgradeInner() {
                   aria-pressed={ciclo === 'anual'}
                   onClick={() => setCiclo('anual')}
                 >
-                  Anual <span className="eco">Prática −33%</span>
+                  Anual <span className={cx('eco')}>Prática −33%</span>
                 </button>
               </div>
             </div>
 
             {/* TRILHA */}
-            <div className="trilha" aria-label="Seu nível no acervo">
+            <div className={cx('trilha')} aria-label="Seu nível no acervo">
               {PLANOS.map((p, i) => {
                 const feito = i <= idxAtual;
                 const aqui = i === idxAtual;
-                let cls = '';
-                if (feito) cls += 'feito';
-                if (aqui) cls += ' aqui';
 
                 return (
                   <React.Fragment key={p.id}>
-                    <div className={`etapa ${cls.trim()}`}>
+                    <div className={cx('etapa', feito && 'feito', aqui && 'aqui')}>
                       <i>{feito ? '✓' : i + 1}</i>
                       <div>
                         {p.nome}
@@ -400,7 +400,7 @@ function UpgradeInner() {
                       </div>
                     </div>
                     {i < PLANOS.length - 1 && (
-                      <span className={`linha ${i < idxAtual ? 'feito' : ''}`}></span>
+                      <span className={cx('linha', i < idxAtual && 'feito')}></span>
                     )}
                   </React.Fragment>
                 );
@@ -408,7 +408,7 @@ function UpgradeInner() {
             </div>
 
             {/* CARTÕES DE PLANOS */}
-            <div className="planos">
+            <div className={cx('planos')}>
               {PLANOS.map((p, i) => {
                 const escuro = p.id === 'pratica';
                 const eAtual = i === idxAtual;
@@ -432,60 +432,60 @@ function UpgradeInner() {
                 if (eAtual) cardCls += ' atual';
 
                 return (
-                  <div key={p.id} className={cardCls}>
-                    {eAtual && <span className="carimbo">Seu plano atual</span>}
+                  <div key={p.id} className={cx(...cardCls.split(' '))}>
+                    {eAtual && <span className={cx('carimbo')}>Seu plano atual</span>}
                     {escuro && !eAtual && (
                       <>
-                        <span className="tape"></span>
-                        <span className="selo">
+                        <span className={cx('tape')}></span>
+                        <span className={cx('selo')}>
                           <span>Mais<br />completo</span>
                         </span>
                       </>
                     )}
 
-                    <div className="cab">
-                      <span className="ic" style={{ background: p.cor }}>
+                    <div className={cx('cab')}>
+                      <span className={cx('ic')} style={{ background: p.cor }}>
                         <svg viewBox="0 0 24 24">{p.icone}</svg>
                       </span>
                       <div>
-                        <span className="nome">{p.nome}</span>
-                        <span className="tipo">{p.tipo}</span>
+                        <span className={cx('nome')}>{p.nome}</span>
+                        <span className={cx('tipo')}>{p.tipo}</span>
                       </div>
                     </div>
 
-                    <p className="desc">{p.desc}</p>
+                    <p className={cx('desc')}>{p.desc}</p>
 
-                    <div className="preco">
-                      <div className="valor">
+                    <div className={cx('preco')}>
+                      <div className={cx('valor')}>
                         <small>R$</small>
                         <b>{valor}</b>
                         <span>{per}</span>
                       </div>
-                      <span className="dif">{dif}</span>
+                      <span className={cx('dif')}>{dif}</span>
                     </div>
 
-                    <ul className="inc">
-                      {p.base && <li className="base">{p.base}</li>}
+                    <ul className={cx('inc')}>
+                      {p.base && <li className={cx('base')}>{p.base}</li>}
                       {p.itens.map((it, idx) => (
                         <li
                           key={idx}
-                          className={i > idxAtual ? 'novo' : ''}
+                          className={i > idxAtual ? s.novo : ''}
                           dangerouslySetInnerHTML={{ __html: `<span>${it}</span>` }}
                         />
                       ))}
                     </ul>
 
                     {eAtual ? (
-                      <button className="cta inativo" type="button" disabled>
+                      <button className={cx('cta', 'inativo')} type="button" disabled>
                         Plano ativo
                       </button>
                     ) : inferior ? (
-                      <button className="cta inativo" type="button" disabled>
+                      <button className={cx('cta', 'inativo')} type="button" disabled>
                         Incluído no seu plano
                       </button>
                     ) : (
                       <button
-                        className="cta"
+                        className={cx('cta')}
                         type="button"
                         disabled={Boolean(loadingPlan)}
                         onClick={() => handleUpgrade(p.id, usaAnual ? 'anual' : 'mensal')}
@@ -506,15 +506,15 @@ function UpgradeInner() {
             </div>
 
             {/* TABELA COMPARATIVA */}
-            <div className="comp">
+            <div className={cx('comp')}>
               <h2>Compare os planos</h2>
               <table>
                 <thead>
                   <tr>
                     <th>Recurso</th>
-                    <th className={planoAtualId === 'consulta' ? 'sel' : ''}>Consulta</th>
-                    <th className={planoAtualId === 'estudo' ? 'sel' : ''}>Estudo</th>
-                    <th className={planoAtualId === 'pratica' ? 'sel' : ''}>Prática</th>
+                    <th className={planoAtualId === 'consulta' ? s.sel : ''}>Consulta</th>
+                    <th className={planoAtualId === 'estudo' ? s.sel : ''}>Estudo</th>
+                    <th className={planoAtualId === 'pratica' ? s.sel : ''}>Prática</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -524,12 +524,12 @@ function UpgradeInner() {
                       {[1, 2, 3].map(colIdx => (
                         <td
                           key={colIdx}
-                          className={colIdx - 1 === idxAtual ? 'sel' : ''}
+                          className={colIdx - 1 === idxAtual ? s.sel : ''}
                         >
                           {r[colIdx] ? (
-                            <span className="sim">✓</span>
+                            <span className={cx('sim')}>✓</span>
                           ) : (
-                            <span className="nao">—</span>
+                            <span className={cx('nao')}>—</span>
                           )}
                         </td>
                       ))}
@@ -540,8 +540,8 @@ function UpgradeInner() {
             </div>
 
             {/* BLOCO DE INFORMAÇÕES / GARANTIAS */}
-            <div className="info">
-              <div className="g">
+            <div className={cx('info')}>
+              <div className={cx('g')}>
                 <i>
                   <svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z" /></svg>
                 </i>
@@ -550,7 +550,7 @@ function UpgradeInner() {
                   <span>Os novos recursos aparecem assim que o pagamento é confirmado.</span>
                 </div>
               </div>
-              <div className="g">
+              <div className={cx('g')}>
                 <i>
                   <svg viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z" /><path d="m9 12 2 2 4-4" /></svg>
                 </i>
@@ -559,7 +559,7 @@ function UpgradeInner() {
                   <span>Processado pela Stripe, com criptografia.</span>
                 </div>
               </div>
-              <div className="g">
+              <div className={cx('g')}>
                 <i>
                   <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><path d="M15 9l-6 6M9 9l6 6" /></svg>
                 </i>
@@ -570,7 +570,7 @@ function UpgradeInner() {
               </div>
             </div>
 
-            <Link className="voltar" href="/plataforma">
+            <Link className={cx('voltar')} href="/plataforma">
               ← Voltar para o início
             </Link>
           </div>
