@@ -1,0 +1,485 @@
+/* ==========================================================================
+   NEUROACERVO — TERMOS DE USO (/termos)
+   ========================================================================== */
+
+.termos-root {
+  --paper: #efe7d2;
+  --bone: #f7f1de;
+  --ink: #15140f;
+  --ink-soft: #2a2620;
+  --ink-mute: #5a5448;
+  --ink-faint: #7c7768;
+  --accent: #488b49;
+  --accent-strong: #2f6b31;
+  --lime: #dafeaa;
+  --line: rgba(21, 20, 15, 0.12);
+  --fd: 'Inter Tight', system-ui, sans-serif;
+  --fs: 'Playfair Display', Georgia, serif;
+  --fm: 'JetBrains Mono', ui-monospace, monospace;
+  --ft: 'Inter', system-ui, sans-serif;
+
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink-soft);
+  font-family: var(--ft);
+  font-size: 16px;
+  line-height: 1.7;
+  min-height: 100vh;
+}
+
+.termos-root * {
+  box-sizing: border-box;
+}
+
+.termos-root a {
+  color: var(--accent-strong);
+}
+
+/* ── Topbar / Header ── */
+.termos-top {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: rgba(239, 231, 210, 0.92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+
+.termos-top .in {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.termos-marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--fd);
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.termos-voltar {
+  font-family: var(--fd);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--ink);
+  text-decoration: none;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: var(--bone);
+  box-shadow: inset 0 0 0 1px var(--line);
+  transition: background 0.15s ease;
+}
+
+.termos-voltar:hover {
+  background: var(--lime);
+}
+
+/* ── Hero ── */
+.termos-hero {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 56px 24px 28px;
+}
+
+.termos-kick {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--fm);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent-strong);
+}
+
+.termos-kick::before {
+  content: '';
+  width: 32px;
+  height: 2px;
+  background: currentColor;
+}
+
+.termos-hero h1 {
+  font-family: var(--fd);
+  font-weight: 800;
+  font-size: clamp(40px, 6vw, 72px);
+  letter-spacing: -0.05em;
+  line-height: 0.98;
+  color: var(--ink);
+  margin: 16px 0 0;
+}
+
+.termos-hero h1 em {
+  font-family: var(--fs);
+  font-style: italic;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--accent-strong);
+}
+
+.termos-meta {
+  font-family: var(--fm);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-top: 18px;
+}
+
+/* ── Layout & TOC ── */
+.termos-layout {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 12px 24px 80px;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 56px;
+  align-items: start;
+}
+
+nav.termos-toc {
+  position: sticky;
+  top: 96px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.termos-toc p {
+  font-family: var(--fm);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 0 0 12px;
+}
+
+.termos-toc ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  counter-reset: t;
+}
+
+.termos-toc li {
+  counter-increment: t;
+}
+
+.termos-toc a {
+  display: flex;
+  gap: 10px;
+  padding: 7px 10px;
+  border-radius: 10px;
+  font-size: 14px;
+  line-height: 1.35;
+  color: var(--ink-mute);
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.termos-toc a::before {
+  content: counter(t, decimal-leading-zero);
+  font-family: var(--fm);
+  font-size: 11px;
+  color: var(--ink-faint);
+  padding-top: 2px;
+}
+
+.termos-toc a:hover {
+  background: var(--bone);
+  color: var(--ink);
+}
+
+.termos-toc a.on {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.termos-toc a.on::before {
+  color: var(--lime);
+}
+
+/* ── Artigo Principal ── */
+.termos-article {
+  max-width: 740px;
+}
+
+.termos-resumo {
+  position: relative;
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: 24px;
+  padding: 30px 32px;
+  margin-bottom: 44px;
+}
+
+.termos-resumo h2 {
+  font-family: var(--fd);
+  font-weight: 800;
+  font-size: 24px;
+  letter-spacing: -0.03em;
+  margin: 0 0 14px;
+  color: var(--paper);
+}
+
+.termos-resumo h2 em {
+  font-family: var(--fs);
+  font-style: italic;
+  font-weight: 500;
+  color: var(--lime);
+}
+
+.termos-resumo ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.termos-resumo li {
+  position: relative;
+  padding: 8px 0 8px 30px;
+  border-top: 1px solid rgba(239, 231, 210, 0.12);
+  font-size: 15px;
+  line-height: 1.55;
+  color: rgba(239, 231, 210, 0.85);
+}
+
+.termos-resumo li:first-child {
+  border-top: 0;
+}
+
+.termos-resumo li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  background: var(--lime);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+}
+
+.termos-resumo small {
+  display: block;
+  margin-top: 14px;
+  font-size: 12.5px;
+  color: rgba(239, 231, 210, 0.55);
+}
+
+.termos-tape {
+  position: absolute;
+  top: -12px;
+  right: 44px;
+  width: 90px;
+  height: 26px;
+  background: var(--lime);
+  opacity: 0.85;
+  transform: rotate(5deg);
+}
+
+/* ── Seções ── */
+.termos-section {
+  padding: 28px 0;
+  border-top: 1px solid var(--line);
+}
+
+.termos-section h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  font-family: var(--fd);
+  font-weight: 800;
+  font-size: 26px;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+  color: var(--ink);
+  margin: 0 0 14px;
+}
+
+.termos-section h2 span {
+  font-family: var(--fm);
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  color: var(--accent-strong);
+}
+
+.termos-section h3 {
+  font-family: var(--fd);
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin: 22px 0 6px;
+}
+
+.termos-article p {
+  margin: 0 0 14px;
+}
+
+ul.termos-l, ol.termos-l {
+  margin: 0 0 14px;
+  padding-left: 22px;
+}
+
+ul.termos-l li, ol.termos-l li {
+  margin: 6px 0;
+}
+
+ul.termos-l li::marker {
+  color: var(--accent);
+}
+
+.termos-article strong {
+  color: var(--ink);
+}
+
+.termos-box {
+  background: var(--bone);
+  border-radius: 16px;
+  padding: 18px 20px;
+  margin: 16px 0;
+  box-shadow: inset 0 0 0 1px var(--line);
+  font-size: 15px;
+}
+
+.termos-box.alerta {
+  background: #f4ead0;
+  box-shadow: inset 4px 0 0 var(--accent-strong);
+}
+
+/* ── Tabela ── */
+.termos-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0 16px;
+  font-size: 15px;
+  background: var(--bone);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.termos-table th, .termos-table td {
+  text-align: left;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.termos-table th {
+  font-family: var(--fm);
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.termos-table tr:last-child td {
+  border-bottom: 0;
+}
+
+/* ── Footer ── */
+.termos-footer {
+  border-top: 1px solid var(--line);
+  background: var(--bone);
+}
+
+.termos-footer .in {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 28px 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--ink-mute);
+}
+
+.termos-footer a {
+  color: var(--ink-mute);
+}
+
+/* ── Botão Voltar ao Topo ── */
+.termos-topo {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--lime);
+  display: grid;
+  place-items: center;
+  text-decoration: none;
+  font-size: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  box-shadow: 0 10px 20px rgba(21, 20, 15, 0.2);
+  z-index: 50;
+  cursor: pointer;
+  border: none;
+}
+
+.termos-topo.on {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.termos-topo:hover {
+  transform: translateY(-3px);
+}
+
+/* ── Responsividade ── */
+@media (max-width: 900px) {
+  .termos-layout {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  nav.termos-toc {
+    position: static;
+    max-height: none;
+    background: var(--bone);
+    border-radius: 18px;
+    padding: 18px;
+    box-shadow: inset 0 0 0 1px var(--line);
+  }
+  .termos-resumo {
+    padding: 26px 22px;
+  }
+}
+
+@media print {
+  .termos-top, nav.termos-toc, .termos-topo, .termos-footer {
+    display: none;
+  }
+  .termos-root {
+    background: #fff;
+  }
+  .termos-layout {
+    display: block;
+  }
+  .termos-resumo {
+    background: #fff;
+    color: #000;
+    border: 1px solid #000;
+  }
+}
