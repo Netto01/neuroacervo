@@ -41,9 +41,9 @@ export function LandingFooter({ logoSrc = '/brand/isologo-preto.svg' }: LandingF
             <h5>Ajuda</h5>
             <ul>
               <li><a href="#duvidas">Dúvidas</a></li>
-              <li><a href="#">Suporte</a></li>
-              <li><a href="#">Termos de uso</a></li>
-              <li><a href="#">Privacidade</a></li>
+              <li><a href="mailto:nao-responda@neuroacervo.com.br">Suporte</a></li>
+              <li><Link href="/termos">Termos de uso</Link></li>
+              <li><Link href="/termos#privacidade">Privacidade</Link></li>
             </ul>
           </div>
         </div>

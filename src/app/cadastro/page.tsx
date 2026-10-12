@@ -750,8 +750,15 @@ function CadastroContent() {
                           }}
                         />
                         <span>
-                          Li e aceito os <Link className="cad-link" href="#">Termos de uso</Link> e a{' '}
-                          <Link className="cad-link" href="#">Política de privacidade</Link>, e entendo que os materiais são de apoio e não substituem os manuais oficiais dos instrumentos.
+                          Li e aceito os{' '}
+                          <Link className="cad-link" href="/termos" target="_blank" rel="noopener noreferrer">
+                            Termos de uso
+                          </Link>{' '}
+                          e a{' '}
+                          <Link className="cad-link" href="/termos#privacidade" target="_blank" rel="noopener noreferrer">
+                            Política de privacidade
+                          </Link>
+                          , e entendo que os materiais são de apoio e não substituem os manuais oficiais dos instrumentos.
                         </span>
                       </label>
                       {termosErr && (
@@ -875,9 +882,9 @@ function CadastroContent() {
             <span>© 2026 NeuroAcervo · Uso profissional</span>
             <nav aria-label="Ajuda">
               <Link href="/">Início</Link>
-              <Link href="#">Suporte</Link>
-              <Link href="#">Termos</Link>
-              <Link href="#">Privacidade</Link>
+              <a href="mailto:nao-responda@neuroacervo.com.br">Suporte</a>
+              <Link href="/termos" target="_blank" rel="noopener noreferrer">Termos</Link>
+              <Link href="/termos#privacidade" target="_blank" rel="noopener noreferrer">Privacidade</Link>
             </nav>
           </div>
         </main>
