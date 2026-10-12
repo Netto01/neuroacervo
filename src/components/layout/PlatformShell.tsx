@@ -18,7 +18,8 @@ export type PlatformPageId =
   | 'laudos' 
   | 'anamnese' 
   | 'compendios'
-  | 'upgrade';
+  | 'upgrade'
+  | 'assinatura';
 
 interface PlatformShellProps {
   activePage: PlatformPageId;
@@ -228,14 +229,19 @@ export const PlatformShell: React.FC<PlatformShellProps> = ({
             <span className="avatar" aria-hidden="true">
               {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
             </span>
-            <div className="user-info">
+            <Link 
+              href="/plataforma/assinatura" 
+              className="user-info"
+              style={{ textDecoration: 'none', color: 'inherit' }}
+              title="Gerenciar assinatura e conta"
+            >
               <b title={currentUser?.name || currentUser?.email || 'Assinante'}>
                 {currentUser?.name || currentUser?.email || 'Assinante'}
               </b>
               <span title={currentUser?.crp ? (currentUser.crp.toUpperCase().startsWith('CRP') ? currentUser.crp : `CRP ${currentUser.crp}`) : (currentUser?.email || '')}>
                 {currentUser?.crp ? (currentUser.crp.toUpperCase().startsWith('CRP') ? currentUser.crp : `CRP ${currentUser.crp}`) : (currentUser?.email || '')}
               </span>
-            </div>
+            </Link>
             <button
               type="button"
               onClick={async () => {
