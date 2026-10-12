@@ -37,6 +37,10 @@ ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS period TEXT DEFAULT '';
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS profession TEXT DEFAULT '';
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS phone TEXT DEFAULT '';
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS newsletter BOOLEAN DEFAULT true;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS subscription_status TEXT DEFAULT 'pending';
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS stripe_subscription_id TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now());
 
 
 -- Ativar RLS em profiles
@@ -267,7 +271,8 @@ BEGIN
     newsletter,
     role, 
     plan, 
-    billing_cycle
+    billing_cycle,
+    subscription_status
   )
   VALUES (
     new.id, 
@@ -282,8 +287,9 @@ BEGIN
     coalesce(new.raw_user_meta_data->>'phone', ''),
     coalesce((new.raw_user_meta_data->>'newsletter')::boolean, true),
     'member',
-    coalesce(new.raw_user_meta_data->>'plan', 'Acervo + Aulas'),
-    coalesce(new.raw_user_meta_data->>'billing_cycle', 'mensal')
+    coalesce(new.raw_user_meta_data->>'plan', 'Prática'),
+    coalesce(new.raw_user_meta_data->>'billing_cycle', 'mensal'),
+    coalesce(new.raw_user_meta_data->>'subscription_status', 'pending')
   )
   ON CONFLICT (id) DO UPDATE SET
     full_name = coalesce(excluded.full_name, profiles.full_name),
@@ -294,7 +300,8 @@ BEGIN
     period = coalesce(excluded.period, profiles.period),
     profession = coalesce(excluded.profession, profiles.profession),
     phone = coalesce(excluded.phone, profiles.phone),
-    newsletter = coalesce(excluded.newsletter, profiles.newsletter);
+    newsletter = coalesce(excluded.newsletter, profiles.newsletter),
+    subscription_status = coalesce(excluded.subscription_status, profiles.subscription_status);
   RETURN new;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
