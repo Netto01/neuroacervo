@@ -1,0 +1,501 @@
+/* ==========================================================================
+   NEUROACERVO — TELA DE ESCOLHA DE PLANOS (/planos)
+   Estilo editorial refinado: tons de pergaminho, tipografia limpa e foco em conversão
+   ========================================================================== */
+
+.planos-root {
+  --paper: #efe7d2;
+  --bone: #f7f1de;
+  --white: #ffffff;
+  --ink: #15140f;
+  --ink-soft: #2a2620;
+  --ink-mute: #5a5448;
+  --ink-faint: #7c7768;
+  --accent: #488b49;
+  --accent-strong: #2f6b31;
+  --lime: #dafeaa;
+  --danger: #a8261d;
+  --danger-soft: #fbebe9;
+  --line: rgba(21, 20, 15, 0.14);
+  --line-soft: rgba(21, 20, 15, 0.08);
+  --shadow: 0 10px 30px rgba(21, 20, 15, 0.06);
+  --shadow-hover: 0 16px 40px rgba(21, 20, 15, 0.12);
+  --font-display: "Playfair Display", Georgia, serif;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  
+  min-height: 100vh;
+  background-color: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* ── Topbar / Header ── */
+.planos-header {
+  border-bottom: 1px solid var(--line);
+  background-color: rgba(247, 241, 222, 0.85);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+.planos-header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.planos-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--ink);
+}
+
+.planos-brand-name {
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  text-transform: uppercase;
+}
+
+.planos-brand-name span {
+  color: var(--accent-strong);
+}
+
+.planos-user-area {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 13.5px;
+}
+
+.planos-user-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(21, 20, 15, 0.05);
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line-soft);
+  color: var(--ink-soft);
+}
+
+.planos-user-badge b {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.planos-btn-sair {
+  background: none;
+  border: 1px solid var(--line);
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-mute);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.planos-btn-sair:hover {
+  background-color: var(--ink);
+  color: var(--white);
+  border-color: var(--ink);
+}
+
+/* ── Conteúdo Principal ── */
+.planos-main {
+  flex: 1;
+  max-width: 1140px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 48px 24px 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ── Alerta de cancelamento ── */
+.planos-alert-cancel {
+  width: 100%;
+  max-width: 860px;
+  background-color: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 10px;
+  padding: 14px 18px;
+  color: #92400e;
+  font-size: 14px;
+  line-height: 1.5;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+/* ── Hero / Título ── */
+.planos-hero {
+  text-align: center;
+  max-width: 740px;
+  margin-bottom: 36px;
+}
+
+.planos-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: 999px;
+  background-color: #e8f4dd;
+  border: 1px solid #c8e4ad;
+  color: var(--accent-strong);
+  font-size: 12.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 16px;
+}
+
+.planos-hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(32px, 4.5vw, 44px);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.8px;
+  color: var(--ink);
+  margin: 0 0 16px;
+}
+
+.planos-hero p {
+  font-size: clamp(15px, 2vw, 17px);
+  line-height: 1.6;
+  color: var(--ink-mute);
+  margin: 0;
+}
+
+/* ── Toggle de Ciclo (Mensal / Anual) ── */
+.planos-billing-toggle {
+  display: flex;
+  align-items: center;
+  background-color: rgba(21, 20, 15, 0.06);
+  padding: 4px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  margin-bottom: 40px;
+}
+
+.planos-toggle-btn {
+  background: none;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-mute);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.planos-toggle-btn.active {
+  background-color: var(--white);
+  color: var(--ink);
+  box-shadow: 0 2px 8px rgba(21, 20, 15, 0.1);
+}
+
+.planos-discount-badge {
+  background-color: var(--accent-strong);
+  color: var(--white);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  letter-spacing: 0.3px;
+}
+
+/* ── Grid de Cards de Planos ── */
+.planos-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  width: 100%;
+  margin-bottom: 48px;
+  align-items: stretch;
+}
+
+.plano-card {
+  background-color: var(--bone);
+  border: 2px solid var(--line);
+  border-radius: 16px;
+  padding: 32px 26px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  text-align: left;
+}
+
+.plano-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover);
+  border-color: rgba(21, 20, 15, 0.28);
+}
+
+.plano-card.selected {
+  background-color: var(--white);
+  border-color: var(--accent-strong);
+  box-shadow: 0 8px 30px rgba(47, 107, 49, 0.15);
+}
+
+.plano-card.destaque {
+  border-color: rgba(47, 107, 49, 0.5);
+  background-color: #fcfbf6;
+}
+
+.plano-card.destaque.selected {
+  border-color: var(--accent-strong);
+  box-shadow: 0 12px 36px rgba(47, 107, 49, 0.22);
+}
+
+.plano-badge-destaque {
+  position: absolute;
+  top: -12px;
+  right: 24px;
+  background-color: var(--accent-strong);
+  color: var(--white);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+
+.plano-header {
+  border-bottom: 1px solid var(--line-soft);
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+}
+
+.plano-nome-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.plano-nome {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0;
+}
+
+.plano-tag {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--ink-faint);
+  background: rgba(21, 20, 15, 0.05);
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.plano-desc {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--ink-mute);
+  min-height: 40px;
+  margin: 0;
+}
+
+.plano-preco-box {
+  margin-bottom: 24px;
+}
+
+.plano-preco-principal {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.8px;
+  line-height: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.plano-preco-periodo {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink-faint);
+}
+
+.plano-preco-sub {
+  font-size: 12.5px;
+  color: var(--accent-strong);
+  font-weight: 600;
+  margin-top: 6px;
+}
+
+.plano-beneficios-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--ink-faint);
+  margin-bottom: 14px;
+}
+
+.plano-beneficios-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.plano-beneficio-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+
+.plano-check-icon {
+  flex-shrink: 0;
+  color: var(--accent-strong);
+  margin-top: 2px;
+}
+
+.plano-card-select-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  border: 1px solid var(--line);
+  background-color: rgba(21, 20, 15, 0.03);
+  color: var(--ink-mute);
+  transition: all 0.15s ease;
+}
+
+.plano-card.selected .plano-card-select-indicator {
+  background-color: #e8f4dd;
+  border-color: var(--accent-strong);
+  color: var(--accent-strong);
+}
+
+/* ── Seção Inferior de Finalização (CTA) ── */
+.planos-checkout-bar {
+  width: 100%;
+  max-width: 640px;
+  background-color: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 28px 32px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.planos-btn-submit {
+  width: 100%;
+  background-color: var(--accent-strong);
+  color: var(--white);
+  border: none;
+  border-radius: 10px;
+  padding: 16px 28px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(47, 107, 49, 0.25);
+}
+
+.planos-btn-submit:hover:not(:disabled) {
+  background-color: #265728;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(47, 107, 49, 0.35);
+}
+
+.planos-btn-submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.planos-security-note {
+  font-size: 12.5px;
+  color: var(--ink-faint);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 0;
+}
+
+.planos-error-msg {
+  background-color: var(--danger-soft);
+  border: 1px solid rgba(168, 38, 29, 0.2);
+  color: var(--danger);
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  width: 100%;
+  text-align: center;
+}
+
+/* ── Responsividade ── */
+@media (max-width: 960px) {
+  .planos-grid {
+    grid-template-columns: 1fr;
+    max-width: 520px;
+  }
+  
+  .plano-badge-destaque {
+    right: 20px;
+  }
+}
+
+@media (max-width: 600px) {
+  .planos-header-inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .planos-user-area {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .planos-main {
+    padding: 32px 16px 48px;
+  }
+  
+  .planos-checkout-bar {
+    padding: 20px;
+  }
+}

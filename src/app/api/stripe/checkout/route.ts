@@ -98,7 +98,7 @@ export async function POST(req: Request) {
       },
       allow_promotion_codes: true,
       success_url: `${origin}/sucesso?session_id={CHECKOUT_SESSION_ID}&plano=${encodeURIComponent(planName)}&ciclo=${billingCycle}`,
-      cancel_url: `${origin}/cadastro?plano=${planKey}&ciclo=${billingCycle}&cancelado=true`
+      cancel_url: `${origin}/planos?plano=${planKey}&ciclo=${billingCycle}&cancelado=true`
     });
 
     return NextResponse.json({ url: session.url });

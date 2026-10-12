@@ -3,7 +3,7 @@
 import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { signIn, resetPasswordForEmail, isSupabaseConfigured } from '@/lib/supabase';
+import { signIn, resetPasswordForEmail, getUserProfile, isSupabaseConfigured } from '@/lib/supabase';
 import './login.css';
 
 function LoginForm() {
@@ -50,10 +50,24 @@ function LoginForm() {
 
     try {
       if (isSupabaseConfigured) {
-        const { error } = await signIn(email.trim(), senha);
+        const { data, error } = await signIn(email.trim(), senha);
         if (error) {
           setLoginError(true);
           setLoading(false);
+          return;
+        }
+
+        // Verifica o perfil e status da assinatura do usuário
+        if (data?.user?.id) {
+          const profile = await getUserProfile(data.user.id);
+          const isAdmin = profile?.role === 'admin';
+          const isActive = profile?.subscriptionStatus === 'active';
+
+          if (isAdmin || isActive) {
+            router.push('/plataforma');
+          } else {
+            router.push('/planos');
+          }
           return;
         }
       } else {

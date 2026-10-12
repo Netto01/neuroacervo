@@ -84,10 +84,14 @@ function DashboardInner() {
   const [activeDrawerMaterial, setActiveDrawerMaterial] = useState<MaterialItem | null>(null);
   const buscaInputRef = useRef<HTMLInputElement>(null);
 
-  // Redireciona para o login se não houver usuário autenticado
+  // Redireciona para o login se não houver usuário autenticado, ou para /planos se não tiver assinatura ativa
   useEffect(() => {
-    if (!isLoadingUser && !currentUser) {
-      router.push('/entrar');
+    if (!isLoadingUser) {
+      if (!currentUser) {
+        router.push('/entrar');
+      } else if (currentUser.role !== 'admin' && currentUser.subscriptionStatus !== 'active') {
+        router.push('/planos');
+      }
     }
   }, [isLoadingUser, currentUser, router]);
 
