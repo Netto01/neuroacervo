@@ -202,45 +202,36 @@ function LeitorContent() {
     };
   }, [materials, paramId, paramArquivo]);
 
-  // Resolve URL do PDF se disponível
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-
-  useEffect(() => {
+  // Resolve URL do PDF imediatamente via useMemo (sem atraso de render/useEffect)
+  const pdfUrl = useMemo(() => {
     const raw = paramArquivo || material.downloadUrl;
-    if (!raw) {
-      setPdfUrl(null);
-      return;
-    }
+    if (!raw) return null;
 
     const publicR2 = (process.env.NEXT_PUBLIC_R2_PUBLIC_URL || 'https://pub-46b7a58b503e44bdb8e86a63a0cf51ba.r2.dev').replace(/\/+$/, '');
 
     // Se é uma URL HTTP/HTTPS direta (ex: Cloudflare R2 com CDN e CORS aberto)
     if (raw.startsWith('http://') || raw.startsWith('https://')) {
-      setPdfUrl(raw);
-      return;
+      return raw;
     }
 
     // Se é apenas o nome/chave do arquivo no R2 (ex: guia-pratico-wisc-iv-4.pdf)
     if (raw.toLowerCase().endsWith('.pdf') && !raw.startsWith('/')) {
-      setPdfUrl(`${publicR2}/${raw}`);
-      return;
+      return `${publicR2}/${raw}`;
     }
 
     if (raw.startsWith('/')) {
-      setPdfUrl(raw);
-      return;
+      return raw;
     }
 
     if (isSupabaseConfigured) {
       try {
         const { data } = supabase.storage.from('materials').getPublicUrl(raw);
         if (data?.publicUrl) {
-          setPdfUrl(data.publicUrl);
-          return;
+          return data.publicUrl;
         }
       } catch {}
     }
-    setPdfUrl(null);
+    return null;
   }, [paramArquivo, material.downloadUrl]);
 
   // Marca d'água personalizada do assinante
@@ -252,8 +243,57 @@ function LeitorContent() {
     return `${nome} · ${reg} · uso pessoal`;
   }, [currentUser]);
 
-  // Estados do leitor - calcula zoom ideal para caber na tela já no primeiro render
-  const [pdfJsLoaded, setPdfJsLoaded] = useState(false);
+  // Estados do leitor - detecta PDF.js instantaneamente se já estiver carregado no window
+  const [pdfJsLoaded, setPdfJsLoaded] = useState(() => {
+    if (typeof window !== 'undefined' && !!(window as any).pdfjsLib) {
+      return true;
+    }
+    return false;
+  });
+
+  // Garante que o PDF.js seja detectado e inicializado mesmo em transições de rota do Next.js sem refresh
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const checkReady = () => {
+      if ((window as any).pdfjsLib) {
+        setPdfJsLoaded(true);
+        return true;
+      }
+      return false;
+    };
+
+    if (checkReady()) return;
+
+    // Polling rápido caso o script CDN esteja terminando de baixar
+    const interval = setInterval(() => {
+      if (checkReady()) {
+        clearInterval(interval);
+      }
+    }, 50);
+
+    // Fallback: se por qualquer razão o script não estiver presente, injeta via DOM
+    const timeout = setTimeout(() => {
+      clearInterval(interval);
+      if (!checkReady()) {
+        const existing = document.getElementById('pdfjs-cdn-script');
+        if (!existing) {
+          const s = document.createElement('script');
+          s.id = 'pdfjs-cdn-script';
+          s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+          s.async = true;
+          s.onload = () => setPdfJsLoaded(true);
+          document.head.appendChild(s);
+        }
+      }
+    }, 1200);
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, []);
+
   const [zoom, setZoom] = useState(() => {
     if (typeof window !== 'undefined') {
       const w = window.innerWidth;
@@ -320,9 +360,12 @@ function LeitorContent() {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  // Montar demonstração caso não seja PDF direto ou falhe
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
+
+  // Montar demonstração caso não haja PDF direto cadastrado
   useEffect(() => {
-    if (!pdfUrl || !pdfJsLoaded) {
+    if (!pdfUrl) {
       // Monta páginas baseadas nos tópicos do material
       const items = material.keyInstructions && material.keyInstructions.length > 0
         ? material.keyInstructions
@@ -423,7 +466,7 @@ function LeitorContent() {
       ];
       setSections(demoSections);
     }
-  }, [pdfUrl, pdfJsLoaded, material]);
+  }, [pdfUrl, material]);
 
   // Carregar documento PDF com PDF.js quando o script estiver pronto e houver pdfUrl
   useEffect(() => {
@@ -431,20 +474,30 @@ function LeitorContent() {
     const pdfjsLib = (window as any).pdfjsLib;
     if (!pdfjsLib) return;
 
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
 
     let isCancelled = false;
-    pdfjsLib.getDocument({
+    setPdfLoading(true);
+    setPdfError(null);
+    setPdfDoc(null);
+    setCurrentPage(1);
+
+    const loadingTask = pdfjsLib.getDocument({
       url: pdfUrl,
       withCredentials: false,
       rangeChunkSize: 65536 * 4,
       disableAutoFetch: false,
       disableStream: false
-    }).promise
+    });
+
+    loadingTask.promise
       .then((doc: any) => {
         if (isCancelled) return;
         pdfDocRef.current = doc;
         setPdfDoc(doc);
+        setPdfLoading(false);
         setTotalPages(doc.numPages);
         setTimeout(handleFitWidth, 50);
 
@@ -467,12 +520,18 @@ function LeitorContent() {
         });
       })
       .catch((err: any) => {
+        if (isCancelled) return;
         console.error('Erro ao carregar o arquivo binário do PDF via PDF.js:', err);
         setPdfDoc(null);
+        setPdfLoading(false);
+        setPdfError(err?.message || 'Falha ao carregar o PDF');
       });
 
     return () => {
       isCancelled = true;
+      try {
+        loadingTask.destroy?.();
+      } catch {}
     };
   }, [pdfUrl, pdfJsLoaded]);
 
@@ -600,8 +659,11 @@ function LeitorContent() {
     <div className={`leitor-root ${focusMode ? 'focus' : ''} ${showLeftMobile ? 'show-left' : ''} ${showRightMobile ? 'show-right' : ''}`}>
       {/* Script PDF.js */}
       <Script
+        id="pdfjs-script"
         src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"
+        strategy="afterInteractive"
         onLoad={() => setPdfJsLoaded(true)}
+        onReady={() => setPdfJsLoaded(true)}
       />
 
       {/* SVG Symbols */}
@@ -780,7 +842,20 @@ function LeitorContent() {
                   watermarkText={watermarkText}
                 />
               ))
-            ) : pdfUrl && !pdfDoc ? (
+            ) : pdfUrl && pdfError ? (
+              // Falha no carregamento do arquivo
+              <div style={{ textAlign: 'center', padding: '60px 24px', maxWidth: '440px', margin: '0 auto', color: 'var(--ink)' }}>
+                <div style={{ width: 44, height: 44, borderRadius: '50%', background: '#fee2e2', color: '#dc2626', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: '20px' }}>⚠️</div>
+                <h3 style={{ fontSize: '16px', fontWeight: 700, margin: '0 0 8px' }}>Não foi possível carregar o documento</h3>
+                <p style={{ fontSize: '13px', color: 'var(--ink-mute)', margin: '0 0 20px', lineHeight: 1.5 }}>
+                  Ocorreu uma oscilação na conexão com o servidor de arquivos. Você pode tentar recarregar ou abrir o arquivo diretamente.
+                </p>
+                <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                  <button className="btn" type="button" onClick={() => window.location.reload()}>Recarregar leitor</button>
+                  <a className="btn solid" href={pdfUrl} target="_blank" rel="noopener noreferrer">Abrir arquivo direto</a>
+                </div>
+              </div>
+            ) : pdfUrl && (pdfLoading || !pdfDoc) ? (
               // Carregando documento real do acervo
               <div style={{ textAlign: 'center', padding: '80px 20px', color: 'var(--ink-mute)', fontFamily: 'var(--mono)', fontSize: '13px' }}>
                 <div style={{ width: 28, height: 28, border: '3px solid var(--accent-strong)', borderTopColor: 'transparent', borderRadius: '50%', margin: '0 auto 16px', animation: 'spin 0.8s linear infinite' }} />
