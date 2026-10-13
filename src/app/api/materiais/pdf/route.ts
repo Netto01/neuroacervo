@@ -28,7 +28,13 @@ export async function GET(req: NextRequest) {
     // Redireciona com 307 diretamente para o CDN público do Cloudflare R2
     // Suporta streaming byte-range nativo, CORS liberado e sem limite de 4.5MB da Vercel
     const directUrl = `${R2_PUBLIC_URL}/${targetKey}`;
-    return NextResponse.redirect(directUrl, 307);
+    return new NextResponse(null, {
+      status: 307,
+      headers: {
+        Location: directUrl,
+        'Cache-Control': 'public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400'
+      }
+    });
   } catch (error: any) {
     console.error('Erro ao redirecionar para PDF do R2:', error);
     return NextResponse.json(

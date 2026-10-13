@@ -49,8 +49,24 @@ const DEFAULT_FILTERS: FilterState = {
 const NeuroContext = createContext<NeuroContextType | undefined>(undefined);
 
 export const NeuroProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [materials, setMaterials] = useState<MaterialItem[]>([]);
-  const [modules, setModules] = useState<CourseModule[]>([]);
+  const [materials, setMaterials] = useState<MaterialItem[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = localStorage.getItem('na_cache_materials');
+        if (cached) return JSON.parse(cached);
+      } catch {}
+    }
+    return [];
+  });
+  const [modules, setModules] = useState<CourseModule[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = localStorage.getItem('na_cache_modules');
+        if (cached) return JSON.parse(cached);
+      } catch {}
+    }
+    return [];
+  });
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [isLoadingUser, setIsLoadingUser] = useState<boolean>(true);
   const [activeRole, setActiveRole] = useState<'member' | 'admin'>('member');
@@ -104,12 +120,20 @@ export const NeuroProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             getMaterials(),
             getModules()
           ]);
-          setMaterials(dbMaterials || []);
-          setModules(dbModules || []);
+          if (dbMaterials) {
+            setMaterials(dbMaterials);
+            try {
+              localStorage.setItem('na_cache_materials', JSON.stringify(dbMaterials));
+            } catch {}
+          }
+          if (dbModules) {
+            setModules(dbModules);
+            try {
+              localStorage.setItem('na_cache_modules', JSON.stringify(dbModules));
+            } catch {}
+          }
         } catch {
-          // Fallback gracioso para dados padrão
-          setMaterials([]);
-          setModules([]);
+          // Mantém dados em cache caso ocorra erro transitório
         }
       } else {
         setIsLoadingUser(false);

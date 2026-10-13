@@ -34,22 +34,54 @@ interface PdfPageItemProps {
 }
 
 function PdfPageItem({ pageNum, pdfDoc, zoom, watermarkText }: PdfPageItemProps) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const renderTaskRef = useRef<any>(null);
   const [pageSize, setPageSize] = useState<{ width: number; height: number }>({
     width: Math.round(794 * zoom),
     height: Math.round(1123 * zoom),
   });
+  // Páginas 1 e 2 carregam imediatamente; as outras aguardam aproximação no scroll
+  const [isVisible, setIsVisible] = useState(pageNum <= 2);
+  const [isRendered, setIsRendered] = useState(false);
+
+  // Lazy loading inteligente: renderiza quando a página estiver a 800px da tela
+  useEffect(() => {
+    if (pageNum <= 2) return;
+    const el = containerRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') {
+      setIsVisible(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsVisible(true);
+            observer.disconnect();
+          }
+        });
+      },
+      {
+        rootMargin: '800px 0px',
+        threshold: 0.01,
+      }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [pageNum]);
 
   useEffect(() => {
-    if (!pdfDoc || !canvasRef.current) return;
+    if (!isVisible || !pdfDoc || !canvasRef.current) return;
     const canvas = canvasRef.current;
     let isCancelled = false;
 
     pdfDoc.getPage(pageNum).then((page: any) => {
       if (isCancelled || !canvas) return;
 
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.75);
       const unscaledViewport = page.getViewport({ scale: 1 });
       const targetWidth = 794 * zoom;
       const scale = (targetWidth / unscaledViewport.width) * dpr;
@@ -71,11 +103,15 @@ function PdfPageItem({ pageNum, pdfDoc, zoom, watermarkText }: PdfPageItemProps)
         }
         const task = page.render({ canvasContext: ctx, viewport });
         renderTaskRef.current = task;
-        task.promise.catch((e: any) => {
-          if (e?.name !== 'RenderingCancelledException') {
-            console.warn(`Erro renderizando página ${pageNum}:`, e);
-          }
-        });
+        task.promise
+          .then(() => {
+            if (!isCancelled) setIsRendered(true);
+          })
+          .catch((e: any) => {
+            if (e?.name !== 'RenderingCancelledException') {
+              console.warn(`Erro renderizando página ${pageNum}:`, e);
+            }
+          });
       }
     }).catch(console.error);
 
@@ -87,10 +123,11 @@ function PdfPageItem({ pageNum, pdfDoc, zoom, watermarkText }: PdfPageItemProps)
         } catch {}
       }
     };
-  }, [pdfDoc, pageNum, zoom]);
+  }, [isVisible, pdfDoc, pageNum, zoom]);
 
   return (
     <div
+      ref={containerRef}
       className="pw"
       data-page={pageNum}
       role="img"
@@ -102,7 +139,13 @@ function PdfPageItem({ pageNum, pdfDoc, zoom, watermarkText }: PdfPageItemProps)
         ['--z' as any]: zoom,
       } as any}
     >
-      <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block' }} />
+      {isVisible ? (
+        <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block' }} />
+      ) : (
+        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff', opacity: 0.6 }}>
+          <span style={{ fontSize: '12px', fontFamily: 'var(--mono)', color: 'var(--ink-faint)' }}>Carregando pág. {pageNum}...</span>
+        </div>
+      )}
       <span className="num">{pageNum}</span>
       <div className="wm" aria-hidden="true">
         <span>{watermarkText}</span>
@@ -391,7 +434,13 @@ function LeitorContent() {
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
     let isCancelled = false;
-    pdfjsLib.getDocument({ url: pdfUrl, withCredentials: false }).promise
+    pdfjsLib.getDocument({
+      url: pdfUrl,
+      withCredentials: false,
+      rangeChunkSize: 65536 * 4,
+      disableAutoFetch: false,
+      disableStream: false
+    }).promise
       .then((doc: any) => {
         if (isCancelled) return;
         pdfDocRef.current = doc;
