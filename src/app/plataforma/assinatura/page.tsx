@@ -1,11 +1,36 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { PlatformShell } from '@/components/layout/PlatformShell';
 import { useNeuro } from '@/context/NeuroContext';
 import { resolveUserPlan } from '@/utils/userPlan';
 import s from './assinatura.module.css';
+
+interface StripeSubscriptionDetails {
+  hasStripe: boolean;
+  hasSubscription?: boolean;
+  customerId?: string;
+  subscriptionId?: string;
+  status?: string;
+  rawStatus?: string;
+  cancelAtPeriodEnd?: boolean;
+  renovacao?: string;
+  currentPeriodEnd?: number;
+  valor?: string;
+  unitAmount?: number;
+  ciclo?: 'mensal' | 'anual';
+  planoId?: 'consulta' | 'estudo' | 'pratica';
+  planoNome?: string;
+  cartao?: {
+    brand: string;
+    last4: string;
+    expMonth: number;
+    expYear: number;
+    textoValidade: string;
+  } | null;
+  message?: string;
+}
 
 export default function AssinaturaPage() {
   const { currentUser } = useNeuro();
@@ -14,53 +39,88 @@ export default function AssinaturaPage() {
   const [loadingPortal, setLoadingPortal] = useState(false);
   const [portalError, setPortalError] = useState<string | null>(null);
 
-  const isAnual = currentUser?.billingCycle === 'anual' || (currentUser?.plan || '').toLowerCase().includes('anual');
-  const isAdmin = currentUser?.role === 'admin';
+  const [stripeDetails, setStripeDetails] = useState<StripeSubscriptionDetails | null>(null);
+  const [loadingStripe, setLoadingStripe] = useState(true);
 
-  // Configurações do plano
-  const planoDados = useMemo(() => {
+  const isAdmin = currentUser?.role === 'admin';
+  const isAnualFallback = currentUser?.billingCycle === 'anual' || (currentUser?.plan || '').toLowerCase().includes('anual');
+
+  // Consulta as informações reais na API do Stripe
+  useEffect(() => {
+    let isMounted = true;
+    async function carregarDadosReaisStripe() {
+      if (!currentUser?.email) return;
+
+      try {
+        setLoadingStripe(true);
+        const res = await fetch('/api/stripe/subscription-details', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: currentUser.id,
+            userEmail: currentUser.email,
+            stripeCustomerId: currentUser.stripeCustomerId
+          })
+        });
+
+        const data: StripeSubscriptionDetails = await res.json();
+        if (isMounted && res.ok && data.hasStripe) {
+          setStripeDetails(data);
+        }
+      } catch (err) {
+        console.warn('Erro ao carregar dados reais da Stripe:', err);
+      } finally {
+        if (isMounted) setLoadingStripe(false);
+      }
+    }
+
+    carregarDadosReaisStripe();
+    return () => {
+      isMounted = false;
+    };
+  }, [currentUser?.email, currentUser?.id, currentUser?.stripeCustomerId]);
+
+  // Plano padrão do sistema caso Stripe não esteja disponível
+  const planoFallback = useMemo(() => {
     const raw = planInfo.tipo;
     if (raw === 'pratica' || isAdmin) {
-      return {
-        id: 'pratica',
-        nome: isAdmin ? 'Admin' : 'Prática',
-        n: 3,
-        mensal: '49,90',
-        anual: '399'
-      };
+      return { id: 'pratica', nome: isAdmin ? 'Admin' : 'Prática', n: 3, mensal: '49,90', anual: '399' };
     }
     if (raw === 'estudo') {
-      return {
-        id: 'estudo',
-        nome: 'Estudo',
-        n: 2,
-        mensal: '39,90',
-        anual: '319'
-      };
+      return { id: 'estudo', nome: 'Estudo', n: 2, mensal: '39,90', anual: '319' };
     }
-    return {
-      id: 'consulta',
-      nome: 'Consulta',
-      n: 1,
-      mensal: '19,90',
-      anual: '159'
-    };
+    return { id: 'consulta', nome: 'Consulta', n: 1, mensal: '19,90', anual: '159' };
   }, [planInfo.tipo, isAdmin]);
 
-  // Data de renovação estimada (30 dias ou 1 ano a partir de hoje / createdAt)
-  const renovacaoEstimada = useMemo(() => {
+  // Dados consolidados (prioriza o que vem real do Stripe)
+  const planoId = stripeDetails?.planoId || planoFallback.id;
+  const planoNome = stripeDetails?.planoNome || (isAdmin ? 'Admin' : planoFallback.nome);
+  const nivel = planoId === 'pratica' || isAdmin ? 3 : planoId === 'estudo' ? 2 : 1;
+
+  const cicloFinal = stripeDetails?.ciclo || (isAnualFallback ? 'anual' : 'mensal');
+  const isAnual = cicloFinal === 'anual';
+  const cicloTexto = isAnual ? 'Anual' : 'Mensal';
+  const cicloUnidade = isAnual ? '/ano' : '/mês';
+
+  const valorFinal = stripeDetails?.valor || (isAnual ? planoFallback.anual : planoFallback.mensal);
+  const statusFinal = stripeDetails?.status || (isAdmin ? 'Admin' : 'Ativa');
+  const cancelamentoAgendado = stripeDetails?.cancelAtPeriodEnd || false;
+
+  // Data de renovação real ou estimada
+  const renovacaoFinal = useMemo(() => {
+    if (stripeDetails?.renovacao) return stripeDetails.renovacao;
     try {
       const d = new Date();
-      if (isAnual) {
-        d.setFullYear(d.getFullYear() + 1);
-      } else {
-        d.setMonth(d.getMonth() + 1);
-      }
+      if (isAnual) d.setFullYear(d.getFullYear() + 1);
+      else d.setMonth(d.getMonth() + 1);
       return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
     } catch {
       return 'Renovação automática';
     }
-  }, [isAnual]);
+  }, [stripeDetails?.renovacao, isAnual]);
+
+  // Cartão real da Stripe
+  const cartaoReal = stripeDetails?.cartao;
 
   async function handleOpenPortal(e?: React.MouseEvent) {
     if (e) e.preventDefault();
@@ -76,7 +136,7 @@ export default function AssinaturaPage() {
         body: JSON.stringify({
           userId: currentUser.id,
           userEmail: currentUser.email,
-          stripeCustomerId: currentUser.stripeCustomerId
+          stripeCustomerId: stripeDetails?.customerId || currentUser.stripeCustomerId
         })
       });
 
@@ -104,17 +164,12 @@ export default function AssinaturaPage() {
     }
   }
 
-  const p = planoDados;
-  const valorExibicao = isAnual ? p.anual : p.mensal;
-  const cicloTexto = isAnual ? 'Anual' : 'Mensal';
-  const cicloUnidade = isAnual ? '/ano' : '/mês';
-
   const nivelTexto =
-    p.n === 3
+    nivel === 3
       ? 'Acervo completo liberado. Aproveite!'
-      : p.n +
+      : nivel +
         ' de 3 níveis liberados.' +
-        (p.n === 1
+        (nivel === 1
           ? ' Aulas e recursos interativos ficam nos planos Estudo e Prática.'
           : ' Os recursos interativos ficam no plano Prática.');
 
@@ -172,12 +227,12 @@ export default function AssinaturaPage() {
                       <path d="M14 3v5h5M10 13h6M10 17h4" />
                     </svg>
                   </span>
-                  <b>{p.nome}</b>
+                  <b>{planoNome}</b>
                 </div>
               </div>
-              <span className={s.status}>
-                <i />
-                <span>{isAdmin ? 'Admin' : 'Ativa'}</span>
+              <span className={s.status} style={cancelamentoAgendado ? { background: '#fef3c7', color: '#92400e' } : {}}>
+                <i style={cancelamentoAgendado ? { background: '#d97706' } : {}} />
+                <span>{cancelamentoAgendado ? 'Cancelamento agendado' : statusFinal}</span>
               </span>
             </div>
 
@@ -185,7 +240,7 @@ export default function AssinaturaPage() {
               <div>
                 <span className={s.lbl}>Valor</span>
                 <b className={s.lime}>
-                  R$ {valorExibicao} <small>{cicloUnidade}</small>
+                  R$ {valorFinal} <small>{cicloUnidade}</small>
                 </b>
               </div>
               <div>
@@ -193,21 +248,21 @@ export default function AssinaturaPage() {
                 <b>{cicloTexto}</b>
               </div>
               <div>
-                <span className={s.lbl}>Próxima renovação</span>
-                <b>{renovacaoEstimada}</b>
+                <span className={s.lbl}>{cancelamentoAgendado ? 'Acesso ativo até' : 'Próxima renovação'}</span>
+                <b>{renovacaoFinal}</b>
               </div>
             </div>
 
             <div className={s.nivel}>
               <span className={s.lbl}>Seu nível no acervo</span>
               <div className={s.bar}>
-                <i style={{ width: `${(p.n / 3) * 100}%` }} />
+                <i style={{ width: `${(nivel / 3) * 100}%` }} />
               </div>
               <p>{nivelTexto}</p>
             </div>
 
             <div className={s.acoes}>
-              {p.n < 3 && (
+              {nivel < 3 && (
                 <Link className={`${s.btn} ${s.lime}`} href="/plataforma/upgrade">
                   Fazer upgrade de plano <span>→</span>
                 </Link>
@@ -232,10 +287,16 @@ export default function AssinaturaPage() {
             <h3>Forma de pagamento</h3>
             <div className={s.cartao}>
               <div className={s.chip} />
-              <div className={s.num}>•••• •••• •••• 4242</div>
+              <div className={s.num}>
+                {cartaoReal ? `•••• •••• •••• ${cartaoReal.last4}` : loadingStripe ? 'Consultando Stripe...' : '•••• •••• •••• Stripe'}
+              </div>
               <div className={s.row}>
-                <span>Cartão de crédito</span>
-                <span>Val. 08/29</span>
+                <span>
+                  {cartaoReal?.brand ? `Cartão ${cartaoReal.brand.toUpperCase()}` : 'Cartão de crédito'}
+                </span>
+                <span>
+                  {cartaoReal?.textoValidade || (loadingStripe ? 'Carregando...' : 'Ativo no Stripe')}
+                </span>
               </div>
             </div>
             <div className={s.linhas}>
@@ -245,7 +306,7 @@ export default function AssinaturaPage() {
               </div>
               <div>
                 <span>Processamento</span>
-                <b>Stripe</b>
+                <b>Stripe Brasil</b>
               </div>
             </div>
             <button
@@ -291,9 +352,9 @@ export default function AssinaturaPage() {
               <small>Roteiros e guias rápidos de aplicação</small>
             </div>
 
-            <div className={`${s.item} ${p.n >= 2 ? '' : s.off}`}>
+            <div className={`${s.item} ${nivel >= 2 ? '' : s.off}`}>
               <span className={s.st}>
-                {p.n >= 2 ? (
+                {nivel >= 2 ? (
                   <svg viewBox="0 0 24 24">
                     <path d="m5 12 4.5 4.5L19 7" />
                   </svg>
@@ -306,12 +367,12 @@ export default function AssinaturaPage() {
               </span>
               <b>Aulas e casos clínicos</b>
               <small>Videoaulas em módulos e discussão de casos</small>
-              {p.n < 2 && <span className={s.need}>Estudo ou Prática</span>}
+              {nivel < 2 && <span className={s.need}>Estudo ou Prática</span>}
             </div>
 
-            <div className={`${s.item} ${p.n >= 3 ? '' : s.off}`}>
+            <div className={`${s.item} ${nivel >= 3 ? '' : s.off}`}>
               <span className={s.st}>
-                {p.n >= 3 ? (
+                {nivel >= 3 ? (
                   <svg viewBox="0 0 24 24">
                     <path d="m5 12 4.5 4.5L19 7" />
                   </svg>
@@ -324,7 +385,7 @@ export default function AssinaturaPage() {
               </span>
               <b>Recursos interativos</b>
               <small>Baralho de Funções Executivas e Histórias Temáticas</small>
-              {p.n < 3 && <span className={s.need}>Prática</span>}
+              {nivel < 3 && <span className={s.need}>Prática</span>}
             </div>
           </div>
         </section>
