@@ -317,7 +317,9 @@ function LeitorContent() {
   const [isSearching, setIsSearching] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [notes, setNotes] = useState('');
-  const [notesStatus, setNotesStatus] = useState('Salvo');
+  const [notesState, setNotesState] = useState<'salvo' | 'salvando' | 'erro'>('salvo');
+  const [copiedNotes, setCopiedNotes] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Referências
   const viewerRef = useRef<HTMLDivElement>(null);
@@ -346,7 +348,7 @@ function LeitorContent() {
           try {
             localStorage.setItem(`na:${material.id}:notas`, cloudNotes);
           } catch {}
-          setNotesStatus('Salvo na sua conta');
+          setNotesState('salvo');
         }
       }).catch(() => {});
     }
@@ -359,7 +361,7 @@ function LeitorContent() {
   const saveNotesTimeout = useRef<NodeJS.Timeout | null>(null);
   const handleNotesChange = (val: string) => {
     setNotes(val);
-    setNotesStatus('Salvando…');
+    setNotesState('salvando');
     if (saveNotesTimeout.current) clearTimeout(saveNotesTimeout.current);
 
     saveNotesTimeout.current = setTimeout(async () => {
@@ -370,19 +372,52 @@ function LeitorContent() {
 
       // Grava no Supabase se configurado
       if (isSupabaseConfigured) {
-        const success = await saveMaterialNotes(material.id, val);
-        setNotesStatus(success ? 'Salvo na sua conta' : 'Salvo neste dispositivo');
+        try {
+          const success = await saveMaterialNotes(material.id, val);
+          setNotesState(success ? 'salvo' : 'erro');
+        } catch {
+          setNotesState('erro');
+        }
       } else {
-        setNotesStatus('Salvo neste dispositivo');
+        setNotesState('salvo');
       }
-    }, 600);
+    }, 700);
   };
 
   const handleInsertPageInNotes = () => {
-    const textToInsert = `\n[p. ${currentPage}] `;
-    const updated = notes + textToInsert;
-    setNotes(updated);
-    handleNotesChange(updated);
+    const ta = textareaRef.current;
+    const ref = `[p. ${currentPage}] `;
+    if (ta) {
+      const s = ta.selectionStart;
+      const e = ta.selectionEnd;
+      const v = ta.value;
+      const pre = (s > 0 && v[s - 1] !== '\n' && v[s - 1] !== ' ') ? ' ' : '';
+      const newVal = v.slice(0, s) + pre + ref + v.slice(e);
+      setNotes(newVal);
+      ta.value = newVal;
+      ta.focus();
+      const pos = s + pre.length + ref.length;
+      ta.setSelectionRange(pos, pos);
+      handleNotesChange(newVal);
+    } else {
+      const textToInsert = `\n[p. ${currentPage}] `;
+      const updated = notes + textToInsert;
+      setNotes(updated);
+      handleNotesChange(updated);
+    }
+  };
+
+  const handleCopyNotes = () => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(notes).then(() => {
+        setCopiedNotes(true);
+        setTimeout(() => setCopiedNotes(false), 1500);
+      }).catch(() => {
+        if (textareaRef.current) textareaRef.current.select();
+      });
+    } else if (textareaRef.current) {
+      textareaRef.current.select();
+    }
   };
 
   // Toast
@@ -1097,33 +1132,51 @@ function LeitorContent() {
               </div>
             </div>
           ) : (
-            <div className="pane notes" role="tabpanel">
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                <span className="pgtag">Página {currentPage}</span>
-                <span style={{ fontSize: '11px', color: 'var(--ink-faint)', fontFamily: 'var(--mono)' }}>
-                  {currentUser ? '☁️ Sincronizado' : '💾 Salvo local'}
-                </span>
-              </div>
-              <textarea 
-                value={notes}
-                onChange={(e) => handleNotesChange(e.target.value)}
-                placeholder="Anote suas observações clínicas, dúvidas ou lembretes deste material. Suas notas são salvas automaticamente na sua conta."
-                aria-label="Minhas notas"
-              />
-              <div className="row">
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '12px' }}>
-                  <i 
-                    style={{ 
-                      width: 6, 
-                      height: 6, 
-                      borderRadius: '50%', 
-                      background: notesStatus.includes('Salvando') ? '#f59e0b' : 'var(--accent)', 
-                      display: 'inline-block' 
-                    }} 
+            <div className="pane" role="tabpanel" style={{ padding: '16px 14px' }}>
+              <div className="na-notes" data-state={notesState} data-page={currentPage}>
+                <div className="na-notes__head">
+                  <span className="na-notes__pg">Notas da página <b>{currentPage}</b></span>
+                  <span className="na-notes__sync" aria-live="polite">
+                    <i />
+                    <span>{notesState === 'salvando' ? 'Salvando…' : notesState === 'erro' ? 'Erro ao salvar' : 'Salvo'}</span>
+                  </span>
+                </div>
+
+                <div className="na-notes__sheet">
+                  <textarea
+                    ref={textareaRef}
+                    className="na-notes__ta"
+                    value={notes}
+                    onChange={(e) => handleNotesChange(e.target.value)}
+                    aria-label="Notas desta página"
+                    placeholder="Escreva suas anotações sobre esta página…"
                   />
-                  {notesStatus}
-                </span>
-                <button type="button" onClick={handleInsertPageInNotes}>+ Inserir pág. {currentPage}</button>
+                  <div className="na-notes__tools">
+                    <button
+                      className="na-notes__btn pri"
+                      type="button"
+                      onClick={handleInsertPageInNotes}
+                    >
+                      <svg viewBox="0 0 24 24"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/></svg>
+                      Inserir pág. <span>{currentPage}</span>
+                    </button>
+                    <button
+                      className="na-notes__btn"
+                      type="button"
+                      onClick={handleCopyNotes}
+                      title="Copiar notas"
+                    >
+                      <svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg>
+                      <span>{copiedNotes ? 'Copiado' : 'Copiar'}</span>
+                    </button>
+                    <span className="na-notes__count">{notes.length}</span>
+                  </div>
+                </div>
+
+                <div className="na-notes__foot">
+                  <svg viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/></svg>
+                  <span>Salvo na sua conta e visível só para você. Não registre dados que identifiquem pacientes.</span>
+                </div>
               </div>
             </div>
           )}
