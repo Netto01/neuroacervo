@@ -288,3 +288,47 @@ export async function cleanupDemoData() {
   }
 }
 
+/* ── Anotações Pessoais de Materiais / PDFs ── */
+export async function getMaterialNotes(materialId: string): Promise<string> {
+  if (!isSupabaseConfigured) return '';
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user?.id) return '';
+
+    const { data, error } = await supabase
+      .from('user_material_notes')
+      .select('notes')
+      .eq('user_id', session.user.id)
+      .eq('material_id', materialId)
+      .maybeSingle();
+
+    if (error || !data) return '';
+    return data.notes || '';
+  } catch {
+    return '';
+  }
+}
+
+export async function saveMaterialNotes(materialId: string, notes: string): Promise<boolean> {
+  if (!isSupabaseConfigured) return false;
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user?.id) return false;
+
+    const { error } = await supabase
+      .from('user_material_notes')
+      .upsert({
+        user_id: session.user.id,
+        material_id: materialId,
+        notes: notes,
+        updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'user_id,material_id'
+      });
+
+    return !error;
+  } catch {
+    return false;
+  }
+}
+

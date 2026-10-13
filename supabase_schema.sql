@@ -253,7 +253,29 @@ CREATE POLICY "Usuários gerenciam seu próprio progresso de aulas"
   USING (auth.uid() = user_id);
 
 
--- 8. Trigger para criar perfil automaticamente no SignUp (auth.users)
+-- 8. Tabela de Anotações Pessoais de Materiais / PDFs
+CREATE TABLE IF NOT EXISTS public.user_material_notes (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  material_id TEXT NOT NULL,
+  notes TEXT NOT NULL DEFAULT '',
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  UNIQUE(user_id, material_id)
+);
+
+ALTER TABLE public.user_material_notes ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Usuários gerenciam suas próprias anotações de materiais" ON public.user_material_notes;
+CREATE POLICY "Usuários gerenciam suas próprias anotações de materiais" 
+  ON public.user_material_notes FOR ALL 
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE INDEX IF NOT EXISTS idx_user_material_notes_user_mat ON public.user_material_notes(user_id, material_id);
+
+
+-- 9. Trigger para criar perfil automaticamente no SignUp (auth.users)
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN

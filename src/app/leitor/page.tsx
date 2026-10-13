@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import Script from 'next/script';
 import { useNeuro } from '@/context/NeuroContext';
-import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured, getMaterialNotes, saveMaterialNotes } from '@/lib/supabase';
 import { AGE_LABELS, TYPE_LABELS } from '@/data/neuroData';
 import { escapeHtml } from '@/utils/security';
 import './leitor.css';
@@ -327,12 +327,33 @@ function LeitorContent() {
   const [sections, setSections] = useState<TocItem[]>([]);
   const [demoPages, setDemoPages] = useState<PageData[]>([]);
 
-  // Carregar notas salvas
+  // Carregar notas salvas (primeiro lê instantaneamente do localStorage, depois sincroniza do Supabase)
   useEffect(() => {
+    let isCancelled = false;
+
+    // 1. Carregamento imediato do cache local para resposta visual em 0ms
     try {
-      const savedNotes = localStorage.getItem(`na:${material.id}:notas`);
-      if (savedNotes) setNotes(savedNotes);
+      const local = localStorage.getItem(`na:${material.id}:notas`);
+      if (local) setNotes(local);
     } catch {}
+
+    // 2. Sincronização em nuvem via Supabase
+    if (isSupabaseConfigured) {
+      getMaterialNotes(material.id).then((cloudNotes) => {
+        if (isCancelled) return;
+        if (cloudNotes) {
+          setNotes(cloudNotes);
+          try {
+            localStorage.setItem(`na:${material.id}:notas`, cloudNotes);
+          } catch {}
+          setNotesStatus('Salvo na sua conta');
+        }
+      }).catch(() => {});
+    }
+
+    return () => {
+      isCancelled = true;
+    };
   }, [material.id]);
 
   const saveNotesTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -340,18 +361,28 @@ function LeitorContent() {
     setNotes(val);
     setNotesStatus('Salvando…');
     if (saveNotesTimeout.current) clearTimeout(saveNotesTimeout.current);
-    saveNotesTimeout.current = setTimeout(() => {
+
+    saveNotesTimeout.current = setTimeout(async () => {
+      // Grava no localStorage imediatamente
       try {
         localStorage.setItem(`na:${material.id}:notas`, val);
-        setNotesStatus('Salvo');
       } catch {}
-    }, 400);
+
+      // Grava no Supabase se configurado
+      if (isSupabaseConfigured) {
+        const success = await saveMaterialNotes(material.id, val);
+        setNotesStatus(success ? 'Salvo na sua conta' : 'Salvo neste dispositivo');
+      } else {
+        setNotesStatus('Salvo neste dispositivo');
+      }
+    }, 600);
   };
 
   const handleInsertPageInNotes = () => {
     const textToInsert = `\n[p. ${currentPage}] `;
-    setNotes(prev => prev + textToInsert);
-    handleNotesChange(notes + textToInsert);
+    const updated = notes + textToInsert;
+    setNotes(updated);
+    handleNotesChange(updated);
   };
 
   // Toast
@@ -1067,16 +1098,32 @@ function LeitorContent() {
             </div>
           ) : (
             <div className="pane notes" role="tabpanel">
-              <span className="pgtag">Página {currentPage}</span>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                <span className="pgtag">Página {currentPage}</span>
+                <span style={{ fontSize: '11px', color: 'var(--ink-faint)', fontFamily: 'var(--mono)' }}>
+                  {currentUser ? '☁️ Sincronizado' : '💾 Salvo local'}
+                </span>
+              </div>
               <textarea 
                 value={notes}
                 onChange={(e) => handleNotesChange(e.target.value)}
-                placeholder="Anote o que quiser lembrar deste material. Suas notas ficam salvas neste aparelho."
+                placeholder="Anote suas observações clínicas, dúvidas ou lembretes deste material. Suas notas são salvas automaticamente na sua conta."
                 aria-label="Minhas notas"
               />
               <div className="row">
-                <span>{notesStatus}</span>
-                <button type="button" onClick={handleInsertPageInNotes}>Inserir nº da página</button>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '12px' }}>
+                  <i 
+                    style={{ 
+                      width: 6, 
+                      height: 6, 
+                      borderRadius: '50%', 
+                      background: notesStatus.includes('Salvando') ? '#f59e0b' : 'var(--accent)', 
+                      display: 'inline-block' 
+                    }} 
+                  />
+                  {notesStatus}
+                </span>
+                <button type="button" onClick={handleInsertPageInNotes}>+ Inserir pág. {currentPage}</button>
               </div>
             </div>
           )}
