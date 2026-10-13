@@ -543,10 +543,47 @@
 .na-notes[data-state=erro] .na-notes__sync i { background: #b23b2b; box-shadow: 0 0 0 3px rgba(178, 59, 43, 0.18); }
 @keyframes na-pulse { 50% { opacity: 0.35; } }
 
-.na-notes__sheet { position: relative; border-radius: 18px; background: var(--bone); box-shadow: inset 0 0 0 1px var(--line), 0 4px 0 rgba(21, 20, 15, 0.04), 0 12px 24px rgba(21, 20, 15, 0.07); transition: box-shadow 0.15s; }
-.na-notes__sheet:focus-within { box-shadow: inset 0 0 0 1.5px var(--accent), 0 0 0 4px rgba(47, 107, 49, 0.12), 0 12px 24px rgba(21, 20, 15, 0.07); }
+.na-notes__sheet { 
+  position: relative; 
+  border-radius: 18px; 
+  background: var(--bone); 
+  box-shadow: inset 0 0 0 1px var(--line), 0 4px 0 rgba(21, 20, 15, 0.04), 0 12px 24px rgba(21, 20, 15, 0.07); 
+  transition: box-shadow 0.15s; 
+  outline: none !important;
+}
+.na-notes__sheet:focus,
+.na-notes__sheet:focus-within,
+.na-notes__sheet:focus-visible { 
+  box-shadow: inset 0 0 0 1px var(--line), 0 4px 0 rgba(21, 20, 15, 0.04), 0 12px 24px rgba(21, 20, 15, 0.07); 
+  outline: none !important;
+}
 .na-notes__sheet::before { content: ""; position: absolute; top: 0; bottom: 50px; left: 34px; width: 1.5px; background: rgba(194, 65, 47, 0.22); pointer-events: none; }
-.na-notes__ta { display: block; width: 100%; min-height: 260px; resize: vertical; border: 0; outline: 0; background: transparent; padding: 14px 16px 14px 46px; font: 400 14.5px/28px 'Inter', system-ui, sans-serif; color: var(--ink); background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 27px, rgba(21, 20, 15, 0.08) 27px, rgba(21, 20, 15, 0.08) 28px); background-position: 0 14px; background-attachment: local; }
+.na-notes__ta { 
+  display: block; 
+  width: 100%; 
+  min-height: 260px; 
+  resize: vertical; 
+  border: 0 !important; 
+  outline: none !important; 
+  box-shadow: none !important;
+  background: transparent; 
+  padding: 14px 16px 14px 46px; 
+  font: 400 14.5px/28px 'Inter', system-ui, sans-serif; 
+  color: var(--ink); 
+  background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 27px, rgba(21, 20, 15, 0.08) 27px, rgba(21, 20, 15, 0.08) 28px); 
+  background-position: 0 14px; 
+  background-attachment: local; 
+}
+.na-notes__ta:focus,
+.na-notes__ta:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  border: 0 !important;
+}
+.na-notes :focus:not(.na-notes__btn),
+.na-notes :focus-visible:not(.na-notes__btn) {
+  outline: none !important;
+}
 .na-notes__ta::placeholder { color: var(--faint); }
 .na-notes__tools { display: flex; align-items: center; gap: 6px; padding: 8px 10px; border-top: 1px dashed var(--line); }
 .na-notes__btn { display: inline-flex; align-items: center; gap: 6px; border: 0; cursor: pointer; padding: 7px 10px; border-radius: 10px; background: transparent; color: var(--mute); font: 600 12.5px 'Inter', system-ui, sans-serif; transition: background 0.15s, color 0.15s; }
