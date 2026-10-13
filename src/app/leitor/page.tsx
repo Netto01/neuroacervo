@@ -465,6 +465,30 @@ function LeitorContent() {
         }))
       ];
       setSections(demoSections);
+    } else {
+      // Sumário inicial para PDF real enquanto o arquivo está sendo processado
+      const rawItems = material.keyInstructions && material.keyInstructions.length > 0
+        ? material.keyInstructions
+        : [
+            'Visão geral & Fundamentação',
+            'Regras de administração e aplicação',
+            'Critérios de pontuação e escores',
+            'Interpretação psicométrica e clínica',
+            'Síntese e redação para o laudo'
+          ];
+
+      const initialSections: TocItem[] = [
+        { title: 'Capa / Início', n: '·', page: 1 },
+        ...rawItems.map((item, idx) => {
+          const cleanTitle = item.replace(/^([IVXLCDM]+|\d+)[\.\-\s:]+/, '').trim() || item;
+          return {
+            title: cleanTitle,
+            n: `${String(idx + 1).padStart(2, '0')}.`,
+            page: Math.max(1, idx + 2)
+          };
+        })
+      ];
+      setSections(initialSections);
     }
   }, [pdfUrl, material]);
 
@@ -493,7 +517,7 @@ function LeitorContent() {
     });
 
     loadingTask.promise
-      .then((doc: any) => {
+      .then(async (doc: any) => {
         if (isCancelled) return;
         pdfDocRef.current = doc;
         setPdfDoc(doc);
@@ -501,23 +525,97 @@ function LeitorContent() {
         setTotalPages(doc.numPages);
         setTimeout(handleFitWidth, 50);
 
-        return doc.getOutline().then((outline: any) => {
+        // Extração Inteligente de Sumário:
+        // Tier 1: Bookmarks / Outline embutido no PDF
+        let resolvedSections: TocItem[] = [];
+
+        try {
+          const outline = await doc.getOutline();
           if (outline && outline.length > 0) {
-            const secPromises = outline.slice(0, 30).map((it: any, k: number) => {
-              const dest = typeof it.dest === 'string' ? doc.getDestination(it.dest) : Promise.resolve(it.dest);
-              return dest.then((d: any) => (d ? doc.getPageIndex(d[0]) : null)).then((idx: number | null) => {
-                if (idx != null) {
-                  return { title: it.title, n: `${k + 1}.`, page: idx + 1 };
+            const secPromises = outline.slice(0, 40).map(async (it: any, k: number) => {
+              try {
+                let dest = it.dest;
+                if (typeof dest === 'string') {
+                  dest = await doc.getDestination(dest);
                 }
-                return null;
-              }).catch(() => null);
+                if (dest && dest[0]) {
+                  const pageIdx = await doc.getPageIndex(dest[0]);
+                  if (pageIdx != null) {
+                    return { title: it.title, n: `${k + 1}.`, page: pageIdx + 1 };
+                  }
+                }
+              } catch {}
+              return null;
             });
-            Promise.all(secPromises).then(results => {
-              const valid = results.filter(Boolean) as TocItem[];
-              if (valid.length > 0) setSections(valid.sort((a, b) => a.page - b.page));
-            });
+            const valid = (await Promise.all(secPromises)).filter(Boolean) as TocItem[];
+            if (valid.length > 0) {
+              resolvedSections = valid.sort((a, b) => a.page - b.page);
+            }
           }
-        });
+        } catch {}
+
+        // Tier 2: Tópicos catalogados do material com mapeamento proporcional das páginas
+        if (resolvedSections.length === 0) {
+          const rawItems = material.keyInstructions && material.keyInstructions.length > 0
+            ? material.keyInstructions
+            : null;
+
+          if (rawItems && rawItems.length > 0) {
+            const numPages = doc.numPages;
+            resolvedSections = [
+              { title: 'Capa / Início', n: '·', page: 1 },
+              ...rawItems.map((item, idx) => {
+                const cleanTitle = item.replace(/^([IVXLCDM]+|\d+)[\.\-\s:]+/, '').trim() || item;
+                const step = (numPages - 1) / rawItems.length;
+                const targetPage = Math.min(numPages, Math.max(1, Math.round(1 + (idx + 0.5) * step)));
+                return {
+                  title: cleanTitle,
+                  n: `${String(idx + 1).padStart(2, '0')}.`,
+                  page: targetPage
+                };
+              })
+            ];
+          } else {
+            // Tier 3: Varredura rápida de cabeçalhos das páginas reais do PDF
+            const numPages = doc.numPages;
+            const maxPages = Math.min(numPages, 30);
+            const pageEntries: TocItem[] = [];
+
+            for (let p = 1; p <= maxPages; p++) {
+              let pageTitle = p === 1 ? 'Capa / Início' : `Página ${p}`;
+              try {
+                const page = await doc.getPage(p);
+                const tc = await page.getTextContent();
+                if (tc?.items?.length) {
+                  let bestStr = '';
+                  let maxScale = 0;
+                  for (const it of tc.items.slice(0, 8)) {
+                    if (it.str && it.str.trim().length > 3 && !/^\d+$/.test(it.str.trim())) {
+                      const scale = Math.abs(it.transform?.[0] || 10);
+                      if (scale > maxScale) {
+                        maxScale = scale;
+                        bestStr = it.str.trim();
+                      }
+                    }
+                  }
+                  if (bestStr) {
+                    pageTitle = bestStr.length > 40 ? bestStr.slice(0, 38) + '…' : bestStr;
+                  }
+                }
+              } catch {}
+              pageEntries.push({
+                title: pageTitle,
+                n: `${p}.`,
+                page: p
+              });
+            }
+            resolvedSections = pageEntries;
+          }
+        }
+
+        if (!isCancelled && resolvedSections.length > 0) {
+          setSections(resolvedSections);
+        }
       })
       .catch((err: any) => {
         if (isCancelled) return;
@@ -533,7 +631,7 @@ function LeitorContent() {
         loadingTask.destroy?.();
       } catch {}
     };
-  }, [pdfUrl, pdfJsLoaded]);
+  }, [pdfUrl, pdfJsLoaded, material]);
 
   // Ajustar largura (Fit to screen)
   const handleFitWidth = () => {
@@ -608,6 +706,33 @@ function LeitorContent() {
     }
     setIsSearching(true);
     const results: { page: number; snippet: string }[] = [];
+
+    if (pdfDoc) {
+      const numPages = pdfDoc.numPages;
+      const maxPages = Math.min(numPages, 35);
+      const searchTasks: Promise<void>[] = [];
+
+      for (let p = 1; p <= maxPages; p++) {
+        searchTasks.push(
+          pdfDoc.getPage(p).then((page: any) => page.getTextContent()).then((tc: any) => {
+            const rawText = tc?.items?.map((it: any) => it.str).join(' ') || '';
+            const lower = rawText.toLowerCase();
+            const pos = lower.indexOf(trimmed);
+            if (pos >= 0) {
+              const start = Math.max(0, pos - 40);
+              const snip = rawText.slice(start, pos + trimmed.length + 50);
+              results.push({ page: p, snippet: `…${snip}…` });
+            }
+          }).catch(() => {})
+        );
+      }
+
+      Promise.all(searchTasks).then(() => {
+        setSearchResults(results.sort((a, b) => a.page - b.page));
+        setIsSearching(false);
+      });
+      return;
+    }
 
     demoPages.forEach((p, idx) => {
       const rawText = p.sheetHtml?.replace(/<[^>]+>/g, ' ') || '';
@@ -776,21 +901,28 @@ function LeitorContent() {
           {activeLeftTab === 'toc' ? (
             <div className="pane" role="tabpanel">
               <div className="lbl">Neste material</div>
-              <ol className="toc">
-                {sections.map((sec, i) => (
-                  <li key={i}>
-                    <button 
-                      type="button" 
-                      aria-current={currentPage === sec.page}
-                      onClick={() => goToPage(sec.page)}
-                    >
-                      <span className="n">{sec.n}</span>
-                      <span>{sec.title}</span>
-                      <span className="p">p. {sec.page}</span>
-                    </button>
-                  </li>
-                ))}
-              </ol>
+              {sections.length > 0 ? (
+                <ol className="toc">
+                  {sections.map((sec, i) => (
+                    <li key={i}>
+                      <button 
+                        type="button" 
+                        aria-current={currentPage === sec.page}
+                        onClick={() => goToPage(sec.page)}
+                      >
+                        <span className="n">{sec.n}</span>
+                        <span>{sec.title}</span>
+                        <span className="p">p. {sec.page}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <div style={{ padding: '24px 12px', textAlign: 'center', color: 'var(--ink-mute)', fontSize: '12px' }}>
+                  <div style={{ width: 16, height: 16, border: '2px solid var(--accent-strong)', borderTopColor: 'transparent', borderRadius: '50%', margin: '0 auto 8px', animation: 'spin 0.8s linear infinite' }} />
+                  Carregando tópicos do sumário…
+                </div>
+              )}
             </div>
           ) : (
             <div className="pane" role="tabpanel">
