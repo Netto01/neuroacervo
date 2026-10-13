@@ -9,7 +9,7 @@ export function HeroSection() {
           <a className="hero-pill" href="#acervo">
             <b>Acervo</b>Guias, laudos, anamnese e aulas
           </a>
-          <span className="label">Para psicólogos e neuropsicólogos</span>
+          <span className="label">Para acadêmicos de psi, psicólogos e neuropsicólogos</span>
           <h1 className="display" id="h-hero">
             Avaliação neuropsicológica <em>com método</em>, num só <em>acervo</em><span className="dot">.</span>
           </h1>

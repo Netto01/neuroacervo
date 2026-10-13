@@ -26,7 +26,7 @@ export function FaqSection() {
                 <span className="faq-toggle" aria-hidden="true">+</span>
               </summary>
               <p className="faq-a">
-                Psicólogos e estudantes de psicologia. Os guias são material de apoio e não substituem o manual oficial dos instrumentos, que segue necessário para a aplicação.
+                Acadêmicos de psi, psicólogos e neuropsicólogos. Os guias são material de apoio e não substituem o manual oficial dos instrumentos, que segue necessário para a aplicação.
               </p>
             </details>
             <details className="faq-item">

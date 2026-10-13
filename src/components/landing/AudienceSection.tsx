@@ -17,7 +17,7 @@ export function AudienceSection() {
           <h2 className="display" id="h-quem">Feito para <em>quem avalia</em><span className="dot">.</span></h2>
           <div className="right">
             <span className="plus" aria-hidden="true">+</span>
-            <p>Psicólogos e estudantes de psicologia em formação ou já na clínica.</p>
+            <p>Acadêmicos de psi, psicólogos e neuropsicólogos em formação ou já na clínica.</p>
           </div>
         </div>
         <div className="labs-grid">

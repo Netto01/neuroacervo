@@ -45,7 +45,7 @@ export function LandingHeader({ logoSrc = '/brand/isologo-preto.svg' }: LandingH
           <span><b>NA / 2026</b> · Acervo clínico Nº 01</span>
           <span className="mid">
             <span>Avaliação <b className="acc">neuropsicológica</b></span>
-            <span>Para psicólogos e neuropsicólogos</span>
+            <span>Para acadêmicos de psi, psicólogos e neuropsicólogos</span>
           </span>
           <span className="right"><span className="pulse"></span>Acervo em atualização</span>
         </div>

@@ -426,7 +426,7 @@ function DashboardInner() {
           {/* saudação */}
           <div className="hello">
             <div>
-              <span className="label">Área do assinante</span>
+              <span className="label">Área do assinante · Acadêmicos de psi, psicólogos e neuropsicólogos</span>
               <h1>
                 <span id="saudacao">{saudacao}</span>, <em>{currentUser?.name ? currentUser.name.split(' ')[0] : 'colega'}</em><span className="dot">.</span>
               </h1>
