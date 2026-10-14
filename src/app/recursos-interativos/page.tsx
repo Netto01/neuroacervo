@@ -1,457 +1,337 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { NeuroProvider, useNeuro } from '@/context/NeuroContext';
+import { useNeuro } from '@/context/NeuroContext';
 import { PlatformShell } from '@/components/layout/PlatformShell';
-import { 
-  Play, 
-  Pause, 
-  RotateCcw, 
-  Plus, 
-  Minus, 
-  BookOpen, 
-  Sparkles, 
-  Layers, 
-  Timer, 
-  Check, 
-  ChevronLeft, 
-  ChevronRight,
-  ArrowRight
-} from 'lucide-react';
-
-const EXECUTIVE_CARDS = [
-  { id: 1, categoria: 'Planejamento', titulo: 'Decomposição em Metas', prompt: 'Divida a tarefa complexa em 3 subtarefas de até 15 minutos cada.', dica: 'Ajuda a contornar paralisia inicial e sobrecarga de memória de trabalho.' },
-  { id: 2, categoria: 'Flexibilidade', titulo: 'Mudança de Perspectiva', prompt: 'Se sua primeira estratégia falhar, formule imediatamente uma via alternativa oposta.', dica: 'Estimula a alternância de set cognitivo em situações de frustração.' },
-  { id: 3, categoria: 'Controle Inibitório', titulo: 'Pausa Estratégica (Stop & Think)', prompt: 'Conte mentalmente 3 segundos antes de registrar a resposta final.', dica: 'Reduz erros por impulsividade motora ou cognitiva em testagens.' },
-  { id: 4, categoria: 'Memória de Trabalho', titulo: 'Chunking / Agrupamento', prompt: 'Agrupe a sequência numérica ou verbal em blocos de 2 a 3 itens com significado.', dica: 'Expande a capacidade aparente de retenção do span imediato.' },
-  { id: 5, categoria: 'Monitoramento', titulo: 'Checagem de Qualidade', prompt: 'Revise o resultado final comparando estritamente com o critério inicial exigido.', dica: 'Treina a autocrítica metacognitiva e a detecção autônoma de inconsistências.' }
-];
-
-const HISTORIAS_TEMATICAS = [
-  {
-    id: 1,
-    titulo: 'A Rotina Escolar de Lucas',
-    contexto: 'Avaliação de compreensão auditiva, retenção episódica e inferência lógica.',
-    etapas: [
-      { passo: 1, texto: 'Lucas acordou às 7 horas. Ao colocar a mochila nas costas, percebeu que havia esquecido o estojo sobre a escrivaninha.', pergunta: 'O que Lucas havia esquecido antes de sair de casa?' },
-      { passo: 2, texto: 'Na escola, a professora pediu para a turma abrir o caderno na lição de matemática, mas o lápis de Lucas estava sem ponta.', pergunta: 'Qual era a matéria e qual obstáculo Lucas encontrou?' },
-      { passo: 3, texto: 'Seu colega Gabriel emprestou um apontador, e Lucas conseguiu terminar a tarefa antes do sinal do recreio tocar.', pergunta: 'Como o problema foi resolvido e quem ajudou Lucas?' }
-    ]
-  },
-  {
-    id: 2,
-    titulo: 'O Passeio no Parque com a Avó',
-    contexto: 'Avaliação de sequenciamento temporal, atenção seletiva e vocabulário contextual.',
-    etapas: [
-      { passo: 1, texto: 'Dona Clara levou seu neto Pedro para caminhar no parque municipal em uma manhã ensolarada de primavera.', pergunta: 'Quem eram os personagens e qual era o local do passeio?' },
-      { passo: 2, texto: 'Eles viram patos nadando no lago e pararam para alimentar os peixes com migalhas de pão.', pergunta: 'Quais animais eles observaram no caminho?' },
-      { passo: 3, texto: 'Antes de voltar para casa, compraram água de coco e sentaram-se em um banco de madeira sob a sombra de uma árvore.', pergunta: 'O que fizeram antes de retornar para casa?' }
-    ]
-  }
-];
-
 import { resolveUserPlan } from '@/utils/userPlan';
-import { PraticaGate } from '@/components/common/PraticaGate';
+import './recursos.css';
 
-function RecursosInterativosInner() {
+export default function RecursosInterativosPage() {
   const { currentUser } = useNeuro();
   const planInfo = resolveUserPlan(currentUser);
 
-  const [activeTool, setActiveTool] = useState<'cronometro' | 'baralho' | 'historias'>('cronometro');
+  const [filter, setFilter] = useState<'todos' | 'historias' | 'baralhos'>('todos');
+  const [openCard, setOpenCard] = useState<string | null>(null);
 
-  // Cronômetro Clínico
-  const [seconds, setSeconds] = useState<number>(0);
-  const [isRunning, setIsRunning] = useState<boolean>(false);
-  const [erros, setErros] = useState<number>(0);
-  const [acertos, setAcertos] = useState<number>(0);
-  const [registros, setRegistros] = useState<{ id: number; tempo: string; erros: number; acertos: number }[]>([]);
-
-  useEffect(() => {
-    let interval: any = null;
-    if (isRunning) {
-      interval = setInterval(() => {
-        setSeconds((s) => s + 1);
-      }, 1000);
+  const toggleCard = (cardId: string) => {
+    const nextState = openCard === cardId ? null : cardId;
+    if (typeof document !== 'undefined' && 'startViewTransition' in document) {
+      (document as any).startViewTransition(() => {
+        setOpenCard(nextState);
+      });
     } else {
-      clearInterval(interval);
+      setOpenCard(nextState);
     }
-    return () => clearInterval(interval);
-  }, [isRunning]);
-
-  const formatTime = (totalSeconds: number) => {
-    const mins = Math.floor(totalSeconds / 60);
-    const secs = totalSeconds % 60;
-    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   };
 
-  const handleReset = () => {
-    setIsRunning(false);
-    setSeconds(0);
-    setErros(0);
-    setAcertos(0);
+  const handleFilter = (f: 'todos' | 'historias' | 'baralhos') => {
+    if (typeof document !== 'undefined' && 'startViewTransition' in document) {
+      (document as any).startViewTransition(() => {
+        setFilter(f);
+      });
+    } else {
+      setFilter(f);
+    }
   };
-
-  const handleLap = () => {
-    const novo = {
-      id: Date.now(),
-      tempo: formatTime(seconds),
-      erros,
-      acertos
-    };
-    setRegistros([novo, ...registros]);
-  };
-
-  // Baralho de Funções Executivas
-  const [currentCardIndex, setCurrentCardIndex] = useState(0);
-  const [cardFlipped, setCardFlipped] = useState(false);
-  const currentCard = EXECUTIVE_CARDS[currentCardIndex];
-
-  // Histórias Temáticas
-  const [activeStoryId, setActiveStoryId] = useState(1);
-  const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const currentStory = HISTORIAS_TEMATICAS.find(h => h.id === activeStoryId) || HISTORIAS_TEMATICAS[0];
-  const currentStep = currentStory.etapas[currentStepIndex];
 
   return (
     <PlatformShell activePage="recursos">
-      {/* Header */}
-      <div className="lib-head">
-        <div>
-          <span className="label">Tecnologia Clínica</span>
-          <h1>Recursos <em>interativos</em><span className="dot">.</span></h1>
-          <p>Ferramentas dinâmicas para apoiar sua aplicação prática de testes, cronometragem precisa com contagem de erros, cartas clínicas e histórias ilustradas para sessões.</p>
+      {!planInfo.hasRecursos && (
+        <div className="aviso">
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 8v5M12 16.5v.01" />
+          </svg>
+          <span>
+            <b>Assinatura pendente.</b>{' '}
+            <span className="t">Conclua o pagamento do plano Prática para liberar os recursos interativos.</span>
+          </span>
+          <Link href="/assinatura">Concluir pagamento</Link>
         </div>
-        <div className="stats" aria-label="Estatísticas">
-          <div className="stat">
-            <b>3</b>
-            <span>ferramentas ativas</span>
-          </div>
-          <div className="stat">
-            <b>100%</b>
-            <span>interativo</span>
-          </div>
-          <div className="stat">
-            <b>0</b>
-            <span>instalações necessárias</span>
-          </div>
-        </div>
-      </div>
+      )}
 
-      {!planInfo.hasRecursos ? (
-        <PraticaGate />
-      ) : (
-        <>
-          {/* Seletor de Ferramenta */}
-          <div className="tabs" style={{ marginTop: '24px' }}>
+      <div className="wrap">
+        <div className="hd3">
+          <div>
+            <div className="kick">Tecnologia clínica</div>
+            <h1>
+              Recursos <em>interativos</em>.
+            </h1>
+            <p>
+              Ferramentas para usar em sessão, com apoio à prática neuropsicológica e cognitivo-comportamental. Clique em um recurso para ver os detalhes.
+            </p>
+          </div>
+          <div className="stats">
+            <div>
+              <b>1</b>
+              <span>recurso ativo</span>
+            </div>
+            <div>
+              <b>50</b>
+              <span>histórias clínicas</span>
+            </div>
+            <div>
+              <b>3</b>
+              <span>em desenvolvimento</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="filtros" role="group" aria-label="Filtrar recursos">
+          <button
+            type="button"
+            className={filter === 'todos' ? 'on' : ''}
+            onClick={() => handleFilter('todos')}
+          >
+            Todos<span className="ct">4</span>
+          </button>
+          <button
+            type="button"
+            className={filter === 'historias' ? 'on' : ''}
+            onClick={() => handleFilter('historias')}
+          >
+            Histórias<span className="ct">2</span>
+          </button>
+          <button
+            type="button"
+            className={filter === 'baralhos' ? 'on' : ''}
+            onClick={() => handleFilter('baralhos')}
+          >
+            Baralhos e atividades<span className="ct">2</span>
+          </button>
+          <span className="r">Novos recursos todo mês</span>
+        </div>
+
+        <div className="na-grid">
+          {/* Card 1: Histórias Clínicas */}
+          <div
+            className={`na-card ${openCard === 'rc-hist' ? 'open' : ''}`}
+            data-cat="historias"
+            style={{ display: filter === 'todos' || filter === 'historias' ? undefined : 'none' }}
+          >
             <button
-              className="tab"
+              className="na-sq"
               type="button"
-              aria-pressed={activeTool === 'cronometro'}
-              onClick={() => setActiveTool('cronometro')}
+              aria-expanded={openCard === 'rc-hist'}
+              aria-controls="rc-hist"
+              onClick={() => toggleCard('rc-hist')}
             >
-              <Timer className="w-4 h-4" />
-              <span>Cronômetro Clínico &amp; Erros</span>
+              <span className="na-sq__top">
+                <span className="na-ic" style={{ background: '#1d5e63' }}>
+                  <svg viewBox="0 0 24 24">
+                    <path d="M2 5h7a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H2zM22 5h-7a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h8z" />
+                  </svg>
+                </span>
+                <span className="na-plus" aria-hidden="true">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M12 5v14M5 12h14" />
+                  </svg>
+                </span>
+              </span>
+              <span className="na-sq__main">
+                <span className="na-ic" style={{ background: '#1d5e63' }}>
+                  <svg viewBox="0 0 24 24">
+                    <path d="M2 5h7a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H2zM22 5h-7a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h8z" />
+                  </svg>
+                </span>
+                <span>
+                  <span className="na-kick">Intervenção clínica</span>
+                  <span className="na-title">
+                    Histórias Clínicas &amp; <em>Regulação</em>
+                  </span>
+                  <span className="na-meta">
+                    <span>50 histórias</span>
+                    <span>6–19 anos</span>
+                  </span>
+                </span>
+              </span>
             </button>
-        <button
-          className="tab"
-          type="button"
-          aria-pressed={activeTool === 'baralho'}
-          onClick={() => setActiveTool('baralho')}
-        >
-          <Layers className="w-4 h-4" />
-          <span>Baralho de Funções Executivas</span>
-        </button>
-        <button
-          className="tab"
-          type="button"
-          aria-pressed={activeTool === 'historias'}
-          onClick={() => setActiveTool('historias')}
-        >
-          <BookOpen className="w-4 h-4" />
-          <span>Histórias Temáticas &amp; Compreensão</span>
-        </button>
-      </div>
-
-      {/* Ferramenta 1: Cronômetro Clínico */}
-      {activeTool === 'cronometro' && (
-        <div style={{ marginTop: '28px', display: 'grid', gridTemplateColumns: 'minmax(0, 1.4fr) minmax(0, 1fr)', gap: '24px' }}>
-          <div style={{ background: 'var(--bone)', borderRadius: '24px', border: '1px solid #15140f0f', padding: '36px 28px', textAlign: 'center', boxShadow: 'var(--shadow)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
-            <span style={{ fontSize: '11px', fontFamily: 'var(--mono)', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--ink-faint)' }}>
-              Cronometragem de Testagem (Stroop, Trilhas, TAVEC, Dígitos)
-            </span>
-
-            <div style={{ fontSize: '72px', fontWeight: 800, fontFamily: 'var(--mono)', letterSpacing: '-0.04em', color: 'var(--ink)' }}>
-              {formatTime(seconds)}
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <button
-                type="button"
-                onClick={() => setIsRunning(!isRunning)}
-                className="btn"
-                style={{ padding: '14px 28px', fontSize: '15px' }}
-              >
-                {isRunning ? (
-                  <>Pausar <span><Pause className="w-4 h-4" /></span></>
-                ) : (
-                  <>Iniciar <span><Play className="w-4 h-4 fill-current ml-0.5" /></span></>
-                )}
-              </button>
-
-              <button
-                type="button"
-                onClick={handleLap}
-                disabled={seconds === 0}
-                className="btn-ghost"
-                style={{ padding: '13px 20px', opacity: seconds === 0 ? 0.4 : 1 }}
-              >
-                Registrar parcial
-              </button>
-
-              <button
-                type="button"
-                onClick={handleReset}
-                className="icon-btn"
-                title="Zerar cronômetro"
-              >
-                <RotateCcw className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Contadores Clínicos de Erros e Acertos */}
-            <div style={{ width: '100%', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', borderTop: '1px solid var(--line)', paddingTop: '20px', marginTop: '10px' }}>
-              <div style={{ background: 'var(--paper)', borderRadius: '16px', padding: '16px', border: '1px solid var(--line)' }}>
-                <span style={{ fontSize: '11px', fontFamily: 'var(--mono)', textTransform: 'uppercase', color: 'var(--accent-strong)', fontWeight: 600 }}>
-                  Acertos / Respostas
-                </span>
-                <div style={{ fontSize: '32px', fontWeight: 800, margin: '8px 0' }}>
-                  {acertos}
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}>
-                  <button type="button" onClick={() => setAcertos(a => Math.max(0, a - 1))} className="icon-btn" style={{ width: 34, height: 34 }}>
-                    <Minus className="w-3.5 h-3.5" />
-                  </button>
-                  <button type="button" onClick={() => setAcertos(a => a + 1)} className="btn" style={{ padding: '6px 14px', fontSize: '13px' }}>
-                    +1 Acerto
-                  </button>
-                </div>
-              </div>
-
-              <div style={{ background: 'var(--paper)', borderRadius: '16px', padding: '16px', border: '1px solid var(--line)' }}>
-                <span style={{ fontSize: '11px', fontFamily: 'var(--mono)', textTransform: 'uppercase', color: '#9c3f33', fontWeight: 600 }}>
-                  Erros / Intrusões
-                </span>
-                <div style={{ fontSize: '32px', fontWeight: 800, margin: '8px 0', color: '#9c3f33' }}>
-                  {erros}
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}>
-                  <button type="button" onClick={() => setErros(e => Math.max(0, e - 1))} className="icon-btn" style={{ width: 34, height: 34 }}>
-                    <Minus className="w-3.5 h-3.5" />
-                  </button>
-                  <button type="button" onClick={() => setErros(e => e + 1)} className="btn" style={{ padding: '6px 14px', fontSize: '13px', background: '#9c3f33' }}>
-                    +1 Erro
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Histórico de Parciais */}
-          <div style={{ background: 'var(--bone)', borderRadius: '24px', border: '1px solid #15140f0f', padding: '24px', boxShadow: 'var(--shadow)', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '14px', borderBottom: '1px solid var(--line)' }}>
-              <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 700, fontFamily: 'var(--sans)' }}>
-                Registros Parciais da Sessão
-              </h3>
-              {registros.length > 0 && (
-                <button type="button" onClick={() => setRegistros([])} className="clear">
-                  Limpar lista
-                </button>
-              )}
-            </div>
-
-            {registros.length === 0 ? (
-              <div style={{ padding: '48px 16px', textAlign: 'center', color: 'var(--ink-faint)', fontSize: '13px' }}>
-                Nenhuma parcial registrada ainda. Conforme a aplicação avança, clique em &quot;Registrar parcial&quot; para salvar o tempo e pontuação de cada etapa.
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px', maxHeight: '340px', overflowY: 'auto' }}>
-                {registros.map((r, i) => (
-                  <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: 'var(--paper)', borderRadius: '12px', border: '1px solid var(--line)', fontSize: '13px' }}>
-                    <span style={{ fontWeight: 600, fontFamily: 'var(--mono)' }}>Etapa {registros.length - i}</span>
-                    <span style={{ fontFamily: 'var(--mono)', color: 'var(--accent-strong)', fontWeight: 700 }}>{r.tempo}</span>
-                    <span style={{ fontSize: '11px', color: 'var(--ink-mute)' }}>{r.acertos} acertos · {r.erros} erros</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Ferramenta 2: Baralho de Funções Executivas */}
-      {activeTool === 'baralho' && (
-        <div style={{ marginTop: '28px', maxWidth: '640px', margin: '28px auto 0' }}>
-          <div style={{ background: 'var(--bone)', borderRadius: '24px', border: '1px solid #15140f0f', padding: '36px 32px', boxShadow: 'var(--shadow)', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
-              <span className="badge">{currentCard.categoria}</span>
-              <span style={{ fontSize: '12px', fontFamily: 'var(--mono)', color: 'var(--ink-faint)' }}>
-                Carta {currentCardIndex + 1} de {EXECUTIVE_CARDS.length}
-              </span>
-            </div>
-
-            <div 
-              onClick={() => setCardFlipped(!cardFlipped)}
-              style={{
-                width: '100%',
-                minHeight: '220px',
-                borderRadius: '18px',
-                background: cardFlipped ? 'var(--ink)' : 'var(--paper)',
-                color: cardFlipped ? '#f7f1de' : 'var(--ink)',
-                border: '1px solid var(--line)',
-                display: 'grid',
-                placeItems: 'center',
-                padding: '32px 24px',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                boxShadow: 'var(--shadow)'
-              }}
-            >
-              <div>
-                <h2 style={{ margin: '0 0 12px', fontSize: '24px', fontWeight: 800, letterSpacing: '-0.02em', color: cardFlipped ? 'var(--lime)' : 'var(--ink)' }}>
-                  {cardFlipped ? 'Fundamentação Clínica' : currentCard.titulo}
-                </h2>
-                <p style={{ margin: 0, fontSize: '15px', lineHeight: 1.6, color: cardFlipped ? '#f7f1debf' : 'var(--ink-soft)' }}>
-                  {cardFlipped ? currentCard.dica : currentCard.prompt}
-                </p>
-                <small style={{ display: 'block', marginTop: '16px', fontSize: '11px', fontFamily: 'var(--mono)', opacity: 0.6 }}>
-                  (Clique para {cardFlipped ? 'ver o exercício' : 'ver a dica clínica'})
-                </small>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-              <button
-                type="button"
-                onClick={() => {
-                  setCardFlipped(false);
-                  setCurrentCardIndex(i => (i === 0 ? EXECUTIVE_CARDS.length - 1 : i - 1));
-                }}
-                className="btn-ghost"
-              >
-                <span><ChevronLeft className="w-4 h-4" /></span> Anterior
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setCardFlipped(false);
-                  setCurrentCardIndex(i => (i === EXECUTIVE_CARDS.length - 1 ? 0 : i + 1));
-                }}
-                className="btn"
-              >
-                Próxima carta <span><ChevronRight className="w-4 h-4" /></span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Ferramenta 3: Histórias Temáticas */}
-      {activeTool === 'historias' && (
-        <div style={{ marginTop: '28px', display: 'grid', gridTemplateColumns: 'minmax(0, 1.6fr) minmax(0, 1fr)', gap: '24px' }}>
-          <div style={{ background: 'var(--bone)', borderRadius: '24px', border: '1px solid #15140f0f', padding: '32px', boxShadow: 'var(--shadow)', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <div>
-                <span className="badge">Narrativa Clínica</span>
-                <h2 style={{ margin: '8px 0 4px', fontSize: '22px', fontWeight: 800 }}>
-                  {currentStory.titulo}
-                </h2>
-                <p style={{ margin: 0, fontSize: '12px', color: 'var(--ink-mute)' }}>
-                  {currentStory.contexto}
-                </p>
-              </div>
-              <span style={{ fontSize: '12px', fontFamily: 'var(--mono)', color: 'var(--ink-faint)', flexShrink: 0 }}>
-                Etapa {currentStepIndex + 1} de {currentStory.etapas.length}
-              </span>
-            </div>
-
-            {/* Texto do Passo */}
-            <div style={{ background: 'var(--paper)', borderRadius: '18px', padding: '24px', border: '1px solid var(--line)', fontSize: '16px', lineHeight: 1.7, color: 'var(--ink)' }}>
-              {currentStep.texto}
-            </div>
-
-            {/* Pergunta de Checagem */}
-            <div style={{ background: 'rgba(218,254,170,0.3)', borderRadius: '16px', padding: '18px 20px', border: '1px solid var(--accent-strong)' }}>
-              <span style={{ fontSize: '11px', fontFamily: 'var(--mono)', textTransform: 'uppercase', color: 'var(--accent-strong)', fontWeight: 700 }}>
-                Pergunta de Checagem Imediata
-              </span>
-              <p style={{ margin: '6px 0 0', fontSize: '14px', fontWeight: 600, color: 'var(--ink)' }}>
-                {currentStep.pergunta}
+            <div className="na-more" id="rc-hist">
+              <div className="na-sep"></div>
+              <p className="na-desc">
+                <b>50 narrativas estruturadas</b> e <b>50 ilustrações exclusivas</b> para usar em sessão com crianças, adolescentes e jovens adultos. Trabalham autoconsciência corporal, reestruturação de pensamentos automáticos e controle inibitório adaptativo, numa abordagem cognitivo-comportamental.
               </p>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
-              <button
-                type="button"
-                disabled={currentStepIndex === 0}
-                onClick={() => setCurrentStepIndex(i => i - 1)}
-                className="btn-ghost"
-                style={{ opacity: currentStepIndex === 0 ? 0.3 : 1 }}
-              >
-                <span><ChevronLeft className="w-4 h-4" /></span> Trecho anterior
-              </button>
-
-              <button
-                type="button"
-                disabled={currentStepIndex === currentStory.etapas.length - 1}
-                onClick={() => setCurrentStepIndex(i => i + 1)}
-                className="btn"
-                style={{ opacity: currentStepIndex === currentStory.etapas.length - 1 ? 0.4 : 1 }}
-              >
-                Próximo trecho <span><ChevronRight className="w-4 h-4" /></span>
-              </button>
+              <div className="na-3">
+                <div>
+                  <i>01</i>
+                  <b>Observar</b>
+                  <small>Perceber o corpo e a emoção</small>
+                </div>
+                <div>
+                  <i>02</i>
+                  <b>Pensar</b>
+                  <small>Rever o pensamento automático</small>
+                </div>
+                <div>
+                  <i>03</i>
+                  <b>Agir</b>
+                  <small>Escolher a resposta adaptativa</small>
+                </div>
+              </div>
+              <div className="na-lbl">
+                Módulos por faixa etária <b>10 histórias cada</b>
+              </div>
+              <ul className="na-5">
+                <li style={{ ['--c' as any]: '#6a4870' }}>
+                  <b>6–8</b>
+                  <small>Infantil I</small>
+                  <span>10 hist.</span>
+                </li>
+                <li style={{ ['--c' as any]: '#2e4c78' }}>
+                  <b>8–11</b>
+                  <small>Infantil II</small>
+                  <span>10 hist.</span>
+                </li>
+                <li style={{ ['--c' as any]: '#1d5e63' }}>
+                  <b>11–13</b>
+                  <small>Transição</small>
+                  <span>10 hist.</span>
+                </li>
+                <li style={{ ['--c' as any]: '#8a5317' }}>
+                  <b>14–16</b>
+                  <small>Adolescência</small>
+                  <span>10 hist.</span>
+                </li>
+                <li style={{ ['--c' as any]: '#2f6b31' }}>
+                  <b>16–19</b>
+                  <small>Jovem adulto</small>
+                  <span>10 hist.</span>
+                </li>
+              </ul>
+              <div className="na-foot">
+                <span className="na-tag">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z" />
+                    <path d="m9 12 2 2 4-4" />
+                  </svg>
+                  Sessão interativa digital · plano Prática
+                </span>
+                <Link className="na-cta" href="/recursos-interativos/historias">
+                  Acessar Histórias Clínicas <i>→</i>
+                </Link>
+              </div>
             </div>
           </div>
 
-          {/* Lista de Histórias Disponíveis */}
-          <div style={{ background: 'var(--bone)', borderRadius: '24px', border: '1px solid #15140f0f', padding: '24px', boxShadow: 'var(--shadow)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <h3 style={{ margin: '0 0 8px', fontSize: '14px', fontWeight: 700, fontFamily: 'var(--sans)' }}>
-              Histórias Clínicas Cadastradas
-            </h3>
-            {HISTORIAS_TEMATICAS.map((h) => (
-              <div
-                key={h.id}
-                onClick={() => {
-                  setActiveStoryId(h.id);
-                  setCurrentStepIndex(0);
-                }}
-                style={{
-                  padding: '16px',
-                  borderRadius: '14px',
-                  background: h.id === activeStoryId ? 'var(--ink)' : 'var(--paper)',
-                  color: h.id === activeStoryId ? '#f7f1de' : 'var(--ink)',
-                  border: '1px solid var(--line)',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s'
-                }}
-              >
-                <b style={{ display: 'block', fontSize: '14px', color: h.id === activeStoryId ? 'var(--lime)' : 'var(--ink)' }}>
-                  {h.titulo}
-                </b>
-                <p style={{ margin: '4px 0 0', fontSize: '12px', opacity: 0.8, lineHeight: 1.4 }}>
-                  {h.contexto}
-                </p>
-              </div>
-            ))}
+          {/* Card 2: Baralho de Funções Executivas (Em desenvolvimento) */}
+          <div
+            className="na-card breve"
+            data-cat="baralhos"
+            style={{ display: filter === 'todos' || filter === 'baralhos' ? undefined : 'none' }}
+          >
+            <button className="na-sq" type="button" disabled>
+              <span className="na-sq__top">
+                <span className="na-ic" style={{ background: '#6a4870' }}>
+                  <svg viewBox="0 0 24 24">
+                    <rect x="4" y="4" width="11" height="15" rx="2" />
+                    <path d="M9 8h10a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H9" />
+                  </svg>
+                </span>
+                <span className="na-badge">Em breve</span>
+              </span>
+              <span className="na-sq__main">
+                <span className="na-ic" style={{ background: '#6a4870' }}>
+                  <svg viewBox="0 0 24 24">
+                    <rect x="4" y="4" width="11" height="15" rx="2" />
+                    <path d="M9 8h10a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H9" />
+                  </svg>
+                </span>
+                <span>
+                  <span className="na-kick">Em desenvolvimento</span>
+                  <span className="na-title">
+                    Baralho de <em>Funções Executivas</em>
+                  </span>
+                  <span className="na-meta">
+                    <span>48 cartas</span>
+                    <span>Infantil e adolescente</span>
+                  </span>
+                </span>
+              </span>
+            </button>
+          </div>
+
+          {/* Card 3: Atividades de atenção (breve) */}
+          <div
+            className="na-card breve"
+            data-cat="baralhos"
+            style={{ display: filter === 'todos' || filter === 'baralhos' ? undefined : 'none' }}
+          >
+            <button className="na-sq" type="button" disabled>
+              <span className="na-sq__top">
+                <span className="na-ic" style={{ background: '#2e4c78' }}>
+                  <svg viewBox="0 0 24 24">
+                    <path d="M4 7h4a2 2 0 1 1 4 0h4v4a2 2 0 1 1 0 4v4H4z" />
+                  </svg>
+                </span>
+                <span className="na-badge">Em breve</span>
+              </span>
+              <span className="na-sq__main">
+                <span className="na-ic" style={{ background: '#2e4c78' }}>
+                  <svg viewBox="0 0 24 24">
+                    <path d="M4 7h4a2 2 0 1 1 4 0h4v4a2 2 0 1 1 0 4v4H4z" />
+                  </svg>
+                </span>
+                <span>
+                  <span className="na-kick">Em desenvolvimento</span>
+                  <span className="na-title">
+                    Atividades de <em>atenção</em>
+                  </span>
+                  <span className="na-meta">
+                    <span>Infantil</span>
+                  </span>
+                </span>
+              </span>
+            </button>
+          </div>
+
+          {/* Card 4: Treino de percepção (breve) */}
+          <div
+            className="na-card breve"
+            data-cat="historias"
+            style={{ display: filter === 'todos' || filter === 'historias' ? undefined : 'none' }}
+          >
+            <button className="na-sq" type="button" disabled>
+              <span className="na-sq__top">
+                <span className="na-ic" style={{ background: '#8a5317' }}>
+                  <svg viewBox="0 0 24 24">
+                    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                </span>
+                <span className="na-badge">Em breve</span>
+              </span>
+              <span className="na-sq__main">
+                <span className="na-ic" style={{ background: '#8a5317' }}>
+                  <svg viewBox="0 0 24 24">
+                    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                </span>
+                <span>
+                  <span className="na-kick">Em desenvolvimento</span>
+                  <span className="na-title">
+                    Treino de <em>percepção</em>
+                  </span>
+                  <span className="na-meta">
+                    <span>Todas as idades</span>
+                  </span>
+                </span>
+              </span>
+            </button>
           </div>
         </div>
-      )}
-    </>
-  )}
+
+        <div className="nota-uso">
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 11v5M12 8v.01" />
+          </svg>
+          <span>
+            <b>Material de apoio.</b> Os recursos interativos não substituem testes psicológicos nem o julgamento clínico. Use-os dentro do seu planejamento de sessão e não registre dados que identifiquem pacientes.
+          </span>
+        </div>
+      </div>
     </PlatformShell>
   );
-}
-
-export default function RecursosInterativosPage() {
-  return <RecursosInterativosInner />;
 }
