@@ -29,3 +29,150 @@ body {
 html {
   scroll-behavior: smooth;
 }
+
+/* Aviso de Modo Prévia */
+.aviso-previa {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  background: var(--bone);
+  border: 1px solid var(--line);
+  box-shadow: 0 4px 16px rgba(21, 20, 15, 0.04);
+  border-radius: 16px;
+  padding: 14px 20px;
+  margin: 0 0 24px;
+}
+
+.aviso-previa__main {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.aviso-previa__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(184, 80, 66, 0.12);
+  color: #b85042;
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.aviso-previa__main p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ink-mute);
+  line-height: 1.5;
+}
+
+.aviso-previa__main p b {
+  color: var(--ink);
+}
+
+.aviso-previa__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--accent-strong);
+  color: #fff;
+  border: none;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 9px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.2s, background 0.2s;
+  box-shadow: 0 4px 12px rgba(29, 94, 99, 0.25);
+}
+
+.aviso-previa__cta:hover {
+  background: #154549;
+  transform: translateY(-1px);
+}
+
+.aviso-previa__cta i {
+  font-style: normal;
+  transition: transform 0.2s;
+}
+
+.aviso-previa__cta:hover i {
+  transform: translateX(3px);
+}
+
+@media (max-width: 768px) {
+  .aviso-previa {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .aviso-previa__cta {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Modal de Upgrade Global */
+.na-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(21, 20, 15, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  overflow-y: auto;
+  animation: naModalFadeIn 0.25s ease-out;
+}
+
+.na-modal-dialog {
+  position: relative;
+  width: 100%;
+  max-width: 860px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: 28px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+  background: var(--paper);
+}
+
+.na-modal-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--bone);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.na-modal-close:hover {
+  background: #fff;
+  transform: scale(1.08);
+}
+
+@keyframes naModalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

@@ -17,7 +17,9 @@ import {
   Save, 
   Video,
   Sparkles,
-  Download
+  Download,
+  Lock,
+  X
 } from 'lucide-react';
 
 import { resolveUserPlan } from '@/utils/userPlan';
@@ -32,6 +34,7 @@ function AulasInner() {
   const [selectedLessonId, setSelectedLessonId] = useState<string>(modules[0]?.lessons[0]?.id || '');
   const [notes, setNotes] = useState<string>('');
   const [notesSaved, setNotesSaved] = useState<boolean>(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState<boolean>(false);
 
   const currentModule = modules.find(m => m.id === selectedModuleId) || modules[0];
   const currentLesson = currentModule?.lessons?.find(l => l.id === selectedLessonId) || currentModule?.lessons?.[0];
@@ -47,6 +50,10 @@ function AulasInner() {
   }, [currentLesson?.id]);
 
   const handleSaveNotes = () => {
+    if (!planInfo.hasAulas) {
+      setShowUpgradeModal(true);
+      return;
+    }
     if (!currentLesson) return;
     try {
       localStorage.setItem(`neuro_notes_${currentLesson.id}`, notes);
@@ -85,9 +92,28 @@ function AulasInner() {
         </div>
       </div>
 
-      {!planInfo.hasAulas ? (
-        <UpgradeGate targetPlan="estudo" />
-      ) : modules.length === 0 ? (
+      {!planInfo.hasAulas && (
+        <div className="aviso-previa" style={{ marginTop: '28px', marginBottom: '8px' }}>
+          <div className="aviso-previa__main">
+            <span className="aviso-previa__badge">
+              <Lock className="w-3 h-3" />
+              Modo Prévia
+            </span>
+            <p>
+              Você está visualizando a formação clínica em <b>modo prévia</b>. O acesso à reprodução dos vídeos e materiais anexos é exclusivo dos planos <b>Estudo</b> e <b>Prática</b>.
+            </p>
+          </div>
+          <button
+            type="button"
+            className="aviso-previa__cta"
+            onClick={() => setShowUpgradeModal(true)}
+          >
+            Fazer upgrade para Estudo <i>→</i>
+          </button>
+        </div>
+      )}
+
+      {modules.length === 0 ? (
         <div className="empty-state" style={{ marginTop: '32px' }}>
           <span className="ring">
             <svg className="ico"><use href="#i-aula"/></svg>
@@ -104,7 +130,87 @@ function AulasInner() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             {/* Player Responsivo */}
             <div style={{ position: 'relative', aspectRatio: '16/9', borderRadius: '20px', overflow: 'hidden', background: '#15140f', border: '1px solid var(--line)', display: 'grid', placeItems: 'center' }}>
-              {currentLesson?.videoUrl ? (
+              {!planInfo.hasAulas ? (
+                <div
+                  style={{
+                    position: 'relative',
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '32px 24px',
+                    textAlign: 'center',
+                    background: 'radial-gradient(circle at center, #23221b 0%, #15140f 100%)',
+                    color: '#f7f1de'
+                  }}
+                >
+                  <div
+                    style={{
+                      width: '60px',
+                      height: '60px',
+                      borderRadius: '50%',
+                      background: 'rgba(218, 254, 170, 0.12)',
+                      border: '1px solid rgba(218, 254, 170, 0.3)',
+                      color: 'var(--lime)',
+                      display: 'grid',
+                      placeItems: 'center',
+                      marginBottom: '14px',
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.3)'
+                    }}
+                  >
+                    <Lock className="w-7 h-7" />
+                  </div>
+                  <span
+                    style={{
+                      fontFamily: 'var(--mono)',
+                      fontSize: '11px',
+                      letterSpacing: '0.12em',
+                      textTransform: 'uppercase',
+                      color: 'var(--lime)',
+                      marginBottom: '6px'
+                    }}
+                  >
+                    Videoaula Bloqueada
+                  </span>
+                  <h3
+                    style={{
+                      margin: '0 0 8px',
+                      fontFamily: 'var(--sans)',
+                      fontSize: '20px',
+                      fontWeight: 700,
+                      color: '#fff',
+                      maxWidth: '480px'
+                    }}
+                  >
+                    {currentLesson?.title || 'Formação Clínica'}
+                  </h3>
+                  <p
+                    style={{
+                      margin: '0 0 20px',
+                      fontSize: '13.5px',
+                      color: 'rgba(247, 241, 222, 0.7)',
+                      maxWidth: '420px',
+                      lineHeight: 1.5
+                    }}
+                  >
+                    Assista a esta aula na íntegra, baixe os materiais anexos e acesse estudos de caso reais nos planos <b>Estudo</b> ou <b>Prática</b>.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setShowUpgradeModal(true)}
+                    className="btn"
+                    style={{
+                      boxShadow: '0 4px 20px rgba(218, 254, 170, 0.3)',
+                      padding: '10px 22px',
+                      fontSize: '13.5px'
+                    }}
+                  >
+                    Liberar esta aula <span><ChevronRight className="w-4 h-4" /></span>
+                  </button>
+                </div>
+              ) : currentLesson?.videoUrl ? (
                 <iframe
                   src={currentLesson.videoUrl}
                   title={currentLesson.title}
@@ -140,12 +246,20 @@ function AulasInner() {
 
                   <button
                     type="button"
-                    onClick={() => toggleLessonCompletion(currentLesson.id)}
+                    onClick={() => {
+                      if (!planInfo.hasAulas) {
+                        setShowUpgradeModal(true);
+                        return;
+                      }
+                      toggleLessonCompletion(currentLesson.id);
+                    }}
                     className={isCompleted ? "btn" : "btn-ghost"}
                     style={{ flexShrink: 0 }}
                   >
                     {isCompleted ? (
                       <>Aula concluída <span><Check className="w-4 h-4" /></span></>
+                    ) : !planInfo.hasAulas ? (
+                      <>Desbloquear aula <span><Lock className="w-3.5 h-3.5" /></span></>
                     ) : (
                       <>Marcar concluída <span><Circle className="w-4 h-4" /></span></>
                     )}
@@ -252,8 +366,14 @@ function AulasInner() {
                           transition: 'background 0.15s'
                         }}
                       >
-                        <div style={{ flexShrink: 0, color: isDone ? 'var(--accent-strong)' : 'var(--ink-faint)' }}>
-                          {isDone ? <CheckCircle className="w-4 h-4" /> : <Circle className="w-4 h-4" />}
+                        <div style={{ flexShrink: 0, color: isDone ? 'var(--accent-strong)' : !planInfo.hasAulas ? 'var(--ink-mute)' : 'var(--ink-faint)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          {!planInfo.hasAulas ? (
+                            <Lock className="w-3.5 h-3.5" style={{ opacity: 0.7 }} />
+                          ) : isDone ? (
+                            <CheckCircle className="w-4 h-4" />
+                          ) : (
+                            <Circle className="w-4 h-4" />
+                          )}
                         </div>
 
                         <div style={{ flex: 1, minWidth: 0 }}>
@@ -272,6 +392,30 @@ function AulasInner() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {showUpgradeModal && (
+        <div
+          className="na-modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setShowUpgradeModal(false)}
+        >
+          <div
+            className="na-modal-dialog"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="na-modal-close"
+              onClick={() => setShowUpgradeModal(false)}
+              aria-label="Fechar"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <UpgradeGate targetPlan="estudo" />
           </div>
         </div>
       )}

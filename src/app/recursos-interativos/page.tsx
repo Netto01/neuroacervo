@@ -5,7 +5,52 @@ import Link from 'next/link';
 import { useNeuro } from '@/context/NeuroContext';
 import { PlatformShell } from '@/components/layout/PlatformShell';
 import { resolveUserPlan } from '@/utils/userPlan';
+import { UpgradeGate } from '@/components/common/UpgradeGate';
 import './recursos.css';
+
+function ResourceCardIcon({
+  fileNames,
+  alt,
+  fallbackBg,
+  fallbackSvg
+}: {
+  fileNames: string[];
+  alt: string;
+  fallbackBg: string;
+  fallbackSvg: React.ReactNode;
+}) {
+  const [srcIndex, setSrcIndex] = useState<number>(0);
+  const [failed, setFailed] = useState<boolean>(false);
+
+  if (failed || srcIndex >= fileNames.length) {
+    return (
+      <span className="na-ic" style={{ background: fallbackBg }}>
+        {fallbackSvg}
+      </span>
+    );
+  }
+
+  const currentFile = fileNames[srcIndex];
+
+  return (
+    <span className="na-ic na-ic--custom">
+      <img
+        src={`/assets/recursos/cards/${currentFile}`}
+        alt={alt}
+        width={58}
+        height={58}
+        className="na-ic-img"
+        onError={() => {
+          if (srcIndex + 1 < fileNames.length) {
+            setSrcIndex(srcIndex + 1);
+          } else {
+            setFailed(true);
+          }
+        }}
+      />
+    </span>
+  );
+}
 
 export default function RecursosInterativosPage() {
   const { currentUser } = useNeuro();
@@ -13,6 +58,7 @@ export default function RecursosInterativosPage() {
 
   const [filter, setFilter] = useState<'todos' | 'historias' | 'baralhos'>('todos');
   const [openCard, setOpenCard] = useState<string | null>(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState<boolean>(false);
 
   const toggleCard = (cardId: string) => {
     const nextState = openCard === cardId ? null : cardId;
@@ -37,21 +83,31 @@ export default function RecursosInterativosPage() {
 
   return (
     <PlatformShell activePage="recursos">
-      {!planInfo.hasRecursos && (
-        <div className="aviso">
-          <svg viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="9" />
-            <path d="M12 8v5M12 16.5v.01" />
-          </svg>
-          <span>
-            <b>Assinatura pendente.</b>{' '}
-            <span className="t">Conclua o pagamento do plano Prática para liberar os recursos interativos.</span>
-          </span>
-          <Link href="/assinatura">Concluir pagamento</Link>
-        </div>
-      )}
-
       <div className="wrap">
+        {!planInfo.hasRecursos && (
+          <div className="aviso-previa">
+            <div className="aviso-previa__main">
+              <span className="aviso-previa__badge">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <rect x="5" y="11" width="14" height="10" rx="2" />
+                  <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+                </svg>
+                Modo Prévia
+              </span>
+              <p>
+                Você está visualizando a vitrine dos recursos interativos. O acesso e a aplicação prática em sessão são exclusivos do plano <b>Prática</b>.
+              </p>
+            </div>
+            <button
+              type="button"
+              className="aviso-previa__cta"
+              onClick={() => setShowUpgradeModal(true)}
+            >
+              Conhecer plano Prática <i>→</i>
+            </button>
+          </div>
+        )}
+
         <div className="hd3">
           <div>
             <div className="kick">Tecnologia clínica</div>
@@ -118,23 +174,44 @@ export default function RecursosInterativosPage() {
               onClick={() => toggleCard('rc-hist')}
             >
               <span className="na-sq__top">
-                <span className="na-ic" style={{ background: '#1d5e63' }}>
-                  <svg viewBox="0 0 24 24">
-                    <path d="M2 5h7a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H2zM22 5h-7a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h8z" />
-                  </svg>
-                </span>
-                <span className="na-plus" aria-hidden="true">
-                  <svg viewBox="0 0 24 24">
-                    <path d="M12 5v14M5 12h14" />
-                  </svg>
+                <ResourceCardIcon
+                  fileNames={['01_historias_clinicas_e_regulacao.png', 'historias-clinicas.png']}
+                  alt="Histórias Clínicas & Regulação"
+                  fallbackBg="#1d5e63"
+                  fallbackSvg={
+                    <svg viewBox="0 0 24 24">
+                      <path d="M2 5h7a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H2zM22 5h-7a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h8z" />
+                    </svg>
+                  }
+                />
+                <span className="na-plus-wrap">
+                  {!planInfo.hasRecursos && (
+                    <span className="na-lock-pill" title="Recurso exclusivo do plano Prática">
+                      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.4">
+                        <rect x="5" y="11" width="14" height="10" rx="2" />
+                        <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+                      </svg>
+                      Prática
+                    </span>
+                  )}
+                  <span className="na-plus" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                      <path d="M12 5v14M5 12h14" />
+                    </svg>
+                  </span>
                 </span>
               </span>
               <span className="na-sq__main">
-                <span className="na-ic" style={{ background: '#1d5e63' }}>
-                  <svg viewBox="0 0 24 24">
-                    <path d="M2 5h7a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H2zM22 5h-7a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h8z" />
-                  </svg>
-                </span>
+                <ResourceCardIcon
+                  fileNames={['01_historias_clinicas_e_regulacao.png', 'historias-clinicas.png']}
+                  alt="Histórias Clínicas & Regulação"
+                  fallbackBg="#1d5e63"
+                  fallbackSvg={
+                    <svg viewBox="0 0 24 24">
+                      <path d="M2 5h7a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H2zM22 5h-7a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h8z" />
+                    </svg>
+                  }
+                />
                 <span>
                   <span className="na-kick">Intervenção clínica</span>
                   <span className="na-title">
@@ -207,9 +284,23 @@ export default function RecursosInterativosPage() {
                   </svg>
                   Sessão interativa digital · plano Prática
                 </span>
-                <Link className="na-cta" href="/recursos-interativos/historias">
-                  Acessar Histórias Clínicas <i>→</i>
-                </Link>
+                {!planInfo.hasRecursos ? (
+                  <button
+                    type="button"
+                    className="na-cta na-cta--locked"
+                    onClick={() => setShowUpgradeModal(true)}
+                  >
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ marginRight: 6 }}>
+                      <rect x="5" y="11" width="14" height="10" rx="2" />
+                      <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+                    </svg>
+                    Desbloquear no Prática <i>→</i>
+                  </button>
+                ) : (
+                  <Link className="na-cta" href="/recursos-interativos/historias">
+                    Acessar Histórias Clínicas <i>→</i>
+                  </Link>
+                )}
               </div>
             </div>
           </div>
@@ -222,21 +313,31 @@ export default function RecursosInterativosPage() {
           >
             <button className="na-sq" type="button" disabled>
               <span className="na-sq__top">
-                <span className="na-ic" style={{ background: '#6a4870' }}>
-                  <svg viewBox="0 0 24 24">
-                    <rect x="4" y="4" width="11" height="15" rx="2" />
-                    <path d="M9 8h10a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H9" />
-                  </svg>
-                </span>
+                <ResourceCardIcon
+                  fileNames={['02_baralho_funcoes_executivas.png', 'baralho-funcoes-executivas.png']}
+                  alt="Baralho de Funções Executivas"
+                  fallbackBg="#6a4870"
+                  fallbackSvg={
+                    <svg viewBox="0 0 24 24">
+                      <rect x="4" y="4" width="11" height="15" rx="2" />
+                      <path d="M9 8h10a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H9" />
+                    </svg>
+                  }
+                />
                 <span className="na-badge">Em breve</span>
               </span>
               <span className="na-sq__main">
-                <span className="na-ic" style={{ background: '#6a4870' }}>
-                  <svg viewBox="0 0 24 24">
-                    <rect x="4" y="4" width="11" height="15" rx="2" />
-                    <path d="M9 8h10a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H9" />
-                  </svg>
-                </span>
+                <ResourceCardIcon
+                  fileNames={['02_baralho_funcoes_executivas.png', 'baralho-funcoes-executivas.png']}
+                  alt="Baralho de Funções Executivas"
+                  fallbackBg="#6a4870"
+                  fallbackSvg={
+                    <svg viewBox="0 0 24 24">
+                      <rect x="4" y="4" width="11" height="15" rx="2" />
+                      <path d="M9 8h10a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H9" />
+                    </svg>
+                  }
+                />
                 <span>
                   <span className="na-kick">Em desenvolvimento</span>
                   <span className="na-title">
@@ -259,19 +360,29 @@ export default function RecursosInterativosPage() {
           >
             <button className="na-sq" type="button" disabled>
               <span className="na-sq__top">
-                <span className="na-ic" style={{ background: '#2e4c78' }}>
-                  <svg viewBox="0 0 24 24">
-                    <path d="M4 7h4a2 2 0 1 1 4 0h4v4a2 2 0 1 1 0 4v4H4z" />
-                  </svg>
-                </span>
+                <ResourceCardIcon
+                  fileNames={['03_atividades_atencao.png', 'atividades-atencao.png']}
+                  alt="Atividades de atenção"
+                  fallbackBg="#2e4c78"
+                  fallbackSvg={
+                    <svg viewBox="0 0 24 24">
+                      <path d="M4 7h4a2 2 0 1 1 4 0h4v4a2 2 0 1 1 0 4v4H4z" />
+                    </svg>
+                  }
+                />
                 <span className="na-badge">Em breve</span>
               </span>
               <span className="na-sq__main">
-                <span className="na-ic" style={{ background: '#2e4c78' }}>
-                  <svg viewBox="0 0 24 24">
-                    <path d="M4 7h4a2 2 0 1 1 4 0h4v4a2 2 0 1 1 0 4v4H4z" />
-                  </svg>
-                </span>
+                <ResourceCardIcon
+                  fileNames={['03_atividades_atencao.png', 'atividades-atencao.png']}
+                  alt="Atividades de atenção"
+                  fallbackBg="#2e4c78"
+                  fallbackSvg={
+                    <svg viewBox="0 0 24 24">
+                      <path d="M4 7h4a2 2 0 1 1 4 0h4v4a2 2 0 1 1 0 4v4H4z" />
+                    </svg>
+                  }
+                />
                 <span>
                   <span className="na-kick">Em desenvolvimento</span>
                   <span className="na-title">
@@ -293,21 +404,31 @@ export default function RecursosInterativosPage() {
           >
             <button className="na-sq" type="button" disabled>
               <span className="na-sq__top">
-                <span className="na-ic" style={{ background: '#8a5317' }}>
-                  <svg viewBox="0 0 24 24">
-                    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />
-                    <circle cx="12" cy="12" r="3" />
-                  </svg>
-                </span>
+                <ResourceCardIcon
+                  fileNames={['04_treino_percepcao.png', 'treino-percepcao.png']}
+                  alt="Treino de percepção"
+                  fallbackBg="#8a5317"
+                  fallbackSvg={
+                    <svg viewBox="0 0 24 24">
+                      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  }
+                />
                 <span className="na-badge">Em breve</span>
               </span>
               <span className="na-sq__main">
-                <span className="na-ic" style={{ background: '#8a5317' }}>
-                  <svg viewBox="0 0 24 24">
-                    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />
-                    <circle cx="12" cy="12" r="3" />
-                  </svg>
-                </span>
+                <ResourceCardIcon
+                  fileNames={['04_treino_percepcao.png', 'treino-percepcao.png']}
+                  alt="Treino de percepção"
+                  fallbackBg="#8a5317"
+                  fallbackSvg={
+                    <svg viewBox="0 0 24 24">
+                      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  }
+                />
                 <span>
                   <span className="na-kick">Em desenvolvimento</span>
                   <span className="na-title">
@@ -332,6 +453,32 @@ export default function RecursosInterativosPage() {
           </span>
         </div>
       </div>
+
+      {showUpgradeModal && (
+        <div
+          className="na-modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setShowUpgradeModal(false)}
+        >
+          <div
+            className="na-modal-dialog"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="na-modal-close"
+              onClick={() => setShowUpgradeModal(false)}
+              aria-label="Fechar"
+            >
+              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" strokeWidth="2.5">
+                <path d="M18 6 6 18M6 6l12 12" />
+              </svg>
+            </button>
+            <UpgradeGate targetPlan="pratica" />
+          </div>
+        </div>
+      )}
     </PlatformShell>
   );
 }
