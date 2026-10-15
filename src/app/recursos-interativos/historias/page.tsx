@@ -535,23 +535,14 @@ export default function HistoriasClinicasPage() {
                 <div className="ilu" id="ilu">
                   {renderStoryIllustration(currentStory)}
                   <span className="num">#{('0' + currentStory.num).slice(-2)}</span>
-                  <div className="foco">
-                    <i>
-                      <svg className="ico" viewBox="0 0 24 24">
-                        <circle cx="12" cy="12" r="9" />
-                        <path d="M8.5 15s1.2-1.5 3.5-1.5 3.5 1.5 3.5 1.5M9 9.5h.01M15 9.5h.01" />
-                      </svg>
-                    </i>
-                    <span>
-                      <small>Foco clínico</small>
-                      <b>{currentStory.theme || currentStory.tag}</b>
-                    </span>
-                  </div>
                 </div>
 
                 <div className="txt">
                   <div className="tags" id="tags">
                     <span className="tag2 fx">{currentFaixa.r} anos · {currentFaixa.n}</span>
+                    {currentStory.theme && currentStory.theme !== currentStory.tag && (
+                      <span className="tag2">{currentStory.theme}</span>
+                    )}
                     <span className="tag2">{currentStory.tag}</span>
                   </div>
 
