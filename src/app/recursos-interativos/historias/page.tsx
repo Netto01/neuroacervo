@@ -102,6 +102,45 @@ export default function HistoriasClinicasPage() {
     }
   }, [currentFaixa]);
 
+  // Renderizador de ilustração da história (imagem gerada com fallback para SVG)
+  const renderStoryIllustration = (story: HistoriaClinica) => {
+    return (
+      <div style={{ width: '100%', height: '100%', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+        {story.image ? (
+          <img
+            src={story.image}
+            alt={story.titulo}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            onError={(e) => {
+              (e.currentTarget as HTMLElement).style.display = 'none';
+              const nextEl = e.currentTarget.nextElementSibling as HTMLElement | null;
+              if (nextEl) nextEl.style.display = 'flex';
+            }}
+          />
+        ) : null}
+        {story.illo ? (
+          <div
+            dangerouslySetInnerHTML={{ __html: story.illo }}
+            style={{
+              width: '100%',
+              height: '100%',
+              display: story.image ? 'none' : 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          />
+        ) : (
+          <div className="ph" style={{ display: story.image ? 'none' : 'flex' }}>
+            <svg viewBox="0 0 24 24">
+              <path d="M2 5h7a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H2zM22 5h-7a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h8z" />
+            </svg>
+            <span>Ilustração</span>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   // Lista de opções da etapa Agir (incluindo customizadas)
   const listaOpcoesAgir = currentStory 
     ? (opcoesCustomizadas[storyKey] || currentStory.parar.opcoes)
@@ -398,24 +437,7 @@ export default function HistoriasClinicasPage() {
                         }}
                       >
                         <div className="ilu">
-                          {h.illo ? (
-                            <div
-                              dangerouslySetInnerHTML={{ __html: h.illo }}
-                              style={{
-                                width: '100%',
-                                height: '100%',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                              }}
-                            />
-                          ) : (
-                            <div className="ph">
-                              <svg viewBox="0 0 24 24">
-                                <path d="M2 5h7a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H2zM22 5h-7a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h8z" />
-                              </svg>
-                            </div>
-                          )}
+                          {renderStoryIllustration(h)}
                           <span className="num">#{n}</span>
                           <span className="emo">{h.theme || h.tag}</span>
                         </div>
@@ -511,19 +533,7 @@ export default function HistoriasClinicasPage() {
               {/* Artigo da História com Ilustração e Ferramentas */}
               <article className="hist">
                 <div className="ilu" id="ilu">
-                  {currentStory.illo ? (
-                    <div
-                      dangerouslySetInnerHTML={{ __html: currentStory.illo }}
-                      style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                    />
-                  ) : (
-                    <div className="ph">
-                      <svg viewBox="0 0 24 24">
-                        <path d="M2 5h7a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H2zM22 5h-7a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h8z" />
-                      </svg>
-                      <span>Ilustração</span>
-                    </div>
-                  )}
+                  {renderStoryIllustration(currentStory)}
                   <span className="num">#{('0' + currentStory.num).slice(-2)}</span>
                   <div className="foco">
                     <i>
@@ -1027,14 +1037,7 @@ export default function HistoriasClinicasPage() {
                     {slidePaciente === 0 && (
                       <div className="sl">
                         <div className="ilu">
-                          {currentStory.illo ? (
-                            <div
-                              dangerouslySetInnerHTML={{ __html: currentStory.illo }}
-                              style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                            />
-                          ) : (
-                            <div className="ph"><span>Ilustração</span></div>
-                          )}
+                          {renderStoryIllustration(currentStory)}
                         </div>
                         <div>
                           <span className="rot">{currentStory.titulo}</span>

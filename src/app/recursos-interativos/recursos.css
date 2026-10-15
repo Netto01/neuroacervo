@@ -1153,6 +1153,13 @@
   display: block;
 }
 
+.hcard .ilu img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
 .hcard .ilu .ph {
   position: absolute;
   inset: 0;
@@ -2266,7 +2273,8 @@
 }
 
 .sheet:focus-within {
-  box-shadow: inset 0 0 0 1.5px var(--accent-strong), 0 0 0 4px rgba(47, 107, 49, 0.12), 0 12px 24px rgba(21, 20, 15, 0.07);
+  box-shadow: inset 0 0 0 1px var(--line), 0 4px 0 rgba(21, 20, 15, 0.04), 0 12px 24px rgba(21, 20, 15, 0.07);
+  outline: none;
 }
 
 .sheet::before {
@@ -2287,7 +2295,7 @@
   min-height: 230px;
   resize: vertical;
   border: 0;
-  outline: 0;
+  outline: none;
   background: transparent;
   padding: 14px 16px 14px 46px;
   font: 400 14.5px/28px var(--ft);
@@ -2295,6 +2303,12 @@
   background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 27px, rgba(21, 20, 15, 0.08) 27px, rgba(21, 20, 15, 0.08) 28px);
   background-position: 0 14px;
   background-attachment: local;
+}
+
+.sheet textarea:focus,
+.sheet textarea:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 .sheet textarea::placeholder {
@@ -2504,7 +2518,16 @@
 .sl .ilu {
   margin: 0;
   min-height: 0;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 16 / 9;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.sl .ilu img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .sl .big {
