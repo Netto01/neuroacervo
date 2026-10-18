@@ -10,6 +10,7 @@ import { PendingSubscriptionBanner } from '@/components/common/PendingSubscripti
 
 import { resolveUserPlan, PlanoTipo } from '@/utils/userPlan';
 import { getMaterialReaderUrl, downloadMaterialFile } from '@/utils/materialActions';
+import { MobileNavSheet } from '@/components/layout/MobileNavSheet';
 
 const TIPOS = {
   guia:        { nome: 'Guia rápido',        plural: 'Guias rápidos',  ico: 'i-guia',        plano: 'acervo' as PlanoTipo },
@@ -94,6 +95,7 @@ function BibliotecaInner() {
   const [limite, setLimite] = useState<number>(12);
   const [abertoId, setAbertoId] = useState<string | number | null>(null);
   const [hoje, setHoje] = useState<string>('');
+  const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
   const buscaInputRef = useRef<HTMLInputElement>(null);
 
   // Redireciona para o login se não houver usuário autenticado, ou para /planos se não tiver assinatura ativa
@@ -463,6 +465,15 @@ function BibliotecaInner() {
               <button className="icon-btn" type="button" aria-label="Novidades">
                 <svg className="ico"><use href="#i-bell"/></svg>
                 <span className="dot"></span>
+              </button>
+              <button
+                type="button"
+                className="mobile-avatar-btn"
+                onClick={() => setIsMobileSheetOpen(true)}
+                aria-label="Abrir menu de conta e assinatura"
+                title="Minha conta e assinatura"
+              >
+                {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : (currentUser?.email ? currentUser.email.charAt(0).toUpperCase() : 'U')}
               </button>
             </div>
           </div>
@@ -950,7 +961,27 @@ function BibliotecaInner() {
           <svg className="ico"><use href="#i-folder"/></svg>
           <span>Pasta</span>
         </Link>
+        <button
+          type="button"
+          onClick={() => setIsMobileSheetOpen(true)}
+          aria-label="Abrir menu da conta e opções"
+          aria-expanded={isMobileSheetOpen}
+          aria-current={isMobileSheetOpen ? 'page' : undefined}
+        >
+          <svg className="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="1.5" />
+            <circle cx="12" cy="5" r="1.5" />
+            <circle cx="12" cy="19" r="1.5" />
+          </svg>
+          <span>Mais</span>
+        </button>
       </nav>
+
+      {/* Gaveta Móvel Deslizante */}
+      <MobileNavSheet
+        isOpen={isMobileSheetOpen}
+        onClose={() => setIsMobileSheetOpen(false)}
+      />
     </div>
   );
 }

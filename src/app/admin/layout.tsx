@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { AdminGuard } from '@/components/admin/AdminGuard';
 import './admin.css';
 
 export const metadata: Metadata = {
@@ -14,5 +15,5 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return <AdminGuard>{children}</AdminGuard>;
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
+import { verifyUserRequest } from '@/lib/serverAuth';
 
 function getSupabaseAdmin() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
@@ -11,6 +12,11 @@ function getSupabaseAdmin() {
 
 export async function POST(req: Request) {
   try {
+    const authCheck = await verifyUserRequest(req);
+    if (!authCheck.authorized) {
+      return authCheck.errorResponse!;
+    }
+
     const rawSecretKey = process.env.STRIPE_SECRET_KEY || '';
     const secretKey = rawSecretKey.trim().replace(/^["']|["']$/g, '');
     if (!secretKey) {
@@ -20,12 +26,22 @@ export async function POST(req: Request) {
       );
     }
 
-    const body = await req.json();
-    const { userId, userEmail, stripeCustomerId } = body;
+    let body: any = {};
+    try {
+      body = await req.json();
+    } catch {}
 
-    if (!userEmail) {
+    const authUser = authCheck.user!;
+    const authProfile = authCheck.profile;
+    const isAdmin = authCheck.isAdmin;
+
+    // Apenas administradores podem solicitar portal em nome de outro e-mail
+    const targetEmail = (isAdmin && body?.userEmail ? body.userEmail : authUser.email || '').trim().toLowerCase();
+    const targetUserId = isAdmin && body?.userId ? body.userId : authUser.id;
+
+    if (!targetEmail) {
       return NextResponse.json(
-        { error: 'E-mail do usuário é obrigatório.' },
+        { error: 'E-mail do usuário não identificado.' },
         { status: 400 }
       );
     }
@@ -36,12 +52,12 @@ export async function POST(req: Request) {
       maxNetworkRetries: 3
     });
 
-    let customerId = stripeCustomerId;
+    let customerId = (targetUserId === authUser.id ? authProfile?.stripe_customer_id : body?.stripeCustomerId) || body?.stripeCustomerId;
 
     // Se o cliente não tem o stripeCustomerId informado, busca na Stripe pelo e-mail
     if (!customerId) {
       const customers = await stripe.customers.list({
-        email: userEmail.trim().toLowerCase(),
+        email: targetEmail,
         limit: 1
       });
 
@@ -49,14 +65,14 @@ export async function POST(req: Request) {
         customerId = customers.data[0].id;
 
         // Atualiza no Supabase se houver userId e cliente administrativo
-        if (userId) {
+        if (targetUserId) {
           try {
             const supabase = getSupabaseAdmin();
             if (supabase) {
               await supabase
                 .from('profiles')
                 .update({ stripe_customer_id: customerId })
-                .eq('id', userId);
+                .eq('id', targetUserId);
             }
           } catch (updateErr) {
             console.warn('Aviso ao salvar stripe_customer_id no perfil:', updateErr);

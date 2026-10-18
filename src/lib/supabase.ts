@@ -76,9 +76,9 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
       email: data.email,
       crp: data.crp ? (data.crp.toUpperCase().startsWith('CRP') ? data.crp : `CRP ${data.crp}`) : '',
       role: (data.role as 'member' | 'admin') || 'member',
-      plan: data.plan || 'Estudo',
+      plan: data.plan || 'Consulta',
       billingCycle: data.billing_cycle || 'mensal',
-      subscriptionStatus: (data.subscription_status as any) || (data.plan ? 'active' : 'pending'),
+      subscriptionStatus: (data.subscription_status as any) || 'pending',
       stripeCustomerId: data.stripe_customer_id || undefined,
       stripeSubscriptionId: data.stripe_subscription_id || undefined,
       avatarUrl: data.avatar_url,
@@ -331,4 +331,148 @@ export async function saveMaterialNotes(materialId: string, notes: string): Prom
     return false;
   }
 }
+
+/* ── Sessões Interativas e Anotações por Paciente ── */
+export interface InteractiveSessionData {
+  observarNotas?: string;
+  intensidade?: number | null;
+  pensarNotas?: string;
+  crenca?: number | null;
+  respostaIdx?: number | null;
+  opcoesCustomizadas?: string[];
+  agirNotas?: string;
+  etapasFeitas?: [boolean, boolean, boolean];
+  updatedAt?: string;
+}
+
+export async function getUserInteractivePatients(): Promise<string[]> {
+  const defaultList = ['Paciente 01'];
+  const localList = (() => {
+    if (typeof window === 'undefined') return defaultList;
+    try {
+      const saved = localStorage.getItem('na_interactive_patients');
+      return saved ? JSON.parse(saved) : defaultList;
+    } catch {
+      return defaultList;
+    }
+  })();
+
+  if (!isSupabaseConfigured) return localList;
+
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user?.id) return localList;
+
+    const { data, error } = await supabase
+      .from('user_interactive_sessions')
+      .select('patient_code')
+      .eq('user_id', session.user.id);
+
+    if (error || !data) return localList;
+
+    const dbCodes: string[] = Array.from(new Set(data.map((d: any) => String(d.patient_code)).filter(Boolean)));
+    const merged = Array.from(new Set([...localList, ...dbCodes]));
+    return merged.length > 0 ? merged : defaultList;
+  } catch {
+    return localList;
+  }
+}
+
+export async function getInteractiveSession(
+  resourceType: string,
+  resourceId: string,
+  patientCode: string
+): Promise<InteractiveSessionData | null> {
+  const localKey = `na_session_${resourceType}_${resourceId}_${patientCode}`;
+  const getLocal = (): InteractiveSessionData | null => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const saved = localStorage.getItem(localKey);
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  };
+
+  if (!isSupabaseConfigured) return getLocal();
+
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user?.id) return getLocal();
+
+    const { data, error } = await supabase
+      .from('user_interactive_sessions')
+      .select('data')
+      .eq('user_id', session.user.id)
+      .eq('resource_type', resourceType)
+      .eq('resource_id', resourceId)
+      .eq('patient_code', patientCode)
+      .maybeSingle();
+
+    if (error) {
+      // Fallback local se a tabela ainda não tiver sido criada no DB
+      return getLocal();
+    }
+
+    if (data?.data) {
+      try {
+        localStorage.setItem(localKey, JSON.stringify(data.data));
+      } catch {}
+      return data.data as InteractiveSessionData;
+    }
+
+    return getLocal();
+  } catch {
+    return getLocal();
+  }
+}
+
+export async function saveInteractiveSession(
+  resourceType: string,
+  resourceId: string,
+  patientCode: string,
+  sessionData: InteractiveSessionData
+): Promise<boolean> {
+  const localKey = `na_session_${resourceType}_${resourceId}_${patientCode}`;
+
+  // Salva no localStorage imediatamente para garantir zero latência e backup
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem(localKey, JSON.stringify(sessionData));
+
+      // Garante que o paciente esteja na lista salva
+      const savedPatients = localStorage.getItem('na_interactive_patients');
+      const list: string[] = savedPatients ? JSON.parse(savedPatients) : ['Paciente 01'];
+      if (!list.includes(patientCode)) {
+        list.push(patientCode);
+        localStorage.setItem('na_interactive_patients', JSON.stringify(list));
+      }
+    } catch {}
+  }
+
+  if (!isSupabaseConfigured) return true;
+
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user?.id) return true;
+
+    const { error } = await supabase
+      .from('user_interactive_sessions')
+      .upsert({
+        user_id: session.user.id,
+        resource_type: resourceType,
+        resource_id: resourceId,
+        patient_code: patientCode,
+        data: sessionData,
+        updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'user_id,resource_type,resource_id,patient_code'
+      });
+
+    return !error;
+  } catch {
+    return false;
+  }
+}
+
 

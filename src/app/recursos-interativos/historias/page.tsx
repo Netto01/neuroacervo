@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useNeuro } from '@/context/NeuroContext';
 import { PlatformShell } from '@/components/layout/PlatformShell';
@@ -21,8 +21,16 @@ import {
   X,
   Check,
   Printer,
-  Copy
+  Copy,
+  User,
+  Plus
 } from 'lucide-react';
+import { 
+  getUserInteractivePatients, 
+  getInteractiveSession, 
+  saveInteractiveSession, 
+  InteractiveSessionData 
+} from '@/lib/supabase';
 import '../recursos.css';
 
 interface FaixaTab {
@@ -67,6 +75,13 @@ export default function HistoriasClinicasPage() {
   const [fontSizeNarrativa, setFontSizeNarrativa] = useState<number>(17);
   const [lendoVoz, setLendoVoz] = useState<boolean>(false);
   const [salvandoStatus, setSalvandoStatus] = useState<'ok' | 'salvando'>('ok');
+
+  // Gerenciamento de Pacientes / Sessões por Profissional
+  const [pacientes, setPacientes] = useState<string[]>(['Paciente 01']);
+  const [pacienteAtivo, setPacienteAtivo] = useState<string>('Paciente 01');
+  const [showNovoPacienteModal, setShowNovoPacienteModal] = useState<boolean>(false);
+  const [novoPacienteInput, setNovoPacienteInput] = useState<string>('');
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   // Notas e Seleções por História
   const [observarNotas, setObservarNotas] = useState<Record<string, string>>({});
@@ -101,6 +116,92 @@ export default function HistoriasClinicasPage() {
       document.documentElement.style.setProperty('--c2', currentFaixa.c2);
     }
   }, [currentFaixa]);
+
+  // Carrega lista de pacientes do usuário ao montar
+  useEffect(() => {
+    getUserInteractivePatients().then(list => {
+      if (list && list.length > 0) {
+        setPacientes(list);
+        setPacienteAtivo(list[0]);
+      }
+    });
+  }, []);
+
+  // Carrega a sessão quando muda a história ativa ou o paciente selecionado
+  useEffect(() => {
+    if (activeStoryNum === null) return;
+    let isMounted = true;
+    setSalvandoStatus('salvando');
+
+    getInteractiveSession('historia', storyKey, pacienteAtivo).then(data => {
+      if (!isMounted) return;
+      if (data) {
+        setObservarNotas(prev => ({ ...prev, [storyKey]: data.observarNotas || '' }));
+        setIntensidades(prev => ({ ...prev, [storyKey]: data.intensidade ?? null }));
+        setPensarNotas(prev => ({ ...prev, [storyKey]: data.pensarNotas || '' }));
+        setCrencas(prev => ({ ...prev, [storyKey]: data.crenca ?? null }));
+        setRespostas(prev => ({ ...prev, [storyKey]: data.respostaIdx ?? null }));
+        setOpcoesCustomizadas(prev => ({ ...prev, [storyKey]: data.opcoesCustomizadas || [] }));
+        setAgirNotas(prev => ({ ...prev, [storyKey]: data.agirNotas || '' }));
+        setEtapasFeitas(prev => ({ ...prev, [storyKey]: data.etapasFeitas || [false, false, false] }));
+      } else {
+        setObservarNotas(prev => ({ ...prev, [storyKey]: '' }));
+        setIntensidades(prev => ({ ...prev, [storyKey]: null }));
+        setPensarNotas(prev => ({ ...prev, [storyKey]: '' }));
+        setCrencas(prev => ({ ...prev, [storyKey]: null }));
+        setRespostas(prev => ({ ...prev, [storyKey]: null }));
+        setOpcoesCustomizadas(prev => ({ ...prev, [storyKey]: [] }));
+        setAgirNotas(prev => ({ ...prev, [storyKey]: '' }));
+        setEtapasFeitas(prev => ({ ...prev, [storyKey]: [false, false, false] }));
+      }
+      setSalvandoStatus('ok');
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [activeStoryNum, storyKey, pacienteAtivo]);
+
+  // Salvar no Supabase e localStorage com debounce
+  const dispararSalvamento = (dadosAtualizados?: Partial<InteractiveSessionData>) => {
+    if (activeStoryNum === null) return;
+    setSalvandoStatus('salvando');
+
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
+    timeoutRef.current = setTimeout(async () => {
+      const payload: InteractiveSessionData = {
+        observarNotas: dadosAtualizados?.observarNotas ?? (observarNotas[storyKey] || ''),
+        intensidade: dadosAtualizados?.intensidade !== undefined ? dadosAtualizados.intensidade : (intensidades[storyKey] ?? null),
+        pensarNotas: dadosAtualizados?.pensarNotas ?? (pensarNotas[storyKey] || ''),
+        crenca: dadosAtualizados?.crenca !== undefined ? dadosAtualizados.crenca : (crencas[storyKey] ?? null),
+        respostaIdx: dadosAtualizados?.respostaIdx !== undefined ? dadosAtualizados.respostaIdx : (respostas[storyKey] ?? null),
+        opcoesCustomizadas: dadosAtualizados?.opcoesCustomizadas ?? (opcoesCustomizadas[storyKey] || []),
+        agirNotas: dadosAtualizados?.agirNotas ?? (agirNotas[storyKey] || ''),
+        etapasFeitas: dadosAtualizados?.etapasFeitas ?? (etapasFeitas[storyKey] || [false, false, false]),
+        updatedAt: new Date().toISOString()
+      };
+
+      await saveInteractiveSession('historia', storyKey, pacienteAtivo, payload);
+      setSalvandoStatus('ok');
+    }, 600);
+  };
+
+  // Criação de novo paciente com seleção imediata
+  const handleCriarPaciente = () => {
+    const nomeLimpo = novoPacienteInput.trim();
+    if (!nomeLimpo) return;
+    if (!pacientes.includes(nomeLimpo)) {
+      const novaLista = [...pacientes, nomeLimpo];
+      setPacientes(novaLista);
+      try {
+        localStorage.setItem('na_interactive_patients', JSON.stringify(novaLista));
+      } catch {}
+    }
+    setPacienteAtivo(nomeLimpo);
+    setNovoPacienteInput('');
+    setShowNovoPacienteModal(false);
+  };
 
   // Renderizador de ilustração da história (imagem gerada com fallback para SVG)
   const renderStoryIllustration = (story: HistoriaClinica) => {
@@ -167,14 +268,6 @@ export default function HistoriasClinicasPage() {
     return matchHab && matchBusca;
   });
 
-  // Gatilho de salvamento simulado
-  const dispararSalvamento = () => {
-    setSalvandoStatus('salvando');
-    setTimeout(() => {
-      setSalvandoStatus('ok');
-    }, 600);
-  };
-
   // Leitura em voz alta
   const alternarVoz = (texto: string) => {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
@@ -210,7 +303,7 @@ export default function HistoriasClinicasPage() {
     const atualTexto = observarNotas[storyKey] || '';
     const novoTexto = atualTexto ? `${atualTexto}\n• ${pista}: ` : `• ${pista}: `;
     setObservarNotas(prev => ({ ...prev, [storyKey]: novoTexto }));
-    dispararSalvamento();
+    dispararSalvamento({ observarNotas: novoTexto });
   };
 
   // Adicionar outra ideia na etapa Agir
@@ -218,17 +311,19 @@ export default function HistoriasClinicasPage() {
     if (!novoTextoOpcao.trim() || !currentStory) return;
     const base = opcoesCustomizadas[storyKey] || [...currentStory.parar.opcoes];
     const novaLista = [...base, novoTextoOpcao.trim()];
+    const novaResp = novaLista.length - 1;
     setOpcoesCustomizadas(prev => ({ ...prev, [storyKey]: novaLista }));
-    setRespostas(prev => ({ ...prev, [storyKey]: novaLista.length - 1 }));
+    setRespostas(prev => ({ ...prev, [storyKey]: novaResp }));
     setNovoTextoOpcao('');
-    dispararSalvamento();
+    dispararSalvamento({ opcoesCustomizadas: novaLista, respostaIdx: novaResp });
   };
 
   // Concluir Etapa / Sessão
   const handleAvancarEtapa = () => {
-    const concluidas = etapasFeitas[storyKey] || [false, false, false];
+    const concluidas = [...(etapasFeitas[storyKey] || [false, false, false])] as [boolean, boolean, boolean];
     concluidas[etapaAtiva] = true;
-    setEtapasFeitas(prev => ({ ...prev, [storyKey]: [...concluidas] }));
+    setEtapasFeitas(prev => ({ ...prev, [storyKey]: concluidas }));
+    dispararSalvamento({ etapasFeitas: concluidas });
 
     if (etapaAtiva < 2) {
       setEtapaAtiva(etapaAtiva + 1);
@@ -256,7 +351,8 @@ export default function HistoriasClinicasPage() {
       ? listaOpcoesAgir[respIndex] 
       : 'Não selecionado';
 
-    const texto = `${currentStory.titulo} (${currentFaixa.r} anos · ${currentStory.tag})\n\n` +
+    const texto = `${currentStory.titulo} (${currentFaixa.r} anos · ${currentStory.tag})\n` +
+      `Paciente / Caso: ${pacienteAtivo}\n\n` +
       `01 · OBSERVAR\nIntensidade: ${int}\nAnotações: ${obs}\n\n` +
       `02 · PENSAR\nCrença no pensamento: ${cr}\nAnotações: ${pen}\n\n` +
       `03 · AGIR\nResposta adaptativa: ${respTxt}\nAnotações: ${agi}`;
@@ -269,18 +365,30 @@ export default function HistoriasClinicasPage() {
     }
   };
 
-  // Recomeçar anotações da história
-  const handleRecomecar = () => {
-    if (confirm('Deseja limpar as anotações desta história e recomeçar a sessão?')) {
+  // Recomeçar anotações da história para o paciente ativo
+  const handleRecomecar = async () => {
+    if (confirm(`Deseja limpar as anotações desta história para o ${pacienteAtivo} e recomeçar?`)) {
       setObservarNotas(prev => { const c = { ...prev }; delete c[storyKey]; return c; });
       setPensarNotas(prev => { const c = { ...prev }; delete c[storyKey]; return c; });
       setAgirNotas(prev => { const c = { ...prev }; delete c[storyKey]; return c; });
       setIntensidades(prev => { const c = { ...prev }; delete c[storyKey]; return c; });
       setCrencas(prev => { const c = { ...prev }; delete c[storyKey]; return c; });
       setRespostas(prev => { const c = { ...prev }; delete c[storyKey]; return c; });
+      setOpcoesCustomizadas(prev => { const c = { ...prev }; delete c[storyKey]; return c; });
       setEtapasFeitas(prev => { const c = { ...prev }; delete c[storyKey]; return c; });
       setSessaoFinalizada(false);
       setEtapaAtiva(0);
+      await saveInteractiveSession('historia', storyKey, pacienteAtivo, {
+        observarNotas: '',
+        intensidade: null,
+        pensarNotas: '',
+        crenca: null,
+        respostaIdx: null,
+        opcoesCustomizadas: [],
+        agirNotas: '',
+        etapasFeitas: [false, false, false],
+        updatedAt: new Date().toISOString()
+      });
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
@@ -530,6 +638,47 @@ export default function HistoriasClinicasPage() {
                 </div>
               </div>
 
+              {/* Barra de Seleção de Paciente / Sessão */}
+              <div className="bar-paciente">
+                <div className="bar-paciente__left">
+                  <span className="bar-paciente__label">
+                    <User size={15} />
+                    <span>Paciente em atendimento:</span>
+                  </span>
+                  <select
+                    className="bar-paciente__select"
+                    value={pacienteAtivo}
+                    onChange={(e) => setPacienteAtivo(e.target.value)}
+                    aria-label="Selecionar paciente"
+                  >
+                    {pacientes.map((p) => (
+                      <option key={p} value={p}>
+                        {p}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    className="bar-paciente__btn-add"
+                    onClick={() => setShowNovoPacienteModal(true)}
+                    title="Cadastrar novo código/iniciais de paciente"
+                  >
+                    <Plus size={14} />
+                    <span>Novo paciente</span>
+                  </button>
+                </div>
+
+                <div className="bar-paciente__right">
+                  <span className="salvo" id="salvo" data-s={salvandoStatus}>
+                    <i></i>
+                    <span>{salvandoStatus === 'salvando' ? 'Salvando na nuvem…' : 'Salvo na nuvem'}</span>
+                  </span>
+                  <span className="bar-paciente__sigilo">
+                    Sigilo preservado (use iniciais ou código)
+                  </span>
+                </div>
+              </div>
+
               {/* Artigo da História com Ilustração e Ferramentas */}
               <article className="hist">
                 <div className="ilu" id="ilu">
@@ -696,7 +845,7 @@ export default function HistoriasClinicasPage() {
                             aria-checked={intensidades[storyKey] === t.val}
                             onClick={() => {
                               setIntensidades(prev => ({ ...prev, [storyKey]: t.val }));
-                              dispararSalvamento();
+                              dispararSalvamento({ intensidade: t.val });
                             }}
                             style={{ ['--t' as any]: t.color }}
                           >
@@ -719,8 +868,9 @@ export default function HistoriasClinicasPage() {
                         placeholder="Anote com o paciente: sensações no corpo, expressões, tom de voz, intensidade…"
                         value={observarNotas[storyKey] || ''}
                         onChange={(e) => {
-                          setObservarNotas(prev => ({ ...prev, [storyKey]: e.target.value }));
-                          dispararSalvamento();
+                          const v = e.target.value;
+                          setObservarNotas(prev => ({ ...prev, [storyKey]: v }));
+                          dispararSalvamento({ observarNotas: v });
                         }}
                       />
                       <div className="sheet-f">
@@ -763,7 +913,7 @@ export default function HistoriasClinicasPage() {
                               aria-checked={crencas[storyKey] === val}
                               onClick={() => {
                                 setCrencas(prev => ({ ...prev, [storyKey]: val }));
-                                dispararSalvamento();
+                                dispararSalvamento({ crenca: val });
                               }}
                             >
                               {c}
@@ -789,8 +939,9 @@ export default function HistoriasClinicasPage() {
                         placeholder="Anote o pensamento alternativo ou a reestruturação cognitiva construída com o paciente…"
                         value={pensarNotas[storyKey] || ''}
                         onChange={(e) => {
-                          setPensarNotas(prev => ({ ...prev, [storyKey]: e.target.value }));
-                          dispararSalvamento();
+                          const v = e.target.value;
+                          setPensarNotas(prev => ({ ...prev, [storyKey]: v }));
+                          dispararSalvamento({ pensarNotas: v });
                         }}
                       />
                       <div className="sheet-f">
@@ -819,7 +970,7 @@ export default function HistoriasClinicasPage() {
                           className={`op ${respostas[storyKey] === optIdx ? 'sel' : ''}`}
                           onClick={() => {
                             setRespostas(prev => ({ ...prev, [storyKey]: optIdx }));
-                            dispararSalvamento();
+                            dispararSalvamento({ respostaIdx: optIdx });
                           }}
                         >
                           <input
@@ -872,8 +1023,9 @@ export default function HistoriasClinicasPage() {
                         placeholder="Por que essa resposta ajuda? Combine com o paciente quando usar em casa ou na escola…"
                         value={agirNotas[storyKey] || ''}
                         onChange={(e) => {
-                          setAgirNotas(prev => ({ ...prev, [storyKey]: e.target.value }));
-                          dispararSalvamento();
+                          const v = e.target.value;
+                          setAgirNotas(prev => ({ ...prev, [storyKey]: v }));
+                          dispararSalvamento({ agirNotas: v });
                         }}
                       />
                       <div className="sheet-f">
@@ -913,7 +1065,12 @@ export default function HistoriasClinicasPage() {
               {/* ================= RESUMO CONCLUÍDO ================= */}
               {sessaoFinalizada && (
                 <section className="resumo" id="resumo" aria-live="polite">
-                  <div className="kick">Sessão concluída</div>
+                  <div className="kick" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+                    <span>Sessão concluída</span>
+                    <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 999, background: 'rgba(0,0,0,0.06)', color: 'var(--ink)' }}>
+                      Paciente: <b>{pacienteAtivo}</b>
+                    </span>
+                  </div>
                   <h3 id="r-t">
                     {currentStory.titulo} · <em>sessão registrada</em>.
                   </h3>
@@ -1111,6 +1268,80 @@ export default function HistoriasClinicasPage() {
                       <span>{slidePaciente < 3 ? 'Avançar' : 'Concluir'}</span>
                       <ChevronRight size={16} />
                     </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Modal de Cadastro de Novo Paciente */}
+              {showNovoPacienteModal && (
+                <div
+                  className="na-modal-overlay"
+                  role="dialog"
+                  aria-modal="true"
+                  onClick={() => setShowNovoPacienteModal(false)}
+                >
+                  <div
+                    className="na-modal-dialog"
+                    style={{ maxWidth: 460, padding: 28, background: 'var(--bone)' }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                      <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: 'var(--ink)' }}>
+                        Cadastrar Paciente / Caso
+                      </h3>
+                      <button
+                        type="button"
+                        onClick={() => setShowNovoPacienteModal(false)}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink-mute)', display: 'grid', placeItems: 'center' }}
+                        aria-label="Fechar"
+                      >
+                        <X size={20} />
+                      </button>
+                    </div>
+
+                    <p style={{ margin: '0 0 16px', fontSize: 13, color: 'var(--ink-mute)', lineHeight: 1.5 }}>
+                      Identifique o paciente por <b>iniciais</b>, <b>código</b> ou <b>apelido</b> (ex: <i>"M.S."</i>, <i>"Caso 02"</i> ou <i>"Enzo (8a)"</i>) para preservar o sigilo clínico profissional (CFP/LGPD).
+                    </p>
+
+                    <form onSubmit={(e) => { e.preventDefault(); handleCriarPaciente(); }}>
+                      <input
+                        type="text"
+                        value={novoPacienteInput}
+                        onChange={(e) => setNovoPacienteInput(e.target.value)}
+                        placeholder="Ex: Paciente M.S. ou Caso 04"
+                        autoFocus
+                        style={{
+                          width: '100%',
+                          padding: '12px 14px',
+                          borderRadius: 12,
+                          border: '1px solid var(--line)',
+                          background: 'var(--paper)',
+                          color: 'var(--ink)',
+                          fontSize: 14,
+                          outline: 'none',
+                          marginBottom: 20,
+                          boxSizing: 'border-box'
+                        }}
+                      />
+
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+                        <button
+                          type="button"
+                          className="btn-ghost"
+                          onClick={() => setShowNovoPacienteModal(false)}
+                          style={{ padding: '8px 16px', fontSize: 13 }}
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          type="submit"
+                          className="btn"
+                          style={{ padding: '8px 18px', fontSize: 13 }}
+                        >
+                          Cadastrar e Selecionar
+                        </button>
+                      </div>
+                    </form>
                   </div>
                 </div>
               )}

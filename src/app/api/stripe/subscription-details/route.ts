@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
+import { verifyUserRequest } from '@/lib/serverAuth';
 
 function getSupabaseAdmin() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
@@ -11,18 +12,29 @@ function getSupabaseAdmin() {
 
 export async function POST(req: Request) {
   try {
+    const authCheck = await verifyUserRequest(req);
+    if (!authCheck.authorized) {
+      return authCheck.errorResponse!;
+    }
+
     const rawSecretKey = process.env.STRIPE_SECRET_KEY || '';
     const secretKey = rawSecretKey.trim().replace(/^["']|["']$/g, '');
     if (!secretKey) {
       return NextResponse.json({ error: 'STRIPE_SECRET_KEY não configurada.' }, { status: 500 });
     }
 
-    const body = await req.json();
-    const { userId, userEmail, stripeCustomerId } = body;
+    let body: any = {};
+    try {
+      body = await req.json();
+    } catch {}
 
-    if (!userEmail && !stripeCustomerId) {
-      return NextResponse.json({ error: 'E-mail ou ID do cliente ausente.' }, { status: 400 });
-    }
+    const authUser = authCheck.user!;
+    const authProfile = authCheck.profile;
+    const isAdmin = authCheck.isAdmin;
+
+    // Apenas administradores podem consultar dados de outro e-mail
+    const targetEmail = (isAdmin && body?.userEmail ? body.userEmail : authUser.email || '').trim().toLowerCase();
+    const targetUserId = isAdmin && body?.userId ? body.userId : authUser.id;
 
     const stripe = new Stripe(secretKey, {
       httpClient: Stripe.createFetchHttpClient(),
@@ -30,23 +42,23 @@ export async function POST(req: Request) {
       maxNetworkRetries: 3
     });
 
-    let customerId = stripeCustomerId;
+    let customerId = (targetUserId === authUser.id ? authProfile?.stripe_customer_id : body?.stripeCustomerId) || body?.stripeCustomerId;
 
     // Se não tiver stripeCustomerId, procura pelo e-mail
-    if (!customerId && userEmail) {
+    if (!customerId && targetEmail) {
       const customers = await stripe.customers.list({
-        email: userEmail.trim().toLowerCase(),
+        email: targetEmail,
         limit: 1
       });
       if (customers.data && customers.data.length > 0) {
         customerId = customers.data[0].id;
 
         // Salva no perfil do Supabase se houver userId
-        if (userId) {
+        if (targetUserId) {
           try {
             const supabase = getSupabaseAdmin();
             if (supabase) {
-              await supabase.from('profiles').update({ stripe_customer_id: customerId }).eq('id', userId);
+              await supabase.from('profiles').update({ stripe_customer_id: customerId }).eq('id', targetUserId);
             }
           } catch (e) {
             console.warn('Erro ao atualizar stripe_customer_id no perfil:', e);
@@ -181,9 +193,11 @@ export async function POST(req: Request) {
       });
     }
 
+    const isCancelando = Boolean((activeSub as any).cancel_at_period_end && activeSub.status !== 'canceled');
+
     // Tradução de status
     const statusMap: Record<string, string> = {
-      active: 'Ativa',
+      active: isCancelando ? 'Cancelamento agendado' : 'Ativa',
       trialing: 'Período de teste',
       past_due: 'Pagamento pendente',
       canceled: 'Cancelada',
@@ -198,8 +212,9 @@ export async function POST(req: Request) {
       subscriptionId: activeSub.id,
       status: statusMap[activeSub.status] || activeSub.status,
       rawStatus: activeSub.status,
-      cancelAtPeriodEnd: (activeSub as any).cancel_at_period_end || false,
-      renovacao,
+      cancelAtPeriodEnd: isCancelando,
+      isCancelando,
+      renovacao: isCancelando ? `Acesso ativo até ${renovacao}` : renovacao,
       currentPeriodEnd: periodEnd || null,
       valor: valorReais,
       unitAmount,

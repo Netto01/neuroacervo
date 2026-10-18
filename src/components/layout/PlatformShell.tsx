@@ -7,6 +7,7 @@ import { useNeuro } from '@/context/NeuroContext';
 import '@/app/plataforma/dashboard.css';
 import { PendingSubscriptionBanner } from '@/components/common/PendingSubscriptionBanner';
 import { resolveUserPlan } from '@/utils/userPlan';
+import { MobileNavSheet } from '@/components/layout/MobileNavSheet';
 
 export type PlatformPageId = 
   | 'inicio' 
@@ -40,6 +41,7 @@ export const PlatformShell: React.FC<PlatformShellProps> = ({
   const { currentUser, isLoadingUser, logout, materials, modules, favorites } = useNeuro();
 
   const [hoje, setHoje] = useState('');
+  const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Redirecionamento de segurança para login
@@ -309,6 +311,15 @@ export const PlatformShell: React.FC<PlatformShellProps> = ({
                 <svg className="ico"><use href="#i-bell"/></svg>
                 <span className="dot"></span>
               </button>
+              <button
+                type="button"
+                className="mobile-avatar-btn"
+                onClick={() => setIsMobileSheetOpen(true)}
+                aria-label="Abrir menu de conta e assinatura"
+                title="Minha conta e assinatura"
+              >
+                {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : (currentUser?.email ? currentUser.email.charAt(0).toUpperCase() : 'U')}
+              </button>
             </div>
           </div>
 
@@ -338,7 +349,27 @@ export const PlatformShell: React.FC<PlatformShellProps> = ({
           <svg className="ico"><use href="#i-folder"/></svg>
           <span>Pasta</span>
         </Link>
+        <button
+          type="button"
+          onClick={() => setIsMobileSheetOpen(true)}
+          aria-label="Abrir menu da conta e opções"
+          aria-expanded={isMobileSheetOpen}
+          aria-current={isMobileSheetOpen ? 'page' : undefined}
+        >
+          <svg className="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="1.5" />
+            <circle cx="12" cy="5" r="1.5" />
+            <circle cx="12" cy="19" r="1.5" />
+          </svg>
+          <span>Mais</span>
+        </button>
       </nav>
+
+      {/* Gaveta Móvel Deslizante */}
+      <MobileNavSheet
+        isOpen={isMobileSheetOpen}
+        onClose={() => setIsMobileSheetOpen(false)}
+      />
     </div>
     </div>
   );

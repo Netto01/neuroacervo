@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useNeuro } from '@/context/NeuroContext';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { BatchUploadModal } from '@/components/admin/BatchUploadModal';
+import { MobileNavSheet } from '@/components/layout/MobileNavSheet';
 import '../admin.css';
 
 export interface MaterialAdminItem {
@@ -69,6 +70,7 @@ export default function AdminMateriaisPage() {
   const [subscriberCount, setSubscriberCount] = useState<number>(0);
   const [loadingData, setLoadingData] = useState<boolean>(true);
   const [isSavingMat, setIsSavingMat] = useState<boolean>(false);
+  const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
 
   // Filters State - Materiais
   const [qMat, setQMat] = useState('');
@@ -586,6 +588,28 @@ export default function AdminMateriaisPage() {
 
         {/* ── CONTEÚDO PRINCIPAL ── */}
         <main className="main" id="conteudo">
+          {/* ── BARRA SUPERIOR MOBILE DO ADMIN ── */}
+          <div className="adm-mobile-topbar">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Link href="/admin" aria-label="NeuroAcervo Admin" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', color: 'inherit' }}>
+                <img src="/brand/isologo-preto.svg" width="22" height="28" alt="" />
+                <span style={{ font: '700 15px var(--sans)', letterSpacing: '-0.02em', color: 'var(--ink)' }}>NeuroAcervo</span>
+              </Link>
+              <span className="adm-tag" style={{ marginLeft: '4px' }}>Admin</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button
+                type="button"
+                className="mobile-avatar-btn"
+                onClick={() => setIsMobileSheetOpen(true)}
+                aria-label="Abrir menu de perfil e conta"
+                title="Minha conta e administração"
+              >
+                {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : 'A'}
+              </button>
+            </div>
+          </div>
+
           {/* ══ MATERIAIS ══ */}
           <section className="view on" id="v-materiais" aria-labelledby="h-mat">
             <div className="head">
@@ -839,7 +863,27 @@ export default function AdminMateriaisPage() {
           <svg className="ico"><use href="#i-cards"/></svg>
           <span>Planos</span>
         </Link>
+        <button
+          type="button"
+          onClick={() => setIsMobileSheetOpen(true)}
+          aria-label="Abrir menu de conta e opções"
+          aria-expanded={isMobileSheetOpen}
+          aria-current={isMobileSheetOpen ? 'page' : undefined}
+        >
+          <svg className="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="1.5" />
+            <circle cx="12" cy="5" r="1.5" />
+            <circle cx="12" cy="19" r="1.5" />
+          </svg>
+          <span>Mais</span>
+        </button>
       </nav>
+
+      {/* ── GAVETA MÓVEL DESLIZANTE ── */}
+      <MobileNavSheet
+        isOpen={isMobileSheetOpen}
+        onClose={() => setIsMobileSheetOpen(false)}
+      />
 
       {/* ── DRAWER (FORMULÁRIO DE NOVO / EDITAR MATERIAL) ── */}
       <div

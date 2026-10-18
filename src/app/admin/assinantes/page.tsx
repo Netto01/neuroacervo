@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useNeuro } from '@/context/NeuroContext';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { MobileNavSheet } from '@/components/layout/MobileNavSheet';
 import '../admin.css';
 
 export interface AssinanteItem {
@@ -27,6 +28,8 @@ export interface StripeStatsState {
   activeSubscriptions?: number;
   novosNoMes?: number;
   canceladasNoMes?: number;
+  cancelandoCount?: number;
+  pendentesCount?: number;
   taxaCancelamento?: number;
   error?: string;
 }
@@ -54,6 +57,7 @@ export default function AdminAssinantesPage() {
   const [adminAccounts, setAdminAccounts] = useState<AssinanteItem[]>([]);
   const [materialsCount, setMaterialsCount] = useState<number>(0);
   const [loadingData, setLoadingData] = useState<boolean>(true);
+  const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
 
   // Stripe Live Metrics State
   const [stripeStats, setStripeStats] = useState<StripeStatsState>({
@@ -113,11 +117,18 @@ export default function AdminAssinantesPage() {
           const userType = p.user_type === 'psicologo' ? 'Psicólogo(a)' :
             p.user_type === 'estudante' ? 'Estudante' : 'Outro';
 
-          const statusRaw = (p.status || 'ativa').toLowerCase();
-          const st: 'ativa' | 'pendente' | 'cancelando' | 'cancelada' =
-            statusRaw === 'pendente' ? 'pendente' :
-            statusRaw === 'cancelando' ? 'cancelando' :
-            statusRaw === 'cancelada' ? 'cancelada' : 'ativa';
+          const statusRaw = (p.subscription_status || p.status || '').toLowerCase().trim();
+          let st: 'ativa' | 'pendente' | 'cancelando' | 'cancelada' = 'pendente';
+          if (statusRaw === 'active' || statusRaw === 'ativa' || statusRaw === 'trialing') {
+            st = 'ativa';
+          } else if (statusRaw === 'cancelando') {
+            st = 'cancelando';
+          } else if (statusRaw === 'canceled' || statusRaw === 'cancelada') {
+            st = 'cancelada';
+          } else {
+            // 'pending', 'past_due', 'unpaid', 'paused', 'incomplete', 'incomplete_expired' ou vazio
+            st = 'pendente';
+          }
 
           const item: AssinanteItem = {
             id: p.id,
@@ -132,15 +143,10 @@ export default function AdminAssinantesPage() {
             role: p.role
           };
 
-          // Não contabilizar a própria conta nem contas administrativas como assinaturas
-          const isAdminRole = p.role === 'admin' || p.user_type === 'admin';
-          const isCurrentUser = Boolean(
-            (currentUser?.id && p.id === currentUser.id) ||
-            (currentUser?.email && p.email && p.email.toLowerCase() === currentUser.email.toLowerCase())
-          );
-          const isAdminEmail = Boolean(p.email && p.email.toLowerCase().includes('admin@'));
+          // Não contabilizar contas administrativas como assinaturas pagantes
+          const isAdminRole = p.role === 'admin';
 
-          if (isAdminRole || isCurrentUser || isAdminEmail) {
+          if (isAdminRole) {
             admins.push(item);
           } else {
             payingSubs.push(item);
@@ -182,9 +188,11 @@ export default function AdminAssinantesPage() {
           configured: json.configured ?? false,
           loading: false,
           mrr: json.mrr,
-          activeSubscriptions: json.activeSubscriptions,
-          novosNoMes: json.novosNoMes,
-          canceladasNoMes: json.canceladasNoMes,
+          activeSubscriptions: json.activeSubscriptions ?? json.ativasCount,
+          novosNoMes: json.novosNoMes ?? json.novosNoMesCount,
+          canceladasNoMes: json.canceladasNoMes ?? json.canceladasCount,
+          cancelandoCount: json.cancelandoCount,
+          pendentesCount: json.pendentesCount,
           taxaCancelamento: json.taxaCancelamento,
           error: json.error
         });
@@ -252,6 +260,14 @@ export default function AdminAssinantesPage() {
       ? stripeStats.canceladasNoMes
       : canceladas;
 
+    const finalCancelando = (stripeStats.configured && typeof stripeStats.cancelandoCount === 'number')
+      ? stripeStats.cancelandoCount
+      : cancelando;
+
+    const finalPendentes = (stripeStats.configured && typeof stripeStats.pendentesCount === 'number')
+      ? stripeStats.pendentesCount
+      : pendentes;
+
     const taxa = (stripeStats.configured && typeof stripeStats.taxaCancelamento === 'number')
       ? stripeStats.taxaCancelamento
       : (total > 0 ? Math.round((canceladas / total) * 1000) / 10 : 0);
@@ -259,8 +275,8 @@ export default function AdminAssinantesPage() {
     return {
       total,
       ativasCount: finalAtivas,
-      pendentesCount: pendentes,
-      cancelandoCount: cancelando,
+      pendentesCount: finalPendentes,
+      cancelandoCount: finalCancelando,
       canceladasCount: finalCanceladas,
       novosNoMesCount: finalNovos,
       taxaCancelamento: taxa,
@@ -398,6 +414,28 @@ export default function AdminAssinantesPage() {
 
         {/* ── CONTEÚDO PRINCIPAL ── */}
         <main className="main" id="conteudo">
+          {/* ── BARRA SUPERIOR MOBILE DO ADMIN ── */}
+          <div className="adm-mobile-topbar">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Link href="/admin" aria-label="NeuroAcervo Admin" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', color: 'inherit' }}>
+                <img src="/brand/isologo-preto.svg" width="22" height="28" alt="" />
+                <span style={{ font: '700 15px var(--sans)', letterSpacing: '-0.02em', color: 'var(--ink)' }}>NeuroAcervo</span>
+              </Link>
+              <span className="adm-tag" style={{ marginLeft: '4px' }}>Admin</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button
+                type="button"
+                className="mobile-avatar-btn"
+                onClick={() => setIsMobileSheetOpen(true)}
+                aria-label="Abrir menu de perfil e conta"
+                title="Minha conta e administração"
+              >
+                {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : 'A'}
+              </button>
+            </div>
+          </div>
+
           {/* ══ ASSINANTES ══ */}
           <section className="view on" id="v-assinantes" aria-labelledby="h-ass">
             <div className="head">
@@ -671,7 +709,27 @@ export default function AdminAssinantesPage() {
           <svg className="ico"><use href="#i-cards"/></svg>
           <span>Planos</span>
         </Link>
+        <button
+          type="button"
+          onClick={() => setIsMobileSheetOpen(true)}
+          aria-label="Abrir menu de conta e opções"
+          aria-expanded={isMobileSheetOpen}
+          aria-current={isMobileSheetOpen ? 'page' : undefined}
+        >
+          <svg className="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="1.5" />
+            <circle cx="12" cy="5" r="1.5" />
+            <circle cx="12" cy="19" r="1.5" />
+          </svg>
+          <span>Mais</span>
+        </button>
       </nav>
+
+      {/* ── GAVETA MÓVEL DESLIZANTE ── */}
+      <MobileNavSheet
+        isOpen={isMobileSheetOpen}
+        onClose={() => setIsMobileSheetOpen(false)}
+      />
 
       {/* ── SCRIM / BACKDROP DO DRAWER ── */}
       <div

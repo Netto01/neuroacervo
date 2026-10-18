@@ -68,18 +68,28 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER STABLE SET search_path = public;
 
--- Proteger colunas sensíveis (role, plan, billing_cycle) contra auto-elevação de privilégios
+-- Proteger colunas sensíveis (role, plan, billing_cycle, subscription_status, user_type) contra auto-elevação de privilégios
 CREATE OR REPLACE FUNCTION public.protect_sensitive_profile_columns()
 RETURNS TRIGGER AS $$
 BEGIN
   IF current_setting('request.jwt.claim.role', true) <> 'service_role' THEN
-    -- Apenas usuários que já são admins confirmados podem alterar role
+    -- Apenas usuários que já são admins confirmados podem alterar role ou user_type
     IF NEW.role IS DISTINCT FROM OLD.role THEN
       IF NOT public.is_admin() THEN
         NEW.role := OLD.role;
       END IF;
     END IF;
-    -- Apenas admins podem alterar plano diretamente sem webhook de pagamento
+    IF NEW.user_type IS DISTINCT FROM OLD.user_type THEN
+      IF NOT public.is_admin() THEN
+        NEW.user_type := OLD.user_type;
+      END IF;
+    END IF;
+    -- Apenas admins ou webhooks (service_role) podem alterar status de assinatura ou plano diretamente
+    IF NEW.subscription_status IS DISTINCT FROM OLD.subscription_status THEN
+      IF NOT public.is_admin() THEN
+        NEW.subscription_status := OLD.subscription_status;
+      END IF;
+    END IF;
     IF NEW.plan IS DISTINCT FROM OLD.plan THEN
       IF NOT public.is_admin() THEN
         NEW.plan := OLD.plan;
@@ -309,9 +319,9 @@ BEGIN
     coalesce(new.raw_user_meta_data->>'phone', ''),
     coalesce((new.raw_user_meta_data->>'newsletter')::boolean, true),
     'member',
-    coalesce(new.raw_user_meta_data->>'plan', 'Prática'),
+    'Consulta',
     coalesce(new.raw_user_meta_data->>'billing_cycle', 'mensal'),
-    coalesce(new.raw_user_meta_data->>'subscription_status', 'pending')
+    'pending'
   )
   ON CONFLICT (id) DO UPDATE SET
     full_name = coalesce(excluded.full_name, profiles.full_name),
@@ -322,8 +332,7 @@ BEGIN
     period = coalesce(excluded.period, profiles.period),
     profession = coalesce(excluded.profession, profiles.profession),
     phone = coalesce(excluded.phone, profiles.phone),
-    newsletter = coalesce(excluded.newsletter, profiles.newsletter),
-    subscription_status = coalesce(excluded.subscription_status, profiles.subscription_status);
+    newsletter = coalesce(excluded.newsletter, profiles.newsletter);
   RETURN new;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -723,4 +732,33 @@ ON CONFLICT (id) DO UPDATE SET
   key_takeaways = EXCLUDED.key_takeaways,
   attached_material_ids = EXCLUDED.attached_material_ids;
 */
+
+
+-- 10. Tabela de Sessões Interativas e Anotações por Paciente
+CREATE TABLE IF NOT EXISTS public.user_interactive_sessions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  resource_type TEXT NOT NULL DEFAULT 'historia', -- 'historia' ou 'baralho'
+  resource_id TEXT NOT NULL,                     -- ex: 'f1_1'
+  patient_code TEXT NOT NULL DEFAULT 'Paciente 01', -- Iniciais ou código (ex: 'M.S.')
+  data JSONB NOT NULL DEFAULT '{}'::jsonb,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  UNIQUE(user_id, resource_type, resource_id, patient_code)
+);
+
+ALTER TABLE public.user_interactive_sessions ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Usuários gerenciam suas próprias sessões interativas" ON public.user_interactive_sessions;
+CREATE POLICY "Usuários gerenciam suas próprias sessões interativas" 
+  ON public.user_interactive_sessions FOR ALL 
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE INDEX IF NOT EXISTS idx_user_sessions_lookup 
+  ON public.user_interactive_sessions(user_id, resource_type, resource_id);
+
+CREATE INDEX IF NOT EXISTS idx_user_sessions_patient 
+  ON public.user_interactive_sessions(user_id, patient_code);
+
 

@@ -77,8 +77,11 @@ async function updateProfileRecord(
 /**
  * Mapeia o status de assinatura da Stripe para o status do nosso banco
  */
-function mapStripeSubscriptionStatus(stripeStatus: Stripe.Subscription.Status): 'active' | 'pending' | 'canceled' | 'past_due' | 'paused' {
-  switch (stripeStatus) {
+function mapStripeSubscriptionStatus(subscription: Stripe.Subscription): 'active' | 'pending' | 'canceled' | 'past_due' | 'paused' | 'cancelando' {
+  if (subscription.cancel_at_period_end && subscription.status !== 'canceled') {
+    return 'cancelando';
+  }
+  switch (subscription.status) {
     case 'active':
     case 'trialing':
       return 'active';
@@ -255,7 +258,7 @@ export async function POST(req: Request) {
         const planName = subscription.metadata?.planName;
         const billingCycle = subscription.metadata?.billingCycle || 
           (subscription.items.data[0]?.price.recurring?.interval === 'year' ? 'anual' : 'mensal');
-        const status = mapStripeSubscriptionStatus(subscription.status);
+        const status = mapStripeSubscriptionStatus(subscription);
 
         console.log(`[Stripe Webhook] customer.subscription.created: id=${subscription.id}, status=${status}, plano=${planName}`);
 
@@ -285,7 +288,7 @@ export async function POST(req: Request) {
         const planName = subscription.metadata?.planName;
         const billingCycle = subscription.metadata?.billingCycle ||
           (subscription.items.data[0]?.price.recurring?.interval === 'year' ? 'anual' : 'mensal');
-        const status = mapStripeSubscriptionStatus(subscription.status);
+        const status = mapStripeSubscriptionStatus(subscription);
 
         console.log(`[Stripe Webhook] customer.subscription.updated: id=${subscription.id}, status=${status}`);
 
@@ -350,7 +353,7 @@ export async function POST(req: Request) {
         const planName = subscription.metadata?.planName;
         const billingCycle = subscription.metadata?.billingCycle ||
           (subscription.items.data[0]?.price.recurring?.interval === 'year' ? 'anual' : 'mensal');
-        const status = mapStripeSubscriptionStatus(subscription.status);
+        const status = mapStripeSubscriptionStatus(subscription);
 
         console.log(`[Stripe Webhook] customer.subscription.pending_update_applied: id=${subscription.id}`);
 
@@ -379,7 +382,7 @@ export async function POST(req: Request) {
         console.log(`[Stripe Webhook] customer.subscription.pending_update_expired: id=${subscription.id}`);
 
         // Registra que a alteração expirou e mantém o status atual da assinatura
-        const status = mapStripeSubscriptionStatus(subscription.status);
+        const status = mapStripeSubscriptionStatus(subscription);
         await updateProfileRecord(
           supabase,
           { userId, stripeSubscriptionId: subscription.id, stripeCustomerId: customerId },

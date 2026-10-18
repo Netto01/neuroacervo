@@ -33,6 +33,8 @@ export function resolveUserPlan(user: UserProfile | null): PlanAccessInfo {
     };
   }
 
+  // Apenas assinaturas com status 'active' têm acesso aos recursos bloqueados
+  const isActive = user?.subscriptionStatus === 'active';
   const rawPlan = (user?.plan || '').toLowerCase();
 
   // Plano Prática / Completo / Pro / Institucional
@@ -46,14 +48,14 @@ export function resolveUserPlan(user: UserProfile | null): PlanAccessInfo {
     const isAnual = user?.billingCycle === 'anual' || rawPlan.includes('anual');
     return {
       tipo: 'pratica',
-      nivel: 3,
+      nivel: isActive ? 3 : 1,
       nome: 'Prática',
       preco: isAnual ? 'R$ 33,25/mês' : 'R$ 49,90/mês',
       desc: 'Acesso a todo o acervo de consulta, às aulas gravadas e aos recursos interativos de prática clínica.',
-      cta: 'Gerenciar assinatura',
-      ctaHref: '/plataforma/assinatura',
-      hasAulas: true,
-      hasRecursos: true
+      cta: isActive ? 'Gerenciar assinatura' : 'Ativar plano Prática',
+      ctaHref: isActive ? '/plataforma/assinatura' : '/plataforma/upgrade?plano=pratica',
+      hasAulas: isActive,
+      hasRecursos: isActive
     };
   }
 
@@ -61,13 +63,13 @@ export function resolveUserPlan(user: UserProfile | null): PlanAccessInfo {
   if (rawPlan.includes('estudo') || rawPlan.includes('aula')) {
     return {
       tipo: 'estudo',
-      nivel: 2,
+      nivel: isActive ? 2 : 1,
       nome: 'Estudo',
       preco: 'R$ 39,90/mês',
       desc: 'Acesso a todos os materiais do plano Consulta mais aulas gravadas em módulos.',
-      cta: 'Fazer upgrade para o Prática',
-      ctaHref: '/plataforma/upgrade?plano=pratica',
-      hasAulas: true,
+      cta: isActive ? 'Fazer upgrade para o Prática' : 'Ativar plano Estudo',
+      ctaHref: isActive ? '/plataforma/upgrade?plano=pratica' : '/plataforma/upgrade?plano=estudo',
+      hasAulas: isActive,
       hasRecursos: false
     };
   }
@@ -79,7 +81,7 @@ export function resolveUserPlan(user: UserProfile | null): PlanAccessInfo {
     nome: 'Consulta',
     preco: 'R$ 19,90/mês',
     desc: 'Todos os PDFs, guias rápidos de aplicação, modelos de laudo e compêndios para consulta.',
-    cta: 'Fazer upgrade de plano',
+    cta: isActive ? 'Fazer upgrade de plano' : 'Assinar plano',
     ctaHref: '/plataforma/upgrade',
     hasAulas: false,
     hasRecursos: false

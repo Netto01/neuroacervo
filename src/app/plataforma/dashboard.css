@@ -140,6 +140,8 @@
 .dash-root .icon-btn { position:relative; width:42px; height:42px; border-radius:50%; border:1px solid var(--line); background:transparent; display:grid; place-items:center; color:var(--ink); cursor:pointer; }
 .dash-root .icon-btn:hover { background:#15140f0a; }
 .dash-root .icon-btn .dot { position:absolute; top:9px; right:10px; width:8px; height:8px; border-radius:50%; background:var(--accent); box-shadow:0 0 0 2px var(--paper); }
+.dash-root .mobile-avatar-btn { display:none; align-items:center; justify-content:center; width:38px; height:38px; border-radius:50%; background:var(--ink); color:var(--paper); font:700 12px/1 var(--sans); border:1.5px solid rgba(218,254,170,.4); cursor:pointer; box-shadow:0 4px 10px rgba(21,20,15,.12); touch-action:manipulation; }
+.dash-root .mobile-avatar-btn:active { transform:scale(0.96); }
 
 .dash-root .sec-rule { display:flex; align-items:center; gap:14px; padding:12px 0; border-bottom:1px solid var(--line-soft); font:400 11px/1 var(--mono); letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); }
 .dash-root .sec-rule .roman { font:500 italic 16px/1 var(--serif); letter-spacing:0; text-transform:none; color:var(--accent-strong); }
@@ -261,9 +263,10 @@
   .dash-root .side { display:none; }
   .dash-root .tools { grid-template-columns:1fr; }
   .dash-root .top-meta span { display:none; }
+  .dash-root .mobile-avatar-btn { display:inline-flex !important; }
   .dash-root .tabbar { 
     display:grid; 
-    grid-template-columns:repeat(5, 1fr); 
+    grid-template-columns:repeat(6, 1fr); 
     position:fixed; 
     left:max(8px, env(safe-area-inset-left, 8px)); 
     right:max(8px, env(safe-area-inset-right, 8px)); 

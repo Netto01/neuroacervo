@@ -430,8 +430,11 @@
 .adm-root .toast.on { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
 .adm-root .toast .ico { color: var(--lime); }
 
-/* ── TABBAR MOBILE ── */
+/* ── TABBAR & TOPBAR MOBILE ── */
 .adm-root .tabbar { display: none; }
+.adm-root .adm-mobile-topbar { display: none; }
+.adm-root .mobile-avatar-btn { display: none; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: var(--ink); color: var(--paper); font: 700 12px/1 var(--sans); border: 1.5px solid rgba(218,254,170,.4); cursor: pointer; box-shadow: 0 4px 10px rgba(21,20,15,.12); touch-action: manipulation; }
+.adm-root .mobile-avatar-btn:active { transform: scale(0.96); }
 
 @media (max-width: 1200px) {
   .adm-root .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -445,12 +448,63 @@
   .adm-root .mini { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .adm-root .moves { grid-template-columns: minmax(0, 1fr); }
   .adm-root .dl2 { grid-template-columns: 110px 1fr; }
-  .adm-root .tabbar { display: grid; grid-template-columns: repeat(4, 1fr); position: fixed; left: 8px; right: 8px; bottom: 8px; z-index: 40; padding: 6px; border-radius: 20px; background: var(--ink); box-shadow: 0 20px 40px -18px rgba(21,20,15,.6); }
+  .adm-root .mobile-avatar-btn { display: inline-flex; }
+  .adm-root .adm-mobile-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    margin: -24px -16px 20px -16px;
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+    position: sticky;
+    top: 0;
+    z-index: 35;
+  }
+  .adm-root .tabbar { 
+    display: grid; 
+    grid-template-columns: repeat(5, 1fr); 
+    position: fixed; 
+    left: max(8px, env(safe-area-inset-left, 8px)); 
+    right: max(8px, env(safe-area-inset-right, 8px)); 
+    bottom: max(8px, env(safe-area-inset-bottom, 8px)); 
+    z-index: 40; 
+    padding: 6px 4px; 
+    border-radius: 20px; 
+    background: var(--ink); 
+    box-shadow: 0 20px 40px -18px rgba(21,20,15,.6); 
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
   .adm-root .tabbar button,
-  .adm-root .tabbar a { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 0; border-radius: 14px; font: 500 11px/1 var(--sans); color: #f7f1deb3; background: transparent; border: 0; text-decoration: none; cursor: pointer; }
+  .adm-root .tabbar a { 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    gap: 4px; 
+    padding: 7px 2px; 
+    border-radius: 12px; 
+    font: 500 10.5px/1 var(--sans); 
+    color: #f7f1deb3; 
+    background: transparent; 
+    border: 0; 
+    text-decoration: none; 
+    cursor: pointer; 
+    min-width: 0;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .adm-root .tabbar button span,
+  .adm-root .tabbar a span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    font-size: 10px;
+  }
   .adm-root .tabbar button[aria-current="page"],
   .adm-root .tabbar a[aria-current="page"] { background: rgba(218,254,170,.14); color: var(--lime); }
-  .adm-root .main { padding-bottom: 110px; }
+  .adm-root .main { padding-bottom: 120px; }
 }
 
 @media (max-width: 560px) {

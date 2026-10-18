@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useNeuro } from '@/context/NeuroContext';
@@ -13,8 +13,10 @@ import {
   ShieldCheck, 
   Sparkles,
   LayoutDashboard,
-  FolderHeart
+  FolderHeart,
+  CreditCard
 } from 'lucide-react';
+import { MobileNavSheet } from '@/components/layout/MobileNavSheet';
 
 interface NavbarProps {
   activeTab?: string;
@@ -24,6 +26,7 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
   const pathname = usePathname();
   const { activeRole, setActiveRole, currentUser, favorites } = useNeuro();
+  const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
 
   const navItems = [
     { id: 'dashboard', label: 'Início', href: '/plataforma', icon: LayoutDashboard },
@@ -141,8 +144,12 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
 
             {/* User Profile Pill */}
             {currentUser ? (
-              <div className="flex items-center gap-2 pl-2 border-l border-slate-200 dark:border-slate-800">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-slate-700 to-slate-900 dark:from-slate-700 dark:to-teal-900 flex items-center justify-center text-white text-xs font-semibold">
+              <div 
+                className="flex items-center gap-2 pl-2 border-l border-slate-200 dark:border-slate-800 cursor-pointer lg:cursor-default"
+                onClick={() => setIsMobileSheetOpen(true)}
+                title="Abrir menu da conta"
+              >
+                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-slate-700 to-slate-900 dark:from-slate-700 dark:to-teal-900 flex items-center justify-center text-white text-xs font-semibold hover:ring-2 hover:ring-teal-500/40 transition-all">
                   {currentUser.name ? currentUser.name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() : 'U'}
                 </div>
                 <div className="hidden lg:block text-left">
@@ -189,7 +196,42 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
             </Link>
           );
         })}
+
+        {/* Botão Gerenciar Assinatura no Mobile */}
+        <Link
+          href="/plataforma/assinatura"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap shrink-0 transition-all bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 border border-teal-500/30"
+        >
+          <CreditCard className="w-3.5 h-3.5" />
+          <span>Assinatura</span>
+        </Link>
+
+        {/* Botão Painel Admin no Mobile (se for admin) */}
+        {currentUser?.role === 'admin' && (
+          <Link
+            href="/admin"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap shrink-0 transition-all bg-lime-100 dark:bg-lime-950/60 text-emerald-900 dark:text-lime-300 border border-emerald-600/30 shadow-xs"
+          >
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>Admin</span>
+          </Link>
+        )}
+
+        {/* Botão Mais / Menu da Conta */}
+        <button
+          type="button"
+          onClick={() => setIsMobileSheetOpen(true)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap shrink-0 transition-all bg-slate-900 text-white dark:bg-white dark:text-slate-950"
+        >
+          <span>Mais...</span>
+        </button>
       </div>
+
+      {/* Gaveta Móvel Deslizante */}
+      <MobileNavSheet
+        isOpen={isMobileSheetOpen}
+        onClose={() => setIsMobileSheetOpen(false)}
+      />
     </header>
   );
 };

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { useNeuro } from '@/context/NeuroContext';
 import { BatchUploadModal } from '@/components/admin/BatchUploadModal';
+import { MobileNavSheet } from '@/components/layout/MobileNavSheet';
 import './admin.css';
 
 // ── Categorias de Materiais e Configurações ──
@@ -66,13 +67,23 @@ interface StripeStatsState {
   loading: boolean;
   error?: string | null;
   mrr?: number;
+  arr?: number;
+  ltv?: number;
+  mrrEmRisco?: number;
+  taxaInadimplencia?: number;
+  taxaCancelamento?: number;
   ativasCount?: number;
   novosNoMesCount?: number;
   canceladasNoMes?: number;
+  cancelandoCount?: number;
+  pendentesCount?: number;
   consultaCount?: number;
   estudoCount?: number;
   praticaCount?: number;
   praticaAnualCount?: number;
+  consultaReceita?: number;
+  estudoReceita?: number;
+  praticaReceita?: number;
   ticketMedio?: number;
   mrrHistory?: [string, number][];
   syncedAt?: string;
@@ -105,6 +116,7 @@ export default function AdminPage() {
   const [loadingData, setLoadingData] = useState<boolean>(true);
   const [isSavingMat, setIsSavingMat] = useState<boolean>(false);
   const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
+  const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
 
   // Stripe Live Metrics State
   const [stripeStats, setStripeStats] = useState<StripeStatsState>({
@@ -230,11 +242,18 @@ export default function AdminPage() {
           const userType = p.user_type === 'psicologo' ? 'Psicólogo(a)' :
             p.user_type === 'estudante' ? 'Estudante' : 'Outro';
 
-          const statusRaw = (p.status || 'ativa').toLowerCase();
-          const st: 'ativa' | 'pendente' | 'cancelando' | 'cancelada' =
-            statusRaw === 'pendente' ? 'pendente' :
-            statusRaw === 'cancelando' ? 'cancelando' :
-            statusRaw === 'cancelada' ? 'cancelada' : 'ativa';
+          const statusRaw = (p.subscription_status || p.status || '').toLowerCase().trim();
+          let st: 'ativa' | 'pendente' | 'cancelando' | 'cancelada' = 'pendente';
+          if (statusRaw === 'active' || statusRaw === 'ativa' || statusRaw === 'trialing') {
+            st = 'ativa';
+          } else if (statusRaw === 'cancelando') {
+            st = 'cancelando';
+          } else if (statusRaw === 'canceled' || statusRaw === 'cancelada') {
+            st = 'cancelada';
+          } else {
+            // 'pending', 'past_due', 'unpaid', 'paused', 'incomplete', 'incomplete_expired' ou vazio
+            st = 'pendente';
+          }
 
           const item: AssinanteItem = {
             id: p.id,
@@ -249,15 +268,10 @@ export default function AdminPage() {
             role: p.role
           };
 
-          // Não contabilizar a própria conta nem contas administrativas como assinaturas
-          const isAdminRole = p.role === 'admin' || p.user_type === 'admin';
-          const isCurrentUser = Boolean(
-            (currentUser?.id && p.id === currentUser.id) ||
-            (currentUser?.email && p.email && p.email.toLowerCase() === currentUser.email.toLowerCase())
-          );
-          const isAdminEmail = Boolean(p.email && p.email.toLowerCase().includes('admin@'));
+          // Não contabilizar contas administrativas como assinaturas pagantes
+          const isAdminRole = p.role === 'admin';
 
-          if (isAdminRole || isCurrentUser || isAdminEmail) {
+          if (isAdminRole) {
             admins.push(item);
           } else {
             payingSubs.push(item);
@@ -335,13 +349,23 @@ export default function AdminPage() {
           loading: false,
           error: data.error || null,
           mrr: data.mrr,
+          arr: data.arr,
+          ltv: data.ltv,
+          mrrEmRisco: data.mrrEmRisco,
+          taxaInadimplencia: data.taxaInadimplencia,
+          taxaCancelamento: data.taxaCancelamento,
           ativasCount: data.ativasCount,
           novosNoMesCount: data.novosNoMesCount,
           canceladasNoMes: data.canceladasNoMes,
+          cancelandoCount: data.cancelandoCount,
+          pendentesCount: data.pendentesCount,
           consultaCount: data.consultaCount,
           estudoCount: data.estudoCount,
           praticaCount: data.praticaCount,
           praticaAnualCount: data.praticaAnualCount,
+          consultaReceita: data.consultaReceita,
+          estudoReceita: data.estudoReceita,
+          praticaReceita: data.praticaReceita,
           ticketMedio: data.ticketMedio,
           mrrHistory: data.mrrHistory,
           syncedAt: data.syncedAt
@@ -425,6 +449,20 @@ export default function AdminPage() {
     const canceladasNoMes = canceladas.length + cancelando.length;
     const taxaCancelamento = total > 0 ? ((canceladasNoMes / total) * 100).toFixed(1).replace('.', ',') : '0';
 
+    // Métricas SaaS Avançadas (Fallback Local)
+    const arr = mrr * 12;
+    const mrrEmRisco = pendentes.reduce((acc, sub) => {
+      if (sub.plano === 'Consulta') return acc + 19.90;
+      if (sub.plano === 'Estudo') return acc + 39.90;
+      if (sub.plano === 'Prática') {
+        return acc + (sub.ciclo === 'anual' ? (399.00 / 12) : 49.90);
+      }
+      return acc;
+    }, 0);
+    const taxaInadimplencia = total > 0 ? Number(((pendentes.length / total) * 100).toFixed(1)) : 0;
+    const churnDecimal = (total > 0 && canceladasNoMes > 0) ? (canceladasNoMes / total) : 0.0833;
+    const ltv = ticketMedio > 0 ? Number((ticketMedio / churnDecimal).toFixed(2)) : 0;
+
     return {
       total,
       ativasCount: ativas.length,
@@ -439,6 +477,10 @@ export default function AdminPage() {
       estudoReceita: estudo.length * 39.90,
       praticaReceita: (praticaMensal.length * 49.90) + (praticaAnual.length * (399.00 / 12)),
       mrr,
+      arr,
+      ltv,
+      mrrEmRisco,
+      taxaInadimplencia,
       ticketMedio,
       psicologos,
       estudantes,
@@ -493,6 +535,39 @@ export default function AdminPage() {
   const activeChartData = (isStripeActive && stripeStats.mrrHistory && stripeStats.mrrHistory.length > 0)
     ? stripeStats.mrrHistory
     : mrrChartData;
+
+  // Métricas SaaS Avançadas Derivadas (com fallback transparente)
+  const activeArr = isStripeActive && typeof stripeStats.arr === 'number'
+    ? stripeStats.arr
+    : (activeMrr * 12);
+
+  const activeLtv = isStripeActive && typeof stripeStats.ltv === 'number'
+    ? stripeStats.ltv
+    : assinantesStats.ltv;
+
+  const activeMrrEmRisco = isStripeActive && typeof stripeStats.mrrEmRisco === 'number'
+    ? stripeStats.mrrEmRisco
+    : assinantesStats.mrrEmRisco;
+
+  const activeTaxaInadimplencia = isStripeActive && typeof stripeStats.taxaInadimplencia === 'number'
+    ? stripeStats.taxaInadimplencia
+    : assinantesStats.taxaInadimplencia;
+
+  const activeTicketMedio = isStripeActive && typeof stripeStats.ticketMedio === 'number'
+    ? stripeStats.ticketMedio
+    : assinantesStats.ticketMedio;
+
+  const activeConsultaReceita = isStripeActive && typeof stripeStats.consultaReceita === 'number'
+    ? stripeStats.consultaReceita
+    : assinantesStats.consultaReceita;
+
+  const activeEstudoReceita = isStripeActive && typeof stripeStats.estudoReceita === 'number'
+    ? stripeStats.estudoReceita
+    : assinantesStats.estudoReceita;
+
+  const activePraticaReceita = isStripeActive && typeof stripeStats.praticaReceita === 'number'
+    ? stripeStats.praticaReceita
+    : assinantesStats.praticaReceita;
 
   // Feed de atividade recente real montado a partir de assinantes e materiais
   const recentActivities = useMemo(() => {
@@ -895,6 +970,27 @@ export default function AdminPage() {
 
         {/* ── CONTEÚDO PRINCIPAL ── */}
         <main className="main" id="conteudo">
+          {/* ── BARRA SUPERIOR MOBILE DO ADMIN ── */}
+          <div className="adm-mobile-topbar">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Link href="/admin" aria-label="NeuroAcervo Admin" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', color: 'inherit' }}>
+                <img src="/brand/isologo-preto.svg" width="22" height="28" alt="" />
+                <span style={{ font: '700 15px var(--sans)', letterSpacing: '-0.02em', color: 'var(--ink)' }}>NeuroAcervo</span>
+              </Link>
+              <span className="adm-tag" style={{ marginLeft: '4px' }}>Admin</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button
+                type="button"
+                className="mobile-avatar-btn"
+                onClick={() => setIsMobileSheetOpen(true)}
+                aria-label="Abrir menu de perfil e conta"
+                title="Minha conta e administração"
+              >
+                {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : 'A'}
+              </button>
+            </div>
+          </div>
 
           {/* ══ VISÃO GERAL ══ */}
           <section className={`view ${activeTab === 'visao' ? 'on' : ''}`} id="v-visao" aria-labelledby="h-visao">
@@ -1017,6 +1113,120 @@ export default function AdminPage() {
                 </button>
               </div>
             )}
+
+            {/* ══ SEÇÃO DEDICADA: SAÚDE FINANCEIRA & MÉTRICAS SAAS ══ */}
+            <div className="sec-rule" style={{ marginTop: '32px' }}>
+              <span className="roman">I.B</span>
+              <span className="t">Saúde Financeira & Métricas SaaS</span>
+              <span style={{ font: '400 11px var(--mono)', color: 'var(--ink-faint)' }}>
+                {isStripeActive ? 'Stripe Live Analytics' : 'Estimativa Supabase'}
+              </span>
+            </div>
+
+            <div className="mini" style={{ marginTop: '14px' }}>
+              <div className="kpi">
+                <div className="k">ARR Projetado</div>
+                <div className="v">
+                  R$ {activeArr >= 1000
+                    ? `${(activeArr / 1000).toFixed(1).replace('.', ',')} mil`
+                    : activeArr.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </div>
+                <div className="d">receita anual recorrente (MRR × 12)</div>
+              </div>
+
+              <div className="kpi">
+                <div className="k">LTV Estimado</div>
+                <div className="v">
+                  R$ {activeLtv.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </div>
+                <div className="d">ciclo de vida médio por cliente</div>
+              </div>
+
+              <div className="kpi">
+                <div className="k">Ticket Médio (ARPU)</div>
+                <div className="v">
+                  R$ {activeTicketMedio.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </div>
+                <div className="d">receita média / assinante ativo</div>
+              </div>
+
+              <div className="kpi">
+                <div className="k" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span>Inadimplência</span>
+                  {activeMrrEmRisco > 0 && <span className="pill warn" style={{ fontSize: '9px', padding: '2px 6px' }}>Em risco</span>}
+                </div>
+                <div className="v" style={{ color: activeMrrEmRisco > 0 ? '#a8261d' : 'inherit' }}>
+                  R$ {activeMrrEmRisco.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </div>
+                <div className="d">
+                  {activeTaxaInadimplencia > 0 ? (
+                    <><span className="dn">{activeTaxaInadimplencia}%</span> da base com cobrança pendente</>
+                  ) : (
+                    <span className="up">0% em atraso</span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Painel de Composição e Distribuição de Receita por Plano */}
+            <div className="panel" style={{ marginTop: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                <div>
+                  <h3>Composição de Receita por Plano</h3>
+                  <p className="sub">Participação de cada nível de assinatura no faturamento recorrente mensal (MRR)</p>
+                </div>
+                <div style={{ font: '600 13px var(--mono)', color: 'var(--ink)' }}>
+                  Total: R$ {activeMrr.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}/mês
+                </div>
+              </div>
+
+              {activeMrr > 0 ? (
+                <>
+                  <div className="profile-bar" style={{ height: '14px', marginTop: '16px' }}>
+                    <span
+                      style={{
+                        width: `${Math.max(2, Math.round((activeConsultaReceita / activeMrr) * 100))}%`,
+                        background: 'var(--cat-guia)'
+                      }}
+                      title={`Consulta: R$ ${activeConsultaReceita.toFixed(2)}`}
+                    />
+                    <span
+                      style={{
+                        width: `${Math.max(2, Math.round((activeEstudoReceita / activeMrr) * 100))}%`,
+                        background: 'var(--cat-anamnese)'
+                      }}
+                      title={`Estudo: R$ ${activeEstudoReceita.toFixed(2)}`}
+                    />
+                    <span
+                      style={{
+                        width: `${Math.max(2, 100 - Math.round((activeConsultaReceita / activeMrr) * 100) - Math.round((activeEstudoReceita / activeMrr) * 100))}%`,
+                        background: 'var(--accent-strong)'
+                      }}
+                      title={`Prática: R$ ${activePraticaReceita.toFixed(2)}`}
+                    />
+                  </div>
+
+                  <div className="profile-leg" style={{ marginTop: '14px', gap: '10px 24px' }}>
+                    <span>
+                      <i style={{ background: 'var(--cat-guia)' }}></i>
+                      Consulta: <b>R$ {activeConsultaReceita.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</b> ({activeMrr > 0 ? Math.round((activeConsultaReceita / activeMrr) * 100) : 0}%)
+                    </span>
+                    <span>
+                      <i style={{ background: 'var(--cat-anamnese)' }}></i>
+                      Estudo: <b>R$ {activeEstudoReceita.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</b> ({activeMrr > 0 ? Math.round((activeEstudoReceita / activeMrr) * 100) : 0}%)
+                    </span>
+                    <span>
+                      <i style={{ background: 'var(--accent-strong)' }}></i>
+                      Prática: <b>R$ {activePraticaReceita.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</b> ({activeMrr > 0 ? Math.max(0, 100 - Math.round((activeConsultaReceita / activeMrr) * 100) - Math.round((activeEstudoReceita / activeMrr) * 100)) : 0}%)
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <p style={{ margin: '14px 0 0', fontStyle: 'italic', color: 'var(--ink-mute)', fontSize: '13px' }}>
+                  Aguardando assinaturas ativas para projetar a distribuição de receita.
+                </p>
+              )}
+            </div>
 
             <div className="grid2 sec">
               <div className="panel">
@@ -1885,7 +2095,27 @@ export default function AdminPage() {
           <svg className="ico"><use href="#i-cards"/></svg>
           <span>Planos</span>
         </button>
+        <button
+          type="button"
+          onClick={() => setIsMobileSheetOpen(true)}
+          aria-label="Abrir menu de conta e opções"
+          aria-expanded={isMobileSheetOpen}
+          aria-current={isMobileSheetOpen ? 'page' : undefined}
+        >
+          <svg className="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="1.5" />
+            <circle cx="12" cy="5" r="1.5" />
+            <circle cx="12" cy="19" r="1.5" />
+          </svg>
+          <span>Mais</span>
+        </button>
       </nav>
+
+      {/* ── GAVETA MÓVEL DESLIZANTE (MENU DE CONTA / ASSINATURA / ADMIN) ── */}
+      <MobileNavSheet
+        isOpen={isMobileSheetOpen}
+        onClose={() => setIsMobileSheetOpen(false)}
+      />
 
       {/* ── FORMULÁRIO: NOVO / EDITAR MATERIAL (DRAWER) ── */}
       <div
