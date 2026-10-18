@@ -1,0 +1,1046 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>NeuroAcervo — Dramatização dos Dois Lados (Fluxo Completo Mobile)</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,560;0,9..144,700;1,9..144,400;1,9..144,600&family=IBM+Plex+Mono:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #efe8d8;
+        --card: #fcfbf7;
+        --sunken: #f3eee3;
+        --line: #e2d9c6;
+        --line-strong: #a39a85;
+        --ink: #1f2620;
+        --muted: #6a6555;
+        --on-dark: #f3efe4;
+        --action: #2b5c35;
+        --action-hover: #1f4628;
+        --on-action: #ffffff;
+        --select: #d6f5a3;
+        --neg-head: #262b26;
+        --neg-soft: #eeeadf;
+        --rac-head: #d6f5a3;
+        --rac-soft: #f4f8e8;
+        --font-display: "Fraunces", Georgia, serif;
+        --font-sans: "Inter", -apple-system, sans-serif;
+        --font-mono: "IBM Plex Mono", monospace;
+        --shadow-card: 0 8px 30px rgba(40, 34, 20, 0.08);
+        --shadow-pop: 0 20px 50px rgba(40, 34, 20, 0.16);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html, body {
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--font-sans);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: 99;
+        pointer-events: none;
+        background-image: radial-gradient(circle at 15% 15%, rgba(43, 92, 53, 0.05) 0, transparent 45%),
+                          radial-gradient(circle at 85% 85%, rgba(43, 92, 53, 0.05) 0, transparent 45%);
+      }
+
+      #root {
+        width: 1080px;
+        height: 1920px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* Top Masthead */
+      .m-topbar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 130px;
+        padding: 0 60px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--line);
+        background: rgba(239, 232, 216, 0.92);
+        backdrop-filter: blur(12px);
+        z-index: 50;
+      }
+      .m-brand {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        font-family: var(--font-display);
+        font-size: 32px;
+        font-weight: 700;
+      }
+      .m-brand img {
+        width: 44px;
+        height: 44px;
+      }
+      .m-brand span span {
+        color: var(--action);
+      }
+      .m-badge-soon {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 20px;
+        border-radius: 999px;
+        background: var(--select);
+        border: 1px solid var(--action);
+        color: var(--action-hover);
+        font-family: var(--font-mono);
+        font-size: 15px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      .pulse-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--action);
+      }
+
+      /* Generic Scene Layout */
+      .m-scene {
+        position: absolute;
+        inset: 130px 0 0 0;
+        padding: 40px 60px 60px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      /* ── LOGO EXPANSION INTRO OVERLAY ── */
+      #intro-logo-overlay {
+        position: absolute;
+        inset: 0;
+        z-index: 80;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: var(--bg);
+        pointer-events: none;
+      }
+      .logo-pulse-circle {
+        position: absolute;
+        width: 440px;
+        height: 440px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(214, 245, 163, 0.5) 0%, rgba(239, 232, 216, 0) 70%);
+      }
+      .logo-box-intro {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 24px;
+        text-align: center;
+      }
+      .logo-box-intro img {
+        width: 140px;
+        height: 140px;
+        filter: drop-shadow(0 16px 32px rgba(43, 92, 53, 0.28));
+      }
+      .logo-box-intro h1 {
+        font-family: var(--font-display);
+        font-size: 68px;
+        font-weight: 700;
+        color: var(--ink);
+      }
+      .logo-box-intro h1 span {
+        color: var(--action);
+      }
+      .logo-box-intro p {
+        font-family: var(--font-mono);
+        font-size: 19px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      /* Shared Step Indicator Banner */
+      .step-banner {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 18px;
+        border-radius: 999px;
+        background: var(--card);
+        border: 1px solid var(--line);
+        font-family: var(--font-mono);
+        font-size: 15px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--action);
+        margin-bottom: 24px;
+      }
+
+      /* ── ETAPA 1: PREPARAÇÃO ── */
+      .s1-wrap {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 28px;
+      }
+      .s1-title {
+        font-family: var(--font-display);
+        font-size: 48px;
+        line-height: 1.2;
+        font-weight: 700;
+        text-align: center;
+      }
+      .s1-title em {
+        color: var(--action);
+        font-style: italic;
+      }
+      .s1-card {
+        width: 100%;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        padding: 40px;
+        box-shadow: var(--shadow-pop);
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+      .s1-field-label {
+        font-family: var(--font-mono);
+        font-size: 14px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .s1-input-mock {
+        padding: 24px;
+        border-radius: 16px;
+        background: var(--sunken);
+        border: 1px solid var(--line-strong);
+        font-family: var(--font-display);
+        font-style: italic;
+        font-size: 28px;
+        line-height: 1.35;
+      }
+      .s1-meter-box {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 18px 24px;
+        border-radius: 16px;
+        background: var(--sunken);
+        border: 1px solid var(--line);
+      }
+      .s1-meter-box b {
+        font-family: var(--font-mono);
+        font-size: 32px;
+        color: #9b1c1c;
+      }
+      .s1-roles-box {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .role-opt-active {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 24px;
+        border-radius: 16px;
+        background: var(--select);
+        border: 2px solid var(--action);
+        font-weight: 700;
+        color: var(--action-hover);
+        font-size: 18px;
+      }
+      .btn-start-mock {
+        width: 100%;
+        height: 68px;
+        border-radius: 999px;
+        background: var(--action);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        font-size: 20px;
+        font-weight: 700;
+        box-shadow: 0 10px 24px rgba(43, 92, 53, 0.3);
+      }
+
+      /* ── ETAPA 2: ARENA DO DEBATE ── */
+      .arena-frame {
+        width: 100%;
+        height: 100%;
+        max-height: 1540px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .arena-bar-m {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 16px 24px;
+      }
+      .arena-bar-m b {
+        font-family: var(--font-display);
+        font-size: 22px;
+        font-weight: 700;
+      }
+      .arena-belief-tag {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-family: var(--font-mono);
+        font-size: 18px;
+        font-weight: 700;
+        background: var(--sunken);
+        padding: 8px 16px;
+        border-radius: 10px;
+      }
+      .arena-v-stack {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+      }
+      .col-box {
+        flex: 1;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        box-shadow: var(--shadow-card);
+      }
+      .col-box.c-neg .col-top {
+        background: var(--neg-head);
+        color: var(--on-dark);
+      }
+      .col-box.c-rac .col-top {
+        background: var(--rac-head);
+        color: var(--action-hover);
+      }
+      .col-top {
+        padding: 16px 22px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .col-icon-s {
+        font-size: 24px;
+      }
+      .col-info h3 {
+        font-size: 18px;
+        font-weight: 700;
+      }
+      .col-info span {
+        font-size: 13px;
+        opacity: 0.8;
+      }
+      .who-pill {
+        margin-left: auto;
+        padding: 6px 16px;
+        border-radius: 999px;
+        font-size: 14px;
+        font-weight: 700;
+      }
+      .c-neg .who-pill {
+        background: var(--on-dark);
+        color: var(--ink);
+      }
+      .c-rac .who-pill {
+        background: var(--action-hover);
+        color: #fff;
+      }
+      .col-body-s {
+        flex: 1;
+        padding: 18px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .c-neg .col-body-s {
+        background: var(--neg-soft);
+      }
+      .c-rac .col-body-s {
+        background: var(--rac-soft);
+      }
+      .fala-card {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 16px 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .fala-card p {
+        font-size: 19px;
+        line-height: 27px;
+        color: var(--ink);
+      }
+      .tag-row {
+        display: flex;
+        gap: 8px;
+      }
+      .c-tag {
+        padding: 4px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        border: 1px solid var(--line);
+        background: var(--card);
+      }
+      .c-tag.ok {
+        background: var(--select);
+        border-color: var(--action);
+        color: var(--action-hover);
+      }
+      .c-tag.flag {
+        background: #f6e3c2;
+        border-color: #87501a;
+        color: #87501a;
+      }
+      .rail-m {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 0;
+        position: relative;
+        z-index: 10;
+      }
+      .rail-m::before {
+        content: "";
+        position: absolute;
+        left: 20px;
+        right: 20px;
+        top: 50%;
+        height: 1px;
+        background: var(--line);
+      }
+      .swap-circ {
+        position: relative;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: var(--action);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 26px;
+        box-shadow: 0 10px 24px rgba(43, 92, 53, 0.4);
+      }
+
+      /* ── ETAPA 3: REFLEXÃO & MÉTRICAS ── */
+      .s3-wrap {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+      }
+      .s3-stats-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+      .stat-metric-card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        padding: 28px 24px;
+        box-shadow: var(--shadow-card);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .stat-metric-card span {
+        font-family: var(--font-mono);
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--muted);
+        text-transform: uppercase;
+      }
+      .stat-num-row {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+      }
+      .stat-num-row .from {
+        font-family: var(--font-mono);
+        font-size: 22px;
+        color: var(--muted);
+        text-decoration: line-through;
+      }
+      .stat-num-row .to {
+        font-family: var(--font-mono);
+        font-size: 44px;
+        font-weight: 700;
+        color: var(--action);
+      }
+      .s3-chart-card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        padding: 36px 32px;
+        box-shadow: var(--shadow-pop);
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+      .s3-chart-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+      }
+      .s3-chart-head h4 {
+        font-family: var(--font-display);
+        font-size: 22px;
+        font-weight: 700;
+      }
+      .drop-chip {
+        background: var(--select);
+        color: var(--action-hover);
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-family: var(--font-mono);
+        font-size: 15px;
+        font-weight: 700;
+      }
+      .s3-takeaway-card {
+        background: var(--sunken);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 22px 24px;
+        font-size: 17px;
+        line-height: 25px;
+      }
+      .s3-takeaway-card b {
+        color: var(--action-hover);
+      }
+
+      /* ── ETAPA 4: TAREFA DE CASA / FOLHAS A4 ── */
+      .s4-wrap-p {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 26px;
+      }
+      .a4-preview-mock {
+        width: 100%;
+        height: 520px;
+        background: #fff;
+        border: 1px solid var(--line-strong);
+        border-radius: 16px;
+        box-shadow: var(--shadow-pop);
+        padding: 32px 36px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        overflow: hidden;
+      }
+      .a4-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        border-bottom: 2px solid var(--ink);
+        padding-bottom: 12px;
+      }
+      .a4-brand {
+        font-family: var(--font-display);
+        font-size: 20px;
+        font-weight: 700;
+      }
+      .a4-title {
+        font-family: var(--font-display);
+        font-size: 26px;
+        font-weight: 700;
+      }
+      .a4-table-mock {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      .a4-table-mock th {
+        background: var(--sunken);
+        padding: 10px;
+        text-align: left;
+        border: 1px solid var(--line);
+      }
+      .a4-table-mock td {
+        padding: 12px 10px;
+        border: 1px solid var(--line);
+        color: var(--muted);
+      }
+      .options-actions-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        width: 100%;
+      }
+      .opt-btn-p {
+        height: 64px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        font-size: 18px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .opt-btn-p.primary {
+        background: var(--action);
+        color: #fff;
+        border: 1px solid var(--action);
+        box-shadow: 0 8px 20px rgba(43, 92, 53, 0.25);
+      }
+      .opt-btn-p.secondary {
+        background: var(--card);
+        color: var(--ink);
+        border: 1px solid var(--line-strong);
+      }
+      .lock-badge-p {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 20px;
+        border-radius: 14px;
+        background: var(--select);
+        color: var(--action-hover);
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      /* ── SCENE 5: LANÇAMENTO EM BREVE ── */
+      .s5-wrap {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 32px;
+      }
+      .s5-brand {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        font-family: var(--font-display);
+        font-size: 52px;
+        font-weight: 700;
+      }
+      .s5-brand img {
+        width: 68px;
+        height: 68px;
+      }
+      .s5-brand span span {
+        color: var(--action);
+      }
+      .s5-headline {
+        font-family: var(--font-display);
+        font-size: 42px;
+        line-height: 1.25;
+        font-weight: 600;
+        max-width: 900px;
+      }
+      .s5-features-list {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        text-align: left;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        padding: 28px 32px;
+        width: 100%;
+        box-shadow: var(--shadow-card);
+      }
+      .s5-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 18px;
+        font-weight: 600;
+      }
+      .s5-item span {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: var(--select);
+        color: var(--action-hover);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+      }
+      .s5-cta-btn {
+        width: 100%;
+        height: 76px;
+        border-radius: 999px;
+        background: var(--action);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        font-weight: 700;
+        box-shadow: 0 14px 34px rgba(43, 92, 53, 0.4);
+      }
+      .s5-url {
+        font-family: var(--font-mono);
+        font-size: 20px;
+        color: #5a5448;
+        letter-spacing: 0.1em;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-width="1080"
+      data-height="1920"
+      data-duration="23"
+    >
+      <audio id="bg-music" src="assets/music.mp3" data-start="0" data-duration="23" data-track-index="10" data-volume="0.85"></audio>
+
+      <!-- Persistent Top Masthead -->
+      <header class="m-topbar">
+        <div class="m-brand">
+          <img src="assets/logo.svg" alt="NeuroAcervo Logo" data-media-id="logo-top" />
+          <span>Neuro<span>Acervo</span></span>
+        </div>
+        <div class="m-badge-soon">
+          <span class="pulse-dot"></span>
+          <span>Lançamento em Breve</span>
+        </div>
+      </header>
+
+      <!-- ── INTRO: EXPANSÃO DA LOGO (0.0s -> 2.5s) ── -->
+      <div id="intro-logo-overlay" data-layout-allow-occlusion>
+        <div class="logo-pulse-circle" id="logo-circle"></div>
+        <div class="logo-box-intro" id="logo-box">
+          <img src="assets/logo.svg" alt="NeuroAcervo Logo" data-media-id="logo-intro" />
+          <h1>Neuro<span>Acervo</span></h1>
+          <p>O Acervo Clínico Interativo</p>
+        </div>
+      </div>
+
+      <!-- ── TELA 1: PREPARAÇÃO (2.5s -> 6.8s) ── -->
+      <section class="m-scene" id="scene-etapa-1">
+        <div class="s1-wrap">
+          <div class="step-banner">Etapa 1 de 4 · Preparação da Sessão</div>
+          <h2 class="s1-title">
+            Mapeie o pensamento e a <em>convicção inicial</em>
+          </h2>
+
+          <div class="s1-card">
+            <span class="s1-field-label">Pensamento-Alvo a Desafiar</span>
+            <div class="s1-input-mock">
+              “Se eu errar na apresentação, todos vão me achar incompetente e serei demitido.”
+            </div>
+
+            <div class="s1-meter-box">
+              <span>Crença Inicial no Pensamento</span>
+              <b id="s1-crenca-val">85%</b>
+            </div>
+
+            <div class="s1-roles-box">
+              <span class="s1-field-label">Quem Inicia no Lado Racional</span>
+              <div class="role-opt-active">
+                <span>Terapeuta no lado racional</span>
+                <span>★ Recomendado</span>
+              </div>
+            </div>
+
+            <div class="btn-start-mock">
+              Iniciar Rodada 1 na Arena →
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── TELA 2: ARENA DO DEBATE & TROCA (6.8s -> 12.5s) ── -->
+      <section class="m-scene" id="scene-etapa-2">
+        <div class="arena-frame">
+          <div class="arena-bar-m">
+            <b>Etapa 2 de 4 · Arena do Debate</b>
+            <div class="arena-belief-tag">
+              Crença: 85 → <span id="s2-belief-dynamic" style="color:var(--action)">25</span>
+            </div>
+          </div>
+
+          <div class="arena-v-stack">
+            <!-- Coluna Negativa -->
+            <div class="col-box c-neg" id="col-neg-box">
+              <div class="col-top">
+                <span class="col-icon-s">☁️</span>
+                <div class="col-info">
+                  <h3>Voz do Pensamento Negativo</h3>
+                  <span>Defende que o medo é verdadeiro</span>
+                </div>
+                <div class="who-pill" id="s2-who-neg">Paciente</div>
+              </div>
+              <div class="col-body-s">
+                <div class="fala-card" id="fala-neg-1">
+                  <p>“Todo mundo vai perceber que eu travei. Não tem como disfarçar.”</p>
+                  <div class="tag-row">
+                    <span class="c-tag flag">🚩 Difícil de rebater</span>
+                    <span class="c-tag">R1</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Trilho Central com Botão de Troca -->
+            <div class="rail-m">
+              <div class="swap-circ" id="s2-swap-btn">⇄</div>
+            </div>
+
+            <!-- Coluna Racional -->
+            <div class="col-box c-rac" id="col-rac-box">
+              <div class="col-top">
+                <span class="col-icon-s">🛡️</span>
+                <div class="col-info">
+                  <h3>Voz Racional</h3>
+                  <span>Contesta com lógica e evidências</span>
+                </div>
+                <div class="who-pill" id="s2-who-rac">Terapeuta</div>
+              </div>
+              <div class="col-body-s">
+                <div class="fala-card" id="fala-rac-1">
+                  <p>“Errar um slide é diferente de ser incompetente. Apresentações servem para alinhar projetos, não para definir seu valor.”</p>
+                  <div class="tag-row">
+                    <span class="c-tag ok">★ Funcionou</span>
+                    <span class="c-tag">R1</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── TELA 3: REFLEXÃO & MÉTRICAS (12.5s -> 16.8s) ── -->
+      <section class="m-scene" id="scene-etapa-3">
+        <div class="s3-wrap">
+          <div class="step-banner">Etapa 3 de 4 · Reflexão & Reavaliação</div>
+
+          <div class="s3-stats-grid">
+            <div class="stat-metric-card">
+              <span>Crença Final</span>
+              <div class="stat-num-row">
+                <span class="from">85%</span>
+                <span class="to">25%</span>
+              </div>
+            </div>
+            <div class="stat-metric-card">
+              <span>Ansiedade</span>
+              <div class="stat-num-row">
+                <span class="from">80</span>
+                <span class="to">30</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="s3-chart-card">
+            <div class="s3-chart-head">
+              <h4>Evolução da Crença na Sessão</h4>
+              <span class="drop-chip">-60 pontos</span>
+            </div>
+            <svg viewBox="0 0 500 160" style="width:100%; height:170px;">
+              <g stroke="var(--line)" stroke-width="1">
+                <line x1="30" y1="20" x2="470" y2="20" stroke-dasharray="4" />
+                <line x1="30" y1="80" x2="470" y2="80" stroke-dasharray="4" />
+                <line x1="30" y1="140" x2="470" y2="140" stroke-dasharray="4" />
+              </g>
+              <polyline
+                id="s3-metric-line"
+                points="50,30 250,85 430,135"
+                fill="none"
+                stroke="var(--action)"
+                stroke-width="5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <circle cx="50" cy="30" r="8" fill="var(--action)" />
+              <text x="50" y="16" font-family="var(--font-mono)" font-size="16" font-weight="700" fill="var(--ink)" text-anchor="middle">85%</text>
+
+              <circle cx="250" cy="85" r="8" fill="var(--action)" />
+              <text x="250" y="70" font-family="var(--font-mono)" font-size="16" font-weight="700" fill="var(--ink)" text-anchor="middle">50%</text>
+
+              <circle cx="430" cy="135" r="10" fill="#2b5c35" stroke="#d6f5a3" stroke-width="4" />
+              <text x="430" y="118" font-family="var(--font-mono)" font-size="18" font-weight="700" fill="var(--action)" text-anchor="middle">25%</text>
+            </svg>
+          </div>
+
+          <div class="s3-takeaway-card">
+            <b>Regra subjacente identificada:</b><br />
+            “Não preciso ser perfeito para ter competência reconhecida.”
+          </div>
+        </div>
+      </section>
+
+      <!-- ── TELA 4: TAREFA DE CASA / A4 (16.8s -> 20.0s) ── -->
+      <section class="m-scene" id="scene-etapa-4">
+        <div class="s4-wrap-p">
+          <div class="step-banner">Etapa 4 de 4 · Para o Paciente Levar</div>
+
+          <div class="a4-preview-mock">
+            <div class="a4-top">
+              <span class="a4-brand">NeuroAcervo · Folha de Tarefa</span>
+              <span style="font-family:var(--font-mono); font-size:12px; color:var(--muted)">Uso Clínico</span>
+            </div>
+            <div class="a4-title">Os Dois Lados, em Casa</div>
+            <p style="font-size:14px; color:var(--muted); line-height:20px;">
+              Quando o pensamento disfuncional surgir, registre a resposta racional com a técnica praticada na sessão.
+            </p>
+            <table class="a4-table-mock">
+              <thead>
+                <tr>
+                  <th>Meu pensamento negativo</th>
+                  <th>Argumento racional</th>
+                  <th>Ainda difícil?</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>“Vou travar na reunião”</td><td>“Já preparei os pontos-chave”</td><td>☐ Sim  ☑ Não</td></tr>
+                <tr><td>“Vão me criticar”</td><td>“Dúvidas alinham o trabalho”</td><td>☐ Sim  ☑ Não</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="options-actions-grid">
+            <div class="opt-btn-p primary">🖨️ Imprimir Folhas</div>
+            <div class="opt-btn-p secondary">📥 Baixar PDF</div>
+          </div>
+
+          <div class="lock-badge-p">
+            🔒 O roteiro do terapeuta e notas confidenciais nunca são impressos.
+          </div>
+        </div>
+      </section>
+
+      <!-- ── TELA 5: LANÇAMENTO EM BREVE & CTA (20.0s -> 23.0s) ── -->
+      <section class="m-scene" id="scene-etapa-5">
+        <div class="s5-wrap">
+          <div class="s5-brand">
+            <img src="assets/logo.svg" alt="NeuroAcervo Logo" data-media-id="logo-outro" />
+            <span>Neuro<span>Acervo</span></span>
+          </div>
+
+          <h2 class="s5-headline">
+            O fluxo completo de intervenção clínica estruturada.
+          </h2>
+
+          <div class="s5-features-list">
+            <div class="s5-item"><span>✓</span> <b>Etapa 1:</b> Mapeamento do pensamento e crença</div>
+            <div class="s5-item"><span>✓</span> <b>Etapa 2:</b> Arena interativa com troca de papéis</div>
+            <div class="s5-item"><span>✓</span> <b>Etapa 3:</b> Métricas e consolidação da autonomia</div>
+            <div class="s5-item"><span>✓</span> <b>Etapa 4:</b> Tarefa de casa em PDF para o paciente</div>
+          </div>
+
+          <div style="width:100%; display:flex; flex-direction:column; gap:16px; align-items:center;">
+            <div class="s5-cta-btn">
+              Cadastre-se na Lista de Espera →
+            </div>
+            <div class="s5-url">neuroacervo.com.br</div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- GSAP Master Animation Timeline -->
+    <script>
+      const tl = gsap.timeline({ paused: true });
+
+      // ── INTRO: EXPANSÃO DA LOGO (0.0s -> 2.5s) ──
+      tl.fromTo("#logo-circle", { scale: 0.15, opacity: 0 }, { scale: 1.7, opacity: 1, duration: 1.5, ease: "power2.out" }, 0.05)
+        .fromTo("#logo-box img", { scale: 0.25, opacity: 0 }, { scale: 1.3, opacity: 1, duration: 1.3, ease: "back.out(1.4)" }, 0.1)
+        .fromTo("#logo-box h1", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }, 0.45)
+        .fromTo("#logo-box p", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 0.7)
+        .to("#intro-logo-overlay", { opacity: 0, scale: 1.08, duration: 0.45, ease: "power2.in" }, 2.05);
+
+      // ── ETAPA 1: PREPARAÇÃO (2.5s -> 6.8s) ──
+      tl.to("#scene-etapa-1", { opacity: 1, duration: 0.35, ease: "power2.out" }, 2.5)
+        .fromTo("#scene-etapa-1 .step-banner", { opacity: 0, y: -15 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 2.6)
+        .fromTo("#scene-etapa-1 .s1-title", { opacity: 0, y: 25 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 2.75)
+        .fromTo("#scene-etapa-1 .s1-card", { opacity: 0, scale: 0.94, y: 35 }, { opacity: 1, scale: 1, y: 0, duration: 0.7, ease: "back.out(1.1)" }, 2.95)
+        .fromTo("#s1-crenca-val", { scale: 0.9 }, { scale: 1.2, yoyo: true, repeat: 1, duration: 0.4, ease: "power2.inOut" }, 4.6)
+        .to("#scene-etapa-1", { opacity: 0, y: -30, duration: 0.35, ease: "power2.in" }, 6.45);
+
+      // ── ETAPA 2: ARENA DO DEBATE & TROCA (6.8s -> 12.5s) ──
+      tl.to("#scene-etapa-2", { opacity: 1, duration: 0.35, ease: "power2.out" }, 6.8)
+        .fromTo("#col-neg-box", { opacity: 0, y: -25 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 7.0)
+        .fromTo("#col-rac-box", { opacity: 0, y: 25 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 7.1)
+        .fromTo("#fala-neg-1", { opacity: 0, scale: 0.95 }, { opacity: 1, scale: 1, duration: 0.45, ease: "power2.out" }, 7.5)
+        .fromTo("#fala-rac-1", { opacity: 0, scale: 0.95 }, { opacity: 1, scale: 1, duration: 0.45, ease: "power2.out" }, 8.4)
+        // Giro central e troca de papéis
+        .to("#s2-swap-btn", { rotate: 180, scale: 1.25, duration: 0.6, ease: "power2.inOut" }, 9.8)
+        .to("#s2-who-neg", { innerText: "Terapeuta", duration: 0.3 }, 10.1)
+        .to("#s2-who-rac", { innerText: "Paciente", duration: 0.3 }, 10.1)
+        .to("#s2-belief-dynamic", { innerText: 25, snap: { innerText: 1 }, duration: 1.2, ease: "power2.out" }, 10.3)
+        .to("#scene-etapa-2", { opacity: 0, scale: 0.98, duration: 0.35, ease: "power2.in" }, 12.15);
+
+      // ── ETAPA 3: REFLEXÃO & MÉTRICAS (12.5s -> 16.8s) ──
+      tl.to("#scene-etapa-3", { opacity: 1, duration: 0.35, ease: "power2.out" }, 12.5)
+        .fromTo("#scene-etapa-3 .step-banner", { opacity: 0, y: -15 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 12.65)
+        .fromTo("#scene-etapa-3 .stat-metric-card", { opacity: 0, y: 20 }, { opacity: 1, y: 0, stagger: 0.12, duration: 0.5, ease: "power3.out" }, 12.8)
+        .fromTo("#scene-etapa-3 .s3-chart-card", { opacity: 0, scale: 0.94, y: 20 }, { opacity: 1, scale: 1, y: 0, duration: 0.6, ease: "back.out(1.15)" }, 13.0)
+        .fromTo("#s3-metric-line", { strokeDasharray: 500, strokeDashoffset: 500 }, { strokeDashoffset: 0, duration: 1.3, ease: "power2.inOut" }, 13.4)
+        .fromTo("#scene-etapa-3 .s3-takeaway-card", { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 14.5)
+        .to("#scene-etapa-3", { opacity: 0, y: -30, duration: 0.35, ease: "power2.in" }, 16.45);
+
+      // ── ETAPA 4: TAREFA DE CASA / A4 (16.8s -> 20.0s) ──
+      tl.to("#scene-etapa-4", { opacity: 1, duration: 0.35, ease: "power2.out" }, 16.8)
+        .fromTo("#scene-etapa-4 .a4-preview-mock", { opacity: 0, scale: 0.92, y: 30 }, { opacity: 1, scale: 1, y: 0, duration: 0.6, ease: "power3.out" }, 17.0)
+        .fromTo("#scene-etapa-4 .opt-btn-p", { opacity: 0, y: 20 }, { opacity: 1, y: 0, stagger: 0.1, duration: 0.5, ease: "power3.out" }, 17.5)
+        .fromTo("#scene-etapa-4 .lock-badge-p", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 18.2)
+        .to("#scene-etapa-4", { opacity: 0, y: -30, duration: 0.35, ease: "power2.in" }, 19.65);
+
+      // ── TELA 5: LANÇAMENTO EM BREVE & CTA (20.0s -> 23.0s) ──
+      tl.to("#scene-etapa-5", { opacity: 1, duration: 0.4, ease: "power2.out" }, 20.0)
+        .fromTo("#scene-etapa-5 .s5-brand", { opacity: 0, scale: 0.9, y: 20 }, { opacity: 1, scale: 1, y: 0, duration: 0.6, ease: "back.out(1.2)" }, 20.2)
+        .fromTo("#scene-etapa-5 .s5-headline", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 20.4)
+        .fromTo("#scene-etapa-5 .s5-features-list", { opacity: 0, scale: 0.95, y: 25 }, { opacity: 1, scale: 1, y: 0, duration: 0.6, ease: "power3.out" }, 20.6)
+        .fromTo("#scene-etapa-5 .s5-cta-btn", { opacity: 0, scale: 0.95 }, { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.2)" }, 21.0);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

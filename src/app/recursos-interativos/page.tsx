@@ -56,7 +56,7 @@ export default function RecursosInterativosPage() {
   const { currentUser } = useNeuro();
   const planInfo = resolveUserPlan(currentUser);
 
-  const [filter, setFilter] = useState<'todos' | 'historias' | 'baralhos'>('todos');
+  const [filter, setFilter] = useState<'todos' | 'historias' | 'baralhos' | 'pensamento'>('todos');
   const [openCard, setOpenCard] = useState<string | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState<boolean>(false);
 
@@ -71,7 +71,7 @@ export default function RecursosInterativosPage() {
     }
   };
 
-  const handleFilter = (f: 'todos' | 'historias' | 'baralhos') => {
+  const handleFilter = (f: 'todos' | 'historias' | 'baralhos' | 'pensamento') => {
     if (typeof document !== 'undefined' && 'startViewTransition' in document) {
       (document as any).startViewTransition(() => {
         setFilter(f);
@@ -120,8 +120,8 @@ export default function RecursosInterativosPage() {
           </div>
           <div className="stats">
             <div>
-              <b>1</b>
-              <span>recurso ativo</span>
+              <b>2</b>
+              <span>recursos ativos</span>
             </div>
             <div>
               <b>50</b>
@@ -140,7 +140,14 @@ export default function RecursosInterativosPage() {
             className={filter === 'todos' ? 'on' : ''}
             onClick={() => handleFilter('todos')}
           >
-            Todos<span className="ct">4</span>
+            Todos<span className="ct">5</span>
+          </button>
+          <button
+            type="button"
+            className={filter === 'pensamento' ? 'on' : ''}
+            onClick={() => handleFilter('pensamento')}
+          >
+            Técnicas de pensamento<span className="ct">1</span>
           </button>
           <button
             type="button"
@@ -299,6 +306,151 @@ export default function RecursosInterativosPage() {
                 ) : (
                   <Link className="na-cta" href="/recursos-interativos/historias">
                     Acessar Histórias Clínicas <i>→</i>
+                  </Link>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Card: Dramatização dos Dois Lados */}
+          <div
+            className={`na-card ${openCard === 'rc-dramatizacao' ? 'open' : ''}`}
+            data-cat="pensamento"
+            style={{ display: filter === 'todos' || filter === 'pensamento' ? undefined : 'none' }}
+          >
+            <button
+              className="na-sq"
+              type="button"
+              aria-expanded={openCard === 'rc-dramatizacao'}
+              aria-controls="rc-dramatizacao"
+              onClick={() => toggleCard('rc-dramatizacao')}
+            >
+              <span className="na-sq__top">
+                <ResourceCardIcon
+                  fileNames={['05_dramatizacao_dois_lados.png', 'dramatizacao.png']}
+                  alt="Dramatização dos Dois Lados"
+                  fallbackBg="#2f6b31"
+                  fallbackSvg={
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    </svg>
+                  }
+                />
+                <span className="na-plus-wrap">
+                  {!planInfo.hasRecursos && (
+                    <span className="na-lock-pill" title="Recurso exclusivo do plano Prática">
+                      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.4">
+                        <rect x="5" y="11" width="14" height="10" rx="2" />
+                        <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+                      </svg>
+                      Prática
+                    </span>
+                  )}
+                  <span className="na-plus" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                      <path d="M12 5v14M5 12h14" />
+                    </svg>
+                  </span>
+                </span>
+              </span>
+              <span className="na-sq__main">
+                <ResourceCardIcon
+                  fileNames={['05_dramatizacao_dois_lados.png', 'dramatizacao.png']}
+                  alt="Dramatização dos Dois Lados"
+                  fallbackBg="#2f6b31"
+                  fallbackSvg={
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    </svg>
+                  }
+                />
+                <span>
+                  <span className="na-kick">Técnica de TCC</span>
+                  <span className="na-title">
+                    Dramatização dos <em>Dois Lados</em>
+                  </span>
+                  <span className="na-meta">
+                    <span>15–25 min</span>
+                    <span>TCC · Leahy</span>
+                  </span>
+                </span>
+              </span>
+            </button>
+            <div className="na-more" id="rc-dramatizacao">
+              <div className="na-sep"></div>
+              <p className="na-desc">
+                Paciente e terapeuta debatem os dois lados de um pensamento negativo, trocando de papel em rodadas sucessivas. Permite identificar quais respostas racionais funcionam na prática, quais pensamentos são mais resistentes e mapear regras subjacentes.
+              </p>
+              <div className="na-3">
+                <div>
+                  <i>01</i>
+                  <b>Preparar</b>
+                  <small>Pensamento-alvo e crença inicial</small>
+                </div>
+                <div>
+                  <i>02</i>
+                  <b>Debater</b>
+                  <small>Arena com troca ativa de papéis</small>
+                </div>
+                <div>
+                  <i>03</i>
+                  <b>Consolidar</b>
+                  <small>Resumo e tarefa inter-sessões</small>
+                </div>
+              </div>
+              <div className="na-lbl">
+                Recursos clínicos inclusos <b>em tempo real</b>
+              </div>
+              <ul className="na-5">
+                <li style={{ ['--c' as any]: '#2f6b31' }}>
+                  <b>Arena</b>
+                  <small>Troca de papéis</small>
+                  <span>2 a 4 rodadas</span>
+                </li>
+                <li style={{ ['--c' as any]: '#1d5e63' }}>
+                  <b>Roteiro</b>
+                  <small>Camada terapeuta</small>
+                  <span>Atalho R</span>
+                </li>
+                <li style={{ ['--c' as any]: '#2e4c78' }}>
+                  <b>Métricas</b>
+                  <small>Curva de crença</small>
+                  <span>0 a 100%</span>
+                </li>
+                <li style={{ ['--c' as any]: '#8a5317' }}>
+                  <b>Autosave</b>
+                  <small>Anti-perda</small>
+                  <span>Offline</span>
+                </li>
+                <li style={{ ['--c' as any]: '#6a4870' }}>
+                  <b>Impressão</b>
+                  <small>Folha clínica</small>
+                  <span>2 páginas</span>
+                </li>
+              </ul>
+              <div className="na-foot">
+                <span className="na-tag">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z" />
+                    <path d="m9 12 2 2 4-4" />
+                  </svg>
+                  Sessão interativa digital · plano Prática
+                </span>
+                {!planInfo.hasRecursos ? (
+                  <button
+                    type="button"
+                    className="na-cta na-cta--locked"
+                    onClick={() => setShowUpgradeModal(true)}
+                  >
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ marginRight: 6 }}>
+                      <rect x="5" y="11" width="14" height="10" rx="2" />
+                      <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+                    </svg>
+                    Desbloquear no Prática <i>→</i>
+                  </button>
+                ) : (
+                  <Link className="na-cta" href="/recursos-interativos/dramatizacao">
+                    Acessar Dramatização dos Dois Lados <i>→</i>
                   </Link>
                 )}
               </div>

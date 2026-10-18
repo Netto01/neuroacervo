@@ -622,6 +622,9 @@
   height: auto !important;
   border: 0 !important;
   border-radius: 0 !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .na-title {
