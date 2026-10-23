@@ -23,7 +23,8 @@ import {
   Printer,
   Copy,
   User,
-  Plus
+  Plus,
+  Users
 } from 'lucide-react';
 import { 
   getUserInteractivePatients, 
@@ -117,12 +118,49 @@ export default function HistoriasClinicasPage() {
     }
   }, [currentFaixa]);
 
-  // Carrega lista de pacientes do usuário ao montar
+  // Carrega lista de pacientes do usuário ao montar e suporta atalhos do Dossiê Clínico
   useEffect(() => {
-    getUserInteractivePatients().then(list => {
+    let qPacInit: string | null = null;
+    if (typeof window !== 'undefined') {
+      const sp = new URLSearchParams(window.location.search);
+      let qFaixa = sp.get('faixa');
+      let qHist = sp.get('historia');
+      const qPac = sp.get('paciente');
+      const qRes = sp.get('resourceId');
+
+      if (qRes && (!qFaixa || !qHist)) {
+        const [fId, hNum] = qRes.split('_');
+        if (fId && !qFaixa) qFaixa = fId;
+        if (hNum && !qHist) qHist = hNum;
+      }
+
+      if (qFaixa) {
+        const idx = FAIXAS_TABS.findIndex((f) => f.id === qFaixa);
+        if (idx !== -1) setAtual(idx);
+      }
+      if (qHist) {
+        const num = parseInt(qHist, 10);
+        if (!isNaN(num)) setActiveStoryNum(num);
+      }
+      if (qPac) {
+        qPacInit = qPac;
+        setPacienteAtivo(qPac);
+      }
+    }
+
+    getUserInteractivePatients().then((list) => {
       if (list && list.length > 0) {
-        setPacientes(list);
-        setPacienteAtivo(list[0]);
+        if (qPacInit) {
+          const combined = list.includes(qPacInit) ? list : [qPacInit, ...list];
+          setPacientes(combined);
+          setPacienteAtivo(qPacInit);
+        } else {
+          setPacientes(list);
+          setPacienteAtivo(list[0]);
+        }
+      } else if (qPacInit) {
+        setPacientes([qPacInit]);
+        setPacienteAtivo(qPacInit);
       }
     });
   }, []);
@@ -179,6 +217,10 @@ export default function HistoriasClinicasPage() {
         opcoesCustomizadas: dadosAtualizados?.opcoesCustomizadas ?? (opcoesCustomizadas[storyKey] || []),
         agirNotas: dadosAtualizados?.agirNotas ?? (agirNotas[storyKey] || ''),
         etapasFeitas: dadosAtualizados?.etapasFeitas ?? (etapasFeitas[storyKey] || [false, false, false]),
+        titulo: currentStory?.titulo,
+        caso: currentStory?.historia,
+        faixa: currentFaixa?.n ? `${currentFaixa.n} (${currentFaixa.r})` : undefined,
+        temas: [currentStory?.theme, currentStory?.tag].filter(Boolean) as string[],
         updatedAt: new Date().toISOString()
       };
 
@@ -666,6 +708,15 @@ export default function HistoriasClinicasPage() {
                     <Plus size={14} />
                     <span>Novo paciente</span>
                   </button>
+                  <Link
+                    href="/recursos-interativos/pacientes"
+                    className="bar-paciente__btn-add"
+                    title="Ver dossiê completo deste paciente"
+                    style={{ textDecoration: 'none' }}
+                  >
+                    <Users size={14} />
+                    <span>Dossiê</span>
+                  </Link>
                 </div>
 
                 <div className="bar-paciente__right">

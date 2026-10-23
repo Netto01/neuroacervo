@@ -6,6 +6,7 @@ import { useNeuro } from '@/context/NeuroContext';
 import { PlatformShell } from '@/components/layout/PlatformShell';
 import { resolveUserPlan } from '@/utils/userPlan';
 import { UpgradeGate } from '@/components/common/UpgradeGate';
+import { Users } from 'lucide-react';
 import './recursos.css';
 
 function ResourceCardIcon({
@@ -118,18 +119,40 @@ export default function RecursosInterativosPage() {
               Ferramentas para usar em sessão, com apoio à prática neuropsicológica e cognitivo-comportamental. Clique em um recurso para ver os detalhes.
             </p>
           </div>
-          <div className="stats">
-            <div>
-              <b>2</b>
-              <span>recursos ativos</span>
-            </div>
-            <div>
-              <b>50</b>
-              <span>histórias clínicas</span>
-            </div>
-            <div>
-              <b>3</b>
-              <span>em desenvolvimento</span>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 14 }}>
+            <Link 
+              href="/recursos-interativos/pacientes"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '9px 18px',
+                borderRadius: 999,
+                background: '#15140f',
+                color: '#efe7d2',
+                fontSize: 13.5,
+                fontWeight: 600,
+                textDecoration: 'none',
+                boxShadow: '0 2px 10px rgba(0,0,0,0.08)',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <Users size={16} />
+              Dossiê & Sessões dos Pacientes
+            </Link>
+            <div className="stats">
+              <div>
+                <b>2</b>
+                <span>recursos ativos</span>
+              </div>
+              <div>
+                <b>50</b>
+                <span>histórias clínicas</span>
+              </div>
+              <div>
+                <b>3</b>
+                <span>em desenvolvimento</span>
+              </div>
             </div>
           </div>
         </div>
@@ -449,7 +472,7 @@ export default function RecursosInterativosPage() {
                     Desbloquear no Prática <i>→</i>
                   </button>
                 ) : (
-                  <Link className="na-cta" href="/recursos-interativos/dramatizacao">
+                  <Link className="na-cta" href="/recursos-interativos/dramatizacao?novo=1">
                     Acessar Dramatização dos Dois Lados <i>→</i>
                   </Link>
                 )}

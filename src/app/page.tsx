@@ -4,6 +4,7 @@ import {
   LandingHeader,
   HeroSection,
   WireSection,
+  DossiePreviewSection,
   AcervoCardsSection,
   MethodSection,
   InsidePreviewSection,
@@ -22,6 +23,7 @@ export default function LandingPage() {
       <main id="conteudo">
         <HeroSection />
         <WireSection />
+        <DossiePreviewSection />
         <AcervoCardsSection />
         <MethodSection />
         <InsidePreviewSection />

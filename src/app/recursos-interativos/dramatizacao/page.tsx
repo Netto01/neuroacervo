@@ -26,8 +26,17 @@ import {
   ChevronRight,
   Cloud,
   Shield,
-  CornerDownLeft
+  CornerDownLeft,
+  Users,
+  User
 } from 'lucide-react';
+import { 
+  getInteractiveSession, 
+  saveInteractiveSession, 
+  deleteInteractiveSession,
+  getUserInteractivePatients,
+  saveUserPatient
+} from '@/lib/supabase';
 import './dramatizacao.css';
 
 interface FalaItem {
@@ -72,6 +81,10 @@ export default function DramatizacaoPage() {
   const [pressupostos, setPressupostos] = useState<string>('');
   const [obs, setObs] = useState<string>('');
   const [codigo, setCodigo] = useState<string>('');
+  const [pacientes, setPacientes] = useState<string[]>(['Paciente 01']);
+  const [pacienteAtivo, setPacienteAtivo] = useState<string>('Paciente 01');
+  const [showNovoPacienteModal, setShowNovoPacienteModal] = useState<boolean>(false);
+  const [novoPacienteInput, setNovoPacienteInput] = useState<string>('');
   const [incluirResumo, setIncluirResumo] = useState<boolean>(true);
   const [incluirBranco, setIncluirBranco] = useState<boolean>(true);
   const [roteiro, setRoteiro] = useState<boolean>(true);
@@ -92,6 +105,9 @@ export default function DramatizacaoPage() {
   const inputNegRef = useRef<HTMLTextAreaElement>(null);
   const inputRacRef = useRef<HTMLTextAreaElement>(null);
   const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isInitialLoadRef = useRef<boolean>(true);
+  const [salvandoStatus, setSalvandoStatus] = useState<'ok' | 'salvando'>('ok');
 
   // Exibir toast temporário
   const showToast = useCallback((msg: string) => {
@@ -108,71 +124,249 @@ export default function DramatizacaoPage() {
   const quemNegativo = (r: number) => outro(quemRacional(r));
   const emocaoNome = () => (emocao === 'Outra' ? emocaoOutra.trim() || 'Outra emoção' : emocao);
   const crencaAtual = () => (crencas.length ? crencas[crencas.length - 1].valor : crencaIni);
+  const pacienteCode = (pacienteAtivo || codigo || 'Paciente 01').trim();
 
-  // Carregar dados salvos no localStorage ao montar
+  // Carregar dados de um paciente específico (local + nuvem)
+  const carregarSessaoPaciente = useCallback(async (pacienteAlvo: string, forcarInicioNovo: boolean = false) => {
+    isInitialLoadRef.current = true;
+    setSalvandoStatus('salvando');
+
+    let dados: any = null;
+
+    // 1. LocalStorage
+    try {
+      const raw = localStorage.getItem(`na_session_dramatizacao_arena_${pacienteAlvo}`) || 
+                  (pacienteAlvo === 'Paciente 01' ? localStorage.getItem(KEY) : null);
+      if (raw) dados = JSON.parse(raw);
+    } catch (e) {
+      console.warn('Erro ao ler cache local do paciente:', e);
+    }
+
+    // 2. Supabase
+    try {
+      const cloud = await getInteractiveSession('dramatizacao', 'arena', pacienteAlvo);
+      if (cloud) {
+        dados = { ...dados, ...cloud };
+      }
+    } catch (e) {
+      console.warn('Erro ao ler Supabase:', e);
+    }
+
+    if (dados && (dados.pensamento || (Array.isArray(dados.falas) && dados.falas.length > 0))) {
+      if (!forcarInicioNovo && dados.step) setStep(dados.step);
+      else setStep(1);
+
+      if (dados.pensamento !== undefined) setPensamento(dados.pensamento);
+      if (dados.emocao) setEmocao(dados.emocao);
+      if (dados.emocaoOutra !== undefined) setEmocaoOutra(dados.emocaoOutra);
+      if (typeof dados.emoIni === 'number') setEmoIni(dados.emoIni);
+      if (typeof dados.crencaIni === 'number') setCrencaIni(dados.crencaIni);
+      if (dados.racionalInicial) setRacionalInicial(dados.racionalInicial);
+      if (typeof dados.rodada === 'number') setRodada(dados.rodada);
+      if (Array.isArray(dados.falas)) setFalas(dados.falas);
+      if (Array.isArray(dados.crencas)) setCrencas(dados.crencas);
+      if (dados.emoFim !== undefined) setEmoFim(dados.emoFim);
+      if (dados.crencaFim !== undefined) setCrencaFim(dados.crencaFim);
+      if (dados.pressupostos !== undefined) setPressupostos(dados.pressupostos);
+      if (dados.obs !== undefined) setObs(dados.obs);
+      if (typeof dados.incluirResumo === 'boolean') setIncluirResumo(dados.incluirResumo);
+      if (typeof dados.incluirBranco === 'boolean') setIncluirBranco(dados.incluirBranco);
+      if (typeof dados.roteiro === 'boolean') setRoteiro(dados.roteiro);
+    } else {
+      // Paciente sem sessão prévia: inicializa na Etapa 1
+      setStep(1);
+      setPensamento('');
+      setEmocao('Ansiedade');
+      setEmocaoOutra('');
+      setEmoIni(50);
+      setCrencaIni(50);
+      setRacionalInicial('Terapeuta');
+      setRodada(1);
+      setFalas([]);
+      setCrencas([]);
+      setEmoFim(null);
+      setCrencaFim(null);
+      setPressupostos('');
+      setObs('');
+    }
+
+    setSalvandoStatus('ok');
+    setTimeout(() => {
+      isInitialLoadRef.current = false;
+    }, 350);
+  }, []);
+
+  // Troca de paciente pelo seletor
+  const handleTrocarPaciente = (novo: string) => {
+    setPacienteAtivo(novo);
+    setCodigo(novo);
+    carregarSessaoPaciente(novo, false);
+  };
+
+  // Criação de novo paciente com seleção imediata e persistência
+  const handleCriarPaciente = async () => {
+    const nomeLimpo = novoPacienteInput.trim();
+    if (!nomeLimpo) return;
+    if (!pacientes.includes(nomeLimpo)) {
+      const novaLista = [...pacientes, nomeLimpo];
+      setPacientes(novaLista);
+      await saveUserPatient(nomeLimpo);
+    }
+    setPacienteAtivo(nomeLimpo);
+    setCodigo(nomeLimpo);
+    setNovoPacienteInput('');
+    setShowNovoPacienteModal(false);
+
+    // Inicia limpo na Etapa 1
+    isInitialLoadRef.current = true;
+    setStep(1);
+    setPensamento('');
+    setEmocao('Ansiedade');
+    setEmocaoOutra('');
+    setEmoIni(50);
+    setCrencaIni(50);
+    setRacionalInicial('Terapeuta');
+    setRodada(1);
+    setFalas([]);
+    setCrencas([]);
+    setEmoFim(null);
+    setCrencaFim(null);
+    setPressupostos('');
+    setObs('');
+    showToast(`Paciente ${nomeLimpo} selecionado`);
+    setTimeout(() => {
+      isInitialLoadRef.current = false;
+    }, 350);
+  };
+
+  // Carrega lista de pacientes do usuário ao montar e suporta atalhos de URL / Dossiê
   useEffect(() => {
     let active = true;
-    Promise.resolve().then(() => {
+    let urlPaciente = '';
+    let urlPensamento = '';
+    let isContinuar = false;
+
+    if (typeof window !== 'undefined') {
+      const sp = new URLSearchParams(window.location.search);
+      const qPac = sp.get('paciente');
+      const qPen = sp.get('pensamento');
+      const qContinuar = sp.get('continuar');
+
+      if (qPac) {
+        urlPaciente = qPac;
+        setCodigo(qPac);
+        setPacienteAtivo(qPac);
+      }
+      if (qPen) {
+        urlPensamento = qPen;
+        setPensamento(qPen);
+      }
+      if (qContinuar === '1' || qContinuar === 'true') {
+        isContinuar = true;
+      }
+    }
+
+    getUserInteractivePatients().then((list) => {
       if (!active) return;
-      try {
-        const raw = localStorage.getItem(KEY);
-        if (raw) {
-          const s = JSON.parse(raw);
-          if (s.step) setStep(s.step);
-          if (s.pensamento !== undefined) setPensamento(s.pensamento);
-          if (s.emocao) setEmocao(s.emocao);
-          if (s.emocaoOutra !== undefined) setEmocaoOutra(s.emocaoOutra);
-          if (typeof s.emoIni === 'number') setEmoIni(s.emoIni);
-          if (typeof s.crencaIni === 'number') setCrencaIni(s.crencaIni);
-          if (s.racionalInicial) setRacionalInicial(s.racionalInicial);
-          if (typeof s.rodada === 'number') setRodada(s.rodada);
-          if (Array.isArray(s.falas)) setFalas(s.falas);
-          if (Array.isArray(s.crencas)) setCrencas(s.crencas);
-          if (s.emoFim !== undefined) setEmoFim(s.emoFim);
-          if (s.crencaFim !== undefined) setCrencaFim(s.crencaFim);
-          if (s.pressupostos !== undefined) setPressupostos(s.pressupostos);
-          if (s.obs !== undefined) setObs(s.obs);
-          if (s.codigo !== undefined) setCodigo(s.codigo);
-          if (typeof s.incluirResumo === 'boolean') setIncluirResumo(s.incluirResumo);
-          if (typeof s.incluirBranco === 'boolean') setIncluirBranco(s.incluirBranco);
-          if (typeof s.roteiro === 'boolean') setRoteiro(s.roteiro);
+      if (list && list.length > 0) {
+        const fullList = urlPaciente && !list.includes(urlPaciente) 
+          ? [urlPaciente, ...list] 
+          : list;
+        setPacientes(fullList);
+
+        const targetPac = urlPaciente || fullList[0];
+        setPacienteAtivo(targetPac);
+        setCodigo(targetPac);
+
+        if (isContinuar) {
+          carregarSessaoPaciente(targetPac, false);
+        } else {
+          // Início padrão sempre na Etapa 1: Preparação
+          setStep(1);
+          setRodada(1);
+          setFalas([]);
+          setCrencas([]);
+          setEmoFim(null);
+          setCrencaFim(null);
+          setPressupostos('');
+          setObs('');
+          setRacionalInicial('Terapeuta');
+          if (!urlPensamento) {
+            setPensamento('');
+            setEmoIni(50);
+            setCrencaIni(50);
+            setEmocao('Ansiedade');
+            setEmocaoOutra('');
+          }
+          setTimeout(() => {
+            isInitialLoadRef.current = false;
+          }, 350);
         }
-      } catch (e) {
-        console.warn('Erro ao carregar sessão:', e);
+      } else {
+        setTimeout(() => {
+          isInitialLoadRef.current = false;
+        }, 350);
       }
     });
+
     return () => {
       active = false;
     };
-  }, []);
+  }, [carregarSessaoPaciente]);
 
-  // Autosave
+  // Autosave contínuo (localStorage imediato + Supabase com debounce)
   useEffect(() => {
+    const state = {
+      step,
+      pensamento,
+      emocao,
+      emocaoOutra,
+      emoIni,
+      crencaIni,
+      racionalInicial,
+      rodada,
+      falas,
+      crencas,
+      emoFim,
+      crencaFim,
+      pressupostos,
+      obs,
+      codigo: pacienteCode,
+      incluirResumo,
+      incluirBranco,
+      roteiro,
+      updatedAt: new Date().toISOString()
+    };
+
+    // Backup local por paciente e global
     try {
-      const state = {
-        step,
-        pensamento,
-        emocao,
-        emocaoOutra,
-        emoIni,
-        crencaIni,
-        racionalInicial,
-        rodada,
-        falas,
-        crencas,
-        emoFim,
-        crencaFim,
-        pressupostos,
-        obs,
-        codigo,
-        incluirResumo,
-        incluirBranco,
-        roteiro
-      };
+      localStorage.setItem(`na_session_dramatizacao_arena_${pacienteCode}`, JSON.stringify(state));
       localStorage.setItem(KEY, JSON.stringify(state));
     } catch (e) {
       console.warn('Erro ao salvar estado:', e);
     }
+
+    if (isInitialLoadRef.current) return;
+
+    // Se a tela estiver limpa (ex: ao reiniciar para novo exercício sem conteúdo ainda),
+    // NÃO sobrescreve nem apaga o registro salvo no Supabase
+    const temConteudo = Boolean(pensamento.trim() || falas.length > 0 || obs.trim() || pressupostos.trim());
+    if (!temConteudo) {
+      setSalvandoStatus('ok');
+      return;
+    }
+
+    // Dispara salvamento em nuvem no Supabase
+    setSalvandoStatus('salvando');
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(async () => {
+      await saveInteractiveSession('dramatizacao', 'arena', pacienteCode, state);
+      setSalvandoStatus('ok');
+    }, 700);
+
+    return () => {
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    };
   }, [
     step,
     pensamento,
@@ -191,7 +385,8 @@ export default function DramatizacaoPage() {
     codigo,
     incluirResumo,
     incluirBranco,
-    roteiro
+    roteiro,
+    pacienteCode
   ]);
 
   // Sincronizar body.script-hidden
@@ -261,6 +456,7 @@ export default function DramatizacaoPage() {
 
   const handleReiniciarConfirmado = () => {
     localStorage.removeItem(KEY);
+    // Preserva o registro salvo no Supabase (não deleta do banco)
     setStep(1);
     setPensamento('');
     setEmocao('Ansiedade');
@@ -597,6 +793,56 @@ export default function DramatizacaoPage() {
               </div>
             </header>
 
+            {/* Barra de Seleção de Paciente / Sessão */}
+            <div className="bar-paciente">
+              <div className="bar-paciente__left">
+                <span className="bar-paciente__label">
+                  <User size={15} />
+                  <span>Paciente em atendimento:</span>
+                </span>
+                <select
+                  className="bar-paciente__select"
+                  value={pacienteAtivo}
+                  onChange={(e) => handleTrocarPaciente(e.target.value)}
+                  aria-label="Selecionar paciente"
+                >
+                  {pacientes.map((p) => (
+                    <option key={p} value={p}>
+                      {p}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  className="bar-paciente__btn-add"
+                  onClick={() => setShowNovoPacienteModal(true)}
+                  title="Cadastrar novo código/iniciais de paciente"
+                >
+                  <Plus size={14} />
+                  <span>Novo paciente</span>
+                </button>
+                <Link
+                  href="/recursos-interativos/pacientes"
+                  className="bar-paciente__btn-add"
+                  title="Ver dossiê completo deste paciente"
+                  style={{ textDecoration: 'none' }}
+                >
+                  <Users size={14} />
+                  <span>Dossiê</span>
+                </Link>
+              </div>
+
+              <div className="bar-paciente__right">
+                <span className="salvo" id="salvo" data-s={salvandoStatus}>
+                  <i></i>
+                  <span>{salvandoStatus === 'salvando' ? 'Salvando na nuvem…' : 'Salvo na nuvem'}</span>
+                </span>
+                <span className="bar-paciente__sigilo">
+                  Sigilo preservado (use iniciais ou código)
+                </span>
+              </div>
+            </div>
+
             {/* Etapas */}
             <nav className="steps" aria-label="Etapas">
               <ol>
@@ -882,7 +1128,22 @@ export default function DramatizacaoPage() {
                     <span className="to">{crencaAtual()}</span>
                   </div>
 
-                  <button type="button" className="btn" onClick={handleEncerrar}>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={iniciarTrocaPapeis}
+                    title="Começar uma nova rodada e trocar papéis (T)"
+                  >
+                    <ArrowLeftRight className="icon" size={17} strokeWidth={2.4} />
+                    Nova rodada <span className="kbd">T</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className="btn"
+                    onClick={handleEncerrar}
+                    title="Encerrar o debate e ir para consolidação"
+                  >
                     <Check className="icon icon-check" size={20} strokeWidth={2.5} /> Encerrar
                   </button>
                   <button
@@ -1525,12 +1786,16 @@ export default function DramatizacaoPage() {
                       id="codigo"
                       className="input mono"
                       value={codigo}
-                      onChange={(e) => setCodigo(e.target.value)}
-                      placeholder="Ex.: P-014"
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setCodigo(val);
+                        setPacienteAtivo(val);
+                      }}
+                      placeholder="Ex.: P-014 ou iniciais"
                       autoComplete="off"
                     />
                     <span className="cap" style={{ fontSize: 12 }}>
-                      Use um código, não o nome.
+                      Use um código ou iniciais, não o nome completo.
                     </span>
                   </div>
 
@@ -1659,6 +1924,80 @@ export default function DramatizacaoPage() {
                     Apagar e recomeçar
                   </button>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Modal de Cadastro de Novo Paciente */}
+          {showNovoPacienteModal && (
+            <div
+              className="na-modal-overlay"
+              role="dialog"
+              aria-modal="true"
+              onClick={() => setShowNovoPacienteModal(false)}
+            >
+              <div
+                className="na-modal-dialog"
+                style={{ maxWidth: 460, padding: 28, background: 'var(--card, #ffffff)' }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                  <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: 'var(--ink)' }}>
+                    Cadastrar Paciente / Caso
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => setShowNovoPacienteModal(false)}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', display: 'grid', placeItems: 'center' }}
+                    aria-label="Fechar"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+
+                <p style={{ margin: '0 0 16px', fontSize: 13, color: 'var(--muted)', lineHeight: 1.5 }}>
+                  Identifique o paciente por <b>iniciais</b>, <b>código</b> ou <b>apelido</b> (ex: <i>"M.S."</i>, <i>"Caso 02"</i> ou <i>"Enzo (8a)"</i>) para preservar o sigilo clínico profissional (CFP/LGPD).
+                </p>
+
+                <form onSubmit={(e) => { e.preventDefault(); handleCriarPaciente(); }}>
+                  <input
+                    type="text"
+                    value={novoPacienteInput}
+                    onChange={(e) => setNovoPacienteInput(e.target.value)}
+                    placeholder="Ex: Paciente M.S. ou Caso 04"
+                    autoFocus
+                    style={{
+                      width: '100%',
+                      padding: '12px 14px',
+                      borderRadius: 12,
+                      border: '1px solid var(--line)',
+                      background: 'var(--sunken, #f7f1de)',
+                      color: 'var(--ink)',
+                      fontSize: 14,
+                      outline: 'none',
+                      marginBottom: 20,
+                      boxSizing: 'border-box'
+                    }}
+                  />
+
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+                    <button
+                      type="button"
+                      className="btn btn-ghost"
+                      onClick={() => setShowNovoPacienteModal(false)}
+                      style={{ padding: '8px 16px', fontSize: 13 }}
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="submit"
+                      className="btn btn-primary"
+                      style={{ padding: '8px 18px', fontSize: 13 }}
+                    >
+                      Cadastrar e Selecionar
+                    </button>
+                  </div>
+                </form>
               </div>
             </div>
           )}

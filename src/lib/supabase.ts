@@ -96,6 +96,11 @@ export async function resetPasswordForEmail(email: string) {
   });
 }
 
+export async function updateUserPassword(password: string) {
+  if (!isSupabaseConfigured) return { data: null, error: null };
+  return await supabase.auth.updateUser({ password });
+}
+
 export const SEED_DEMO_MATERIAL_IDS = new Set([
   'mat-moca',
   'mat-laudo-tdah-adulto',
@@ -343,7 +348,34 @@ export interface InteractiveSessionData {
   agirNotas?: string;
   etapasFeitas?: [boolean, boolean, boolean];
   updatedAt?: string;
+  [key: string]: any;
 }
+
+export interface EvolucaoSessionData {
+  numeroSessao: number;
+  dataSessao: string;
+  modalidade: 'presencial' | 'online' | 'Presencial' | 'Online';
+  duracao?: string;
+  humor?: number | null;
+  comportamento?: string[];
+  obs?: string;
+  estadoEmocional?: string;
+  temas?: string;
+  temasAbordados?: string;
+  tecnicas?: string[];
+  intervencoes?: string;
+  resposta?: string;
+  evolucaoClinica?: string;
+  combinados?: string;
+  tarefasCombinados?: string;
+  proxima?: string;
+  planoProximaSessao?: string;
+  encaminhamentos?: string;
+  recursosVinculados?: string[];
+  updatedAt?: string;
+  [key: string]: any;
+}
+
 
 export async function getUserInteractivePatients(): Promise<string[]> {
   const defaultList = ['Paciente 01'];
@@ -363,14 +395,15 @@ export async function getUserInteractivePatients(): Promise<string[]> {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user?.id) return localList;
 
-    const { data, error } = await supabase
-      .from('user_interactive_sessions')
-      .select('patient_code')
-      .eq('user_id', session.user.id);
+    const [sessRes, patRes] = await Promise.all([
+      supabase.from('user_interactive_sessions').select('patient_code').eq('user_id', session.user.id),
+      supabase.from('user_patients').select('code').eq('user_id', session.user.id)
+    ]);
 
-    if (error || !data) return localList;
+    const sessCodes = sessRes.data ? sessRes.data.map((d: any) => String(d.patient_code)).filter(Boolean) : [];
+    const patCodes = patRes.data ? patRes.data.map((d: any) => String(d.code)).filter(Boolean) : [];
 
-    const dbCodes: string[] = Array.from(new Set(data.map((d: any) => String(d.patient_code)).filter(Boolean)));
+    const dbCodes = Array.from(new Set([...sessCodes, ...patCodes]));
     const merged = Array.from(new Set([...localList, ...dbCodes]));
     return merged.length > 0 ? merged : defaultList;
   } catch {
@@ -469,10 +502,415 @@ export async function saveInteractiveSession(
         onConflict: 'user_id,resource_type,resource_id,patient_code'
       });
 
+    // Auto-registra o paciente na tabela user_patients se não existir
+    try {
+      await supabase
+        .from('user_patients')
+        .upsert(
+          {
+            user_id: session.user.id,
+            code: patientCode,
+            updated_at: new Date().toISOString()
+          },
+          { onConflict: 'user_id,code', ignoreDuplicates: true }
+        );
+    } catch {}
+
     return !error;
   } catch {
     return false;
   }
 }
+
+export const saveUserSession = saveInteractiveSession;
+
+export async function deleteInteractiveSession(
+  resourceType: string,
+  resourceId: string,
+  patientCode: string,
+  sessionId?: string
+): Promise<boolean> {
+  const localKey = `na_session_${resourceType}_${resourceId}_${patientCode}`;
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.removeItem(localKey);
+      if (resourceType === 'dramatizacao') {
+        localStorage.removeItem('na-dramatizacao-v1');
+      }
+    } catch {}
+  }
+
+  if (!isSupabaseConfigured) return true;
+
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user?.id) return true;
+
+    // Se possui UUID válido do banco, apaga por id
+    if (sessionId && !sessionId.includes('_')) {
+      const { error } = await supabase
+        .from('user_interactive_sessions')
+        .delete()
+        .eq('id', sessionId)
+        .eq('user_id', session.user.id);
+      return !error;
+    }
+
+    const { error } = await supabase
+      .from('user_interactive_sessions')
+      .delete()
+      .eq('user_id', session.user.id)
+      .eq('resource_type', resourceType)
+      .eq('resource_id', resourceId)
+      .eq('patient_code', patientCode);
+
+    return !error;
+  } catch {
+    return false;
+  }
+}
+
+export interface StoredSessionRecord {
+  id?: string;
+  resource_type: string;
+  resource_id: string;
+  patient_code: string;
+  data: InteractiveSessionData;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export async function getAllUserInteractiveSessions(): Promise<StoredSessionRecord[]> {
+  // 1. Coleta itens locais como base/fallback
+  const localItems: StoredSessionRecord[] = [];
+  if (typeof window !== 'undefined') {
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith('na_session_')) {
+          const parts = k.replace('na_session_', '').split('_');
+          if (parts.length >= 3) {
+            const type = parts[0];
+            const code = parts[parts.length - 1];
+            const resId = parts.slice(1, -1).join('_');
+            const raw = localStorage.getItem(k);
+            if (raw) {
+              const data = JSON.parse(raw);
+              localItems.push({
+                resource_type: type,
+                resource_id: resId,
+                patient_code: code,
+                data: data,
+                updated_at: data.updatedAt || new Date().toISOString()
+              });
+            }
+          }
+        }
+      }
+    } catch {}
+  }
+
+  if (!isSupabaseConfigured) return localItems;
+
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user?.id) return localItems;
+
+    const { data, error } = await supabase
+      .from('user_interactive_sessions')
+      .select('id, resource_type, resource_id, patient_code, data, created_at, updated_at')
+      .eq('user_id', session.user.id)
+      .order('updated_at', { ascending: false });
+
+    if (error || !data || data.length === 0) return localItems;
+
+    return data as StoredSessionRecord[];
+  } catch {
+    return localItems;
+  }
+}
+
+export async function deletePatientAllSessions(patientCode: string): Promise<boolean> {
+  if (typeof window !== 'undefined') {
+    try {
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith('na_session_') && k.endsWith(`_${patientCode}`)) {
+          keysToRemove.push(k);
+        }
+      }
+      keysToRemove.forEach(k => localStorage.removeItem(k));
+
+      const savedPatients = localStorage.getItem('na_interactive_patients');
+      if (savedPatients) {
+        const list: string[] = JSON.parse(savedPatients);
+        const filtered = list.filter(p => p !== patientCode);
+        localStorage.setItem('na_interactive_patients', JSON.stringify(filtered));
+      }
+    } catch {}
+  }
+
+  if (!isSupabaseConfigured) return true;
+
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user?.id) return true;
+
+    const { error } = await supabase
+      .from('user_interactive_sessions')
+      .delete()
+      .eq('user_id', session.user.id)
+      .eq('patient_code', patientCode);
+
+    return !error;
+  } catch {
+    return false;
+  }
+}
+
+/* =========================================================================
+   PACIENTES & NOTAS CLÍNICAS (user_patients)
+   ========================================================================= */
+
+export interface UserPatientRecord {
+  id?: string;
+  code: string;
+  note?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export async function getUserPatients(): Promise<UserPatientRecord[]> {
+  const defaultCodes = ['Paciente 01'];
+  const localItems: UserPatientRecord[] = [];
+
+  // 1. Carrega do localStorage como fallback e para resposta instantânea
+  if (typeof window !== 'undefined') {
+    try {
+      const savedPatients = localStorage.getItem('na_interactive_patients');
+      const list: string[] = savedPatients ? JSON.parse(savedPatients) : defaultCodes;
+      const notesRaw = localStorage.getItem('na_patient_notes');
+      const notes: Record<string, string> = notesRaw ? JSON.parse(notesRaw) : {};
+
+      list.forEach((c) => {
+        if (c) {
+          localItems.push({
+            code: c,
+            note: notes[c] || '',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+        }
+      });
+    } catch {}
+  }
+
+  if (!isSupabaseConfigured) return localItems;
+
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user?.id) return localItems;
+
+    const { data, error } = await supabase
+      .from('user_patients')
+      .select('id, code, note, created_at, updated_at')
+      .eq('user_id', session.user.id)
+      .order('updated_at', { ascending: false });
+
+    if (error || !data || data.length === 0) {
+      return localItems;
+    }
+
+    // Mantém o cache local atualizado com o Supabase
+    if (typeof window !== 'undefined') {
+      try {
+        const codes = Array.from(new Set([...data.map((p) => p.code), ...localItems.map((p) => p.code)]));
+        const notesObj: Record<string, string> = {};
+        localItems.forEach((li) => { if (li.note) notesObj[li.code] = li.note; });
+        data.forEach((p) => { if (p.note) notesObj[p.code] = p.note; });
+        localStorage.setItem('na_interactive_patients', JSON.stringify(codes));
+        localStorage.setItem('na_patient_notes', JSON.stringify(notesObj));
+      } catch {}
+    }
+
+    return data as UserPatientRecord[];
+  } catch {
+    return localItems;
+  }
+}
+
+export async function saveUserPatient(code: string, note: string = ''): Promise<boolean> {
+  const cleanCode = code.trim();
+  if (!cleanCode) return false;
+
+  // 1. Atualiza imediatamente o localStorage (backup offline e reatividade rápida)
+  if (typeof window !== 'undefined') {
+    try {
+      const saved = localStorage.getItem('na_interactive_patients');
+      const list: string[] = saved ? JSON.parse(saved) : ['Paciente 01'];
+      if (!list.includes(cleanCode)) {
+        list.push(cleanCode);
+        localStorage.setItem('na_interactive_patients', JSON.stringify(list));
+      }
+      const notesRaw = localStorage.getItem('na_patient_notes');
+      const notes: Record<string, string> = notesRaw ? JSON.parse(notesRaw) : {};
+      notes[cleanCode] = note;
+      localStorage.setItem('na_patient_notes', JSON.stringify(notes));
+    } catch {}
+  }
+
+  if (!isSupabaseConfigured) return true;
+
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user?.id) return true;
+
+    const { error } = await supabase
+      .from('user_patients')
+      .upsert({
+        user_id: session.user.id,
+        code: cleanCode,
+        note: note,
+        updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'user_id,code'
+      });
+
+    return !error;
+  } catch {
+    return false;
+  }
+}
+
+export async function updateUserPatientCode(
+  oldCode: string,
+  newCode: string,
+  note?: string
+): Promise<boolean> {
+  const cleanOld = oldCode.trim();
+  const cleanNew = newCode.trim();
+  if (!cleanOld || !cleanNew) return false;
+
+  // 1. Atualiza no localStorage
+  if (typeof window !== 'undefined') {
+    try {
+      const saved = localStorage.getItem('na_interactive_patients');
+      if (saved) {
+        const list: string[] = JSON.parse(saved);
+        const idx = list.indexOf(cleanOld);
+        if (idx > -1) list[idx] = cleanNew;
+        else if (!list.includes(cleanNew)) list.push(cleanNew);
+        localStorage.setItem('na_interactive_patients', JSON.stringify(list));
+      }
+      const notesRaw = localStorage.getItem('na_patient_notes');
+      const notes: Record<string, string> = notesRaw ? JSON.parse(notesRaw) : {};
+      const currentNote = note !== undefined ? note : notes[cleanOld] || '';
+      delete notes[cleanOld];
+      notes[cleanNew] = currentNote;
+      localStorage.setItem('na_patient_notes', JSON.stringify(notes));
+
+      // Atualiza chaves das sessões locais
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith('na_session_') && k.endsWith(`_${cleanOld}`)) {
+          const newK = k.slice(0, -cleanOld.length) + cleanNew;
+          const val = localStorage.getItem(k);
+          if (val) {
+            localStorage.setItem(newK, val);
+            localStorage.removeItem(k);
+          }
+        }
+      }
+    } catch {}
+  }
+
+  if (!isSupabaseConfigured) return true;
+
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user?.id) return true;
+
+    if (cleanOld !== cleanNew) {
+      // Atualiza registro em user_patients
+      await supabase
+        .from('user_patients')
+        .update({
+          code: cleanNew,
+          ...(note !== undefined ? { note } : {}),
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', session.user.id)
+        .eq('code', cleanOld);
+
+      // Cascata a alteração em user_interactive_sessions
+      await supabase
+        .from('user_interactive_sessions')
+        .update({
+          patient_code: cleanNew,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', session.user.id)
+        .eq('patient_code', cleanOld);
+    } else if (note !== undefined) {
+      await supabase
+        .from('user_patients')
+        .update({
+          note,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', session.user.id)
+        .eq('code', cleanOld);
+    }
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function deleteUserPatient(code: string): Promise<boolean> {
+  const cleanCode = code.trim();
+  if (!cleanCode) return false;
+
+  // 1. Remove do localStorage
+  if (typeof window !== 'undefined') {
+    try {
+      const saved = localStorage.getItem('na_interactive_patients');
+      if (saved) {
+        const list: string[] = JSON.parse(saved);
+        localStorage.setItem(
+          'na_interactive_patients',
+          JSON.stringify(list.filter((c) => c !== cleanCode))
+        );
+      }
+      const notesRaw = localStorage.getItem('na_patient_notes');
+      if (notesRaw) {
+        const notes: Record<string, string> = JSON.parse(notesRaw);
+        delete notes[cleanCode];
+        localStorage.setItem('na_patient_notes', JSON.stringify(notes));
+      }
+    } catch {}
+  }
+
+  if (!isSupabaseConfigured) return true;
+
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user?.id) return true;
+
+    const { error } = await supabase
+      .from('user_patients')
+      .delete()
+      .eq('user_id', session.user.id)
+      .eq('code', cleanCode);
+
+    return !error;
+  } catch {
+    return false;
+  }
+}
+
+
 
 

@@ -1,6 +1,7 @@
 export { LandingHeader } from './LandingHeader';
 export { HeroSection } from './HeroSection';
 export { WireSection } from './WireSection';
+export { DossiePreviewSection } from './DossiePreviewSection';
 export { AcervoCardsSection } from './AcervoCardsSection';
 export { MethodSection } from './MethodSection';
 export { InsidePreviewSection } from './InsidePreviewSection';

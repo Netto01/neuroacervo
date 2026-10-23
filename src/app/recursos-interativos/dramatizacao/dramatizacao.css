@@ -816,6 +816,29 @@ body.script-hidden .script {
   border-radius: 999px;
 }
 
+.arena-bar .btn-primary {
+  background: var(--action);
+  border-color: var(--action);
+  color: var(--on-action);
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(43, 92, 53, 0.22);
+}
+
+.arena-bar .btn-primary:hover {
+  background: var(--action-hover);
+  border-color: var(--action-hover);
+  color: #ffffff;
+}
+
+.arena-bar .btn-primary .kbd {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: #ffffff;
+}
+
 .arena-bar .btn .icon,
 .arena-bar .btn .icon-check {
   width: 20px;
@@ -1967,3 +1990,169 @@ body.script-hidden .script {
     height: 16mm !important;
   }
 }
+
+/* ================= BARRA DE PACIENTE / SESSÃO CLÍNICA ================= */
+.bar-paciente {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: var(--sunken, #f7f1de);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 12px 18px;
+  margin: 18px 0 24px;
+  box-shadow: 0 4px 16px rgba(21, 20, 15, 0.04);
+}
+
+.bar-paciente__left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.bar-paciente__label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--action);
+}
+
+.bar-paciente__select {
+  padding: 7px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--card, #ffffff);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.bar-paciente__select:focus {
+  border-color: var(--action);
+}
+
+.bar-paciente__btn-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 12px;
+  border-radius: 10px;
+  background: var(--card, #ffffff);
+  border: 1px dashed var(--line);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+.bar-paciente__btn-add:hover {
+  background: #ffffff;
+  border-color: var(--action);
+  color: var(--action);
+}
+
+.bar-paciente__right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.bar-paciente__sigilo {
+  font-size: 11.5px;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.salvo {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.salvo i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--action);
+  box-shadow: 0 0 0 3px rgba(47, 107, 49, 0.18);
+}
+
+.salvo[data-s='salvando'] i {
+  background: #c9a227;
+  box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.2);
+  animation: pl 1s infinite;
+}
+
+@keyframes pl {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@media (max-width: 768px) {
+  .bar-paciente {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .bar-paciente__right {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+@media print {
+  .bar-paciente {
+    display: none !important;
+  }
+}
+
+/* Modais de suporte na Dramatização */
+.na-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(21, 20, 15, 0.52);
+  backdrop-filter: blur(4px);
+  display: grid;
+  place-items: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+.na-modal-dialog {
+  border-radius: 20px;
+  box-shadow: 0 20px 48px rgba(21, 20, 15, 0.25);
+  border: 1px solid var(--line);
+  animation: modalIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+

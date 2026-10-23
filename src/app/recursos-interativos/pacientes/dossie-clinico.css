@@ -1,0 +1,2467 @@
+/* =========================================================================
+   Dossiê Clínico Unificado · NeuroAcervo
+   Estilos baseados no design system oficial de dossiê clínico (Inter + IBM Plex Mono)
+   ========================================================================= */
+
+.dossie-root {
+  --bg: #efe8d8;
+  --card: #fcfbf7;
+  --sunken: #f3eee3;
+  --line: #e2d9c6;
+  --line-strong: #a39a85;
+  --ink: #1f2620;
+  --muted: #6a6555;
+  --on-dark: #f3efe4;
+  --action: #2b5c35;
+  --action-hover: #1f4628;
+  --on-action: #ffffff;
+  --select: #d6f5a3;
+  --dark: #1f2620;
+  --warn-bg: #f6e3c2;
+  --warn-ink: #87501a;
+  --danger: #a8261d;
+  --cat-evo: #56704f;
+  --cat-evo-soft: #ebe2ca;
+  --cat-drama: #2b5c35;
+  --cat-drama-soft: #e3f2cc;
+  --cat-hist: #2e4c78;
+  --cat-hist-soft: #dfe6f1;
+  --frame: #dacead;
+  --page: #f7f1de;
+  --strip: #2b5c35;
+  --strip-ink: #d6f5a3;
+  --focus: #9a5d12;
+  --scrim: rgba(31, 38, 32, 0.45);
+  --font-sans: "Inter", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --r-md: 10px;
+  --r-lg: 16px;
+  --shadow-card: 0 1px 2px rgba(40, 34, 20, 0.05), 0 4px 14px rgba(40, 34, 20, 0.05);
+  --shadow-pop: 0 14px 36px rgba(40, 34, 20, 0.18);
+
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 15px/22px var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100%;
+}
+
+.dossie-root *,
+.dossie-root *::before,
+.dossie-root *::after {
+  box-sizing: border-box;
+}
+
+.dossie-root button,
+.dossie-root input,
+.dossie-root textarea,
+.dossie-root select {
+  font: inherit;
+  color: inherit;
+}
+
+/* Neutraliza regras vazadas do dashboard.css (PlatformShell) */
+.dash-root .dossie-root section,
+.dossie-root section {
+  margin-top: 0;
+}
+
+.dossie-root :focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.dossie-root .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.dossie-root .icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.dossie-root .icon-sm {
+  width: 15px;
+  height: 15px;
+}
+
+.dossie-root .icon-g {
+  stroke-width: 3;
+}
+
+.dossie-root .mono {
+  font-family: var(--font-mono);
+  font-weight: 500;
+}
+
+.dossie-root .muted {
+  color: var(--muted);
+}
+
+.dossie-root .eyebrow {
+  font: 600 11px/16px var(--font-sans);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.dossie-root .btn,
+.dash-root .dossie-root .btn {
+  all: unset !important;
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  height: 40px !important;
+  padding: 0 14px !important;
+  border-radius: var(--r-md) !important;
+  border: 1px solid var(--line) !important;
+  background: var(--card) !important;
+  font: 600 13px/1 var(--font-sans) !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  text-decoration: none !important;
+  color: var(--ink) !important;
+  box-shadow: none !important;
+  align-self: center !important;
+  flex-shrink: 0 !important;
+  transition: border-color 0.15s, background 0.15s !important;
+}
+
+.dossie-root .btn:hover,
+.dash-root .dossie-root .btn:hover {
+  border-color: var(--line-strong) !important;
+  background: var(--card) !important;
+}
+
+.dossie-root .btn-primary,
+.dash-root .dossie-root .btn-primary {
+  background: var(--action) !important;
+  border-color: var(--action) !important;
+  color: var(--on-action) !important;
+  box-shadow: none !important;
+}
+
+.dossie-root .btn-primary:hover,
+.dash-root .dossie-root .btn-primary:hover {
+  background: var(--action-hover) !important;
+  border-color: var(--action-hover) !important;
+}
+
+/* Neutraliza o vazamento de .dash-root .btn span e .dash-root .btn-ghost span */
+.dossie-root .btn span,
+.dash-root .dossie-root .btn span,
+.dossie-root .btn-ghost span,
+.dash-root .dossie-root .btn-ghost span {
+  width: auto !important;
+  height: auto !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  display: inline !important;
+  place-items: unset !important;
+  color: inherit !important;
+  font: inherit !important;
+  white-space: nowrap !important;
+}
+
+.dossie-root .btn-sm,
+.dash-root .dossie-root .btn-sm {
+  height: 34px !important;
+  padding: 0 12px !important;
+  font-size: 12px !important;
+  gap: 6px !important;
+}
+
+.dossie-root .btn-icon,
+.dash-root .dossie-root .btn-icon {
+  width: 40px !important;
+  height: 40px !important;
+  padding: 0 !important;
+  min-width: 40px !important;
+  justify-content: center !important;
+}
+
+.dossie-root .btn-sm.btn-icon,
+.dash-root .dossie-root .btn-sm.btn-icon {
+  width: 34px !important;
+  height: 34px !important;
+  min-width: 34px !important;
+  max-width: 34px !important;
+  padding: 0 !important;
+  border-radius: var(--r-md) !important;
+  justify-content: center !important;
+}
+
+.dossie-root .btn-ghost,
+.dash-root .dossie-root .btn-ghost {
+  background: transparent !important;
+  border-color: transparent !important;
+  color: var(--ink) !important;
+  box-shadow: none !important;
+  padding: 0 10px !important;
+}
+
+.dossie-root .btn-ghost:hover,
+.dash-root .dossie-root .btn-ghost:hover {
+  background: var(--sunken) !important;
+  border-color: transparent !important;
+}
+
+.dossie-root .card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.dossie-root .page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px 40px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.dossie-root .crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.dossie-root .crumbs a {
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.dossie-root .crumbs a:hover {
+  color: var(--ink);
+}
+
+.dossie-root .crumbs b {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* Cabeçalho do paciente (Dossiê individual) */
+.dossie-root .card.head,
+.dossie-root section.head {
+  padding: 22px 24px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  position: relative;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.dossie-root .card.head .av,
+.dossie-root section.head .av {
+  width: 60px;
+  height: 60px;
+  border-radius: 18px;
+  background: var(--dark);
+  color: var(--on-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: 600 17px/1 var(--font-mono);
+  flex: 0 0 auto;
+}
+
+.dossie-root .who {
+  all: unset;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 8px;
+  padding: 2px 6px;
+  margin-left: -6px;
+}
+
+.dossie-root .who:hover {
+  background: var(--sunken);
+}
+
+.dossie-root .who:focus-visible {
+  outline: 2px solid var(--focus);
+}
+
+.dossie-root .who h1 {
+  margin: 0;
+  font: 700 26px/32px var(--font-sans);
+  letter-spacing: -0.02em;
+}
+
+.dossie-root .head .meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.dossie-root .head .meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dossie-root .head-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  position: relative;
+  align-items: center;
+}
+
+.dossie-root .menu {
+  position: absolute;
+  right: 0;
+  top: 46px;
+  z-index: 30;
+  min-width: 270px;
+  padding: 6px;
+  border-radius: 12px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-pop);
+  display: none;
+  flex-direction: column;
+}
+
+.dossie-root .menu.open {
+  display: flex;
+}
+
+.dossie-root .menu button {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.dossie-root .menu button:hover,
+.dossie-root .menu button:focus-visible {
+  background: var(--sunken);
+}
+
+.dossie-root .menu small {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.dossie-root .menu hr {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: 6px 0;
+}
+
+.dossie-root .menu .danger {
+  color: var(--danger);
+}
+
+.dossie-root .mi {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 32px;
+}
+
+.dossie-root .picker {
+  left: 84px;
+  right: auto;
+  top: 64px;
+  min-width: 300px;
+}
+
+.dossie-root .picker .s {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 10px;
+  margin-bottom: 4px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--sunken);
+}
+
+.dossie-root .picker .s input {
+  flex: 1;
+  border: 0;
+  outline: 0;
+  background: transparent;
+}
+
+.dossie-root .picker .av {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  font-size: 11px;
+}
+
+.dossie-root .picker [aria-current="true"] {
+  background: var(--select);
+}
+
+.dossie-root .t-evo {
+  background: var(--cat-evo-soft);
+  color: var(--cat-evo);
+}
+
+.dossie-root .t-drama {
+  background: var(--cat-drama-soft);
+  color: var(--cat-drama);
+}
+
+.dossie-root .t-hist {
+  background: var(--cat-hist-soft);
+  color: var(--cat-hist);
+}
+
+.dossie-root .layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 22px;
+  align-items: start;
+}
+
+/* Filtros */
+.dossie-root .bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.dossie-root .search {
+  flex: 1 1 240px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 42px;
+  padding: 0 12px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--line);
+  background: var(--card);
+}
+
+.dossie-root .search:focus-within {
+  border-color: var(--action);
+  box-shadow: 0 0 0 3px rgba(43, 92, 53, 0.12);
+}
+
+.dossie-root .search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+}
+
+.dossie-root .tabs {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--sunken);
+  border: 1px solid var(--line);
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.dossie-root .tab {
+  all: unset;
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  transition: all 0.15s;
+}
+
+.dossie-root .tab:hover {
+  color: var(--ink);
+}
+
+.dossie-root .tab:focus-visible {
+  outline: 2px solid var(--focus);
+}
+
+.dossie-root .tab[aria-selected="true"] {
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: 0 1px 2px rgba(40, 34, 20, 0.08);
+}
+
+.dossie-root .tab .n {
+  font: 500 11px/1 var(--font-mono);
+  padding: 3px 6px;
+  border-radius: 999px;
+  background: var(--line);
+}
+
+.dossie-root .tab[aria-selected="true"] .n {
+  background: var(--select);
+  color: var(--action-hover);
+}
+
+/* Linha do tempo */
+.dossie-root .day {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.dossie-root .day::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+.dossie-root .day:first-letter {
+  text-transform: uppercase;
+}
+
+.dossie-root .list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dossie-root .item {
+  overflow: hidden;
+  scroll-margin-top: 16px;
+  transition: box-shadow 0.2s ease;
+}
+
+.dossie-root .item.flash {
+  box-shadow: 0 0 0 3px var(--select), var(--shadow-card);
+}
+
+.dossie-root .ih {
+  all: unset;
+  box-sizing: border-box;
+  width: 100%;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  padding: 14px 18px;
+  transition: background 0.15s;
+}
+
+.dossie-root .ih:hover {
+  background: var(--sunken);
+}
+
+.dossie-root .ih:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
+/* ===== Componente .ses-badge (Ícone de Sessão em Folha de Calendário) ===== */
+.ses-badge {
+  --s: 56px;
+  width: var(--s);
+  height: var(--s);
+  flex: 0 0 var(--s);
+  border-radius: calc(var(--s) * 0.29);
+  background: var(--frame, #dacead);
+  padding: calc(var(--s) * 0.09);
+  box-sizing: border-box;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.ses-badge .pg {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  border-radius: calc(var(--s) * 0.2);
+  background: var(--page, #f7f1de);
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(138, 122, 80, 0.35);
+}
+
+.ses-badge .tp {
+  position: relative;
+  height: 30%;
+  background: var(--strip, #2b5c35);
+  color: var(--strip-ink, #d6f5a3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: 700 calc(var(--s) * 0.105) / 1 var(--font-sans, "Inter", sans-serif);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding-left: 0.12em;
+}
+
+.ses-badge .tp::before,
+.ses-badge .tp::after {
+  content: "";
+  position: absolute;
+  top: -1px;
+  width: calc(var(--s) * 0.06);
+  height: calc(var(--s) * 0.11);
+  border-radius: 0 0 3px 3px;
+  background: var(--frame, #dacead);
+}
+
+.ses-badge .tp::before {
+  left: 9%;
+}
+
+.ses-badge .tp::after {
+  right: 9%;
+}
+
+.ses-badge .nb {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: 600 calc(var(--s) * 0.38) / 1 var(--font-mono, "IBM Plex Mono", monospace);
+  letter-spacing: -0.02em;
+  color: var(--ink, #1f2620);
+  padding-bottom: 2%;
+}
+
+.ses-badge .nb[data-len="3"] {
+  font-size: calc(var(--s) * 0.28);
+}
+
+.ses-badge .tp-short {
+  display: none;
+}
+
+.ses-badge.is-sm {
+  --s: 40px;
+}
+
+.ses-badge.is-sm .tp-long {
+  display: none;
+}
+
+.ses-badge.is-sm .tp-short {
+  display: inline;
+}
+
+.ses-badge.is-lg {
+  --s: 72px;
+}
+
+.ses-badge.is-atual {
+  --frame: #bfe08f;
+  --strip: var(--dark, #1f2620);
+}
+
+.dossie-root .badge {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.dossie-root .badge .icon {
+  width: 26px;
+  height: 26px;
+}
+
+.dossie-root .badge.num {
+  background: var(--ink);
+  color: var(--on-dark);
+}
+
+.dossie-root .badge.num small {
+  font: 600 9px/1 var(--font-sans);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.dossie-root .badge.num b {
+  font: 500 19px/1 var(--font-mono);
+  margin-top: 4px;
+}
+
+.dossie-root .kind {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.dossie-root .ititle {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 22px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dossie-root .imeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.dossie-root .imeta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.dossie-root .iright {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dossie-root .pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: var(--sunken);
+  border: 1px solid var(--line);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.dossie-root .pill b {
+  font: 500 14px/1 var(--font-mono);
+}
+
+.dossie-root .pill .d {
+  font: 600 11px/1 var(--font-sans);
+  padding: 3px 6px;
+  border-radius: 999px;
+  background: var(--select);
+  color: var(--action-hover);
+}
+
+.dossie-root .pill.ok {
+  background: var(--select);
+  border-color: transparent;
+  color: var(--action-hover);
+}
+
+.dossie-root .chev {
+  transition: transform 0.2s ease;
+  color: var(--muted);
+}
+
+.dossie-root .item[data-open="true"] .chev {
+  transform: rotate(180deg);
+}
+
+.dossie-root .ib {
+  display: none;
+  border-top: 1px solid var(--line);
+  padding: 18px 20px 18px 86px;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.dossie-root .item[data-open="true"] .ib {
+  display: flex;
+}
+
+.dossie-root .row {
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr);
+  gap: 16px;
+}
+
+.dossie-root .row > span {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding-top: 2px;
+}
+
+.dossie-root .row p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 23px;
+  max-width: 70ch;
+}
+
+.dossie-root .tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.dossie-root .tag {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: var(--sunken);
+  border: 1px solid var(--line);
+}
+
+.dossie-root .tag.on {
+  background: var(--select);
+  border-color: transparent;
+  color: var(--action-hover);
+}
+
+.dossie-root .links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.dossie-root .lnk {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s;
+}
+
+.dossie-root .lnk:hover {
+  border-color: var(--line-strong);
+}
+
+.dossie-root .lnk:focus-visible {
+  outline: 2px solid var(--focus);
+}
+
+.dossie-root .lnk small {
+  display: block;
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.dossie-root .todo {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--sunken);
+}
+
+.dossie-root .todo .ck {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 2px solid var(--line-strong);
+  flex: 0 0 20px;
+  margin-top: 1px;
+}
+
+.dossie-root .mets {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.dossie-root .met {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--sunken);
+  border: 1px solid var(--line);
+}
+
+.dossie-root .met span {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.dossie-root .met b {
+  font: 500 22px/30px var(--font-mono);
+}
+
+.dossie-root .met b small {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.dossie-root .list-s {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dossie-root .list-s li {
+  font-size: 14px;
+  line-height: 20px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: var(--sunken);
+}
+
+.dossie-root .quote {
+  position: relative;
+  padding: 14px 16px 14px 42px;
+  border-radius: 12px;
+  background: var(--sunken);
+  font-size: 15px;
+  line-height: 24px;
+}
+
+.dossie-root .quote::before {
+  content: "“";
+  position: absolute;
+  left: 14px;
+  top: 4px;
+  font: 700 34px/1 Georgia, serif;
+  color: var(--cat-hist);
+  opacity: 0.5;
+}
+
+.dossie-root .qa {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dossie-root .qa div {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 10px;
+}
+
+.dossie-root .qa .n {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--on-dark);
+  display: grid;
+  place-items: center;
+  font: 500 12px/1 var(--font-mono);
+}
+
+.dossie-root .qa q {
+  display: block;
+  quotes: none;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.dossie-root .qa p {
+  margin: 2px 0 0;
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.dossie-root .ifoot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+  padding-top: 12px;
+  border-top: 1px dashed var(--line);
+}
+
+.dossie-root .empty {
+  padding: 48px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.dossie-root .empty h3 {
+  margin: 0;
+  font: 700 18px/24px var(--font-sans);
+}
+
+.dossie-root .empty p {
+  margin: 0;
+  max-width: 440px;
+  color: var(--muted);
+}
+
+.dossie-root .starts {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+/* Lateral */
+.dossie-root .side {
+  position: sticky;
+  top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dossie-root .box {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dossie-root .box h2 {
+  margin: 0;
+  font: 700 15px/20px var(--font-sans);
+}
+
+.dossie-root .box-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.dossie-root .chart svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.dossie-root .stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--sunken);
+  overflow: hidden;
+}
+
+.dossie-root .stats div {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dossie-root .stats div + div {
+  border-left: 1px solid var(--line);
+}
+
+.dossie-root .stats b {
+  font: 500 20px/24px var(--font-mono);
+}
+
+.dossie-root .stats span {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.dossie-root .rank {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dossie-root .rank li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 10px;
+  font-size: 13px;
+}
+
+.dossie-root .rank .b {
+  grid-column: 1 / -1;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--sunken);
+  overflow: hidden;
+}
+
+.dossie-root .rank .b i {
+  display: block;
+  height: 100%;
+  background: var(--action);
+  border-radius: 999px;
+}
+
+.dossie-root .rank .n {
+  font: 500 12px/1 var(--font-mono);
+  color: var(--muted);
+  align-self: center;
+}
+
+.dossie-root .pending {
+  font-size: 14px;
+  line-height: 21px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--select);
+}
+
+.dossie-root .pending b {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--action-hover);
+  margin-bottom: 2px;
+}
+
+.dossie-root .lock {
+  display: flex;
+  gap: 10px;
+  font-size: 12px;
+  line-height: 17px;
+  color: var(--muted);
+  padding: 0 4px;
+}
+
+/* Notificação Toast */
+.dossie-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%) translateY(20px);
+  opacity: 0;
+  background: #1f2620;
+  color: #f3efe4;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  transition: opacity 0.2s, transform 0.2s;
+  pointer-events: none;
+  z-index: 50;
+}
+
+.dossie-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Modais de Edição e Exclusão */
+.dx-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(31, 38, 32, 0.45);
+  backdrop-filter: blur(2px);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.dx-modal-card {
+  width: 100%;
+  max-width: 480px;
+  background: var(--card, #fcfbf7);
+  border: 1px solid var(--line, #e2d9c6);
+  border-radius: 16px;
+  box-shadow: 0 14px 36px rgba(40, 34, 20, 0.18);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dx-modal-title {
+  margin: 0;
+  font: 700 18px/24px var(--font-sans, sans-serif);
+  color: var(--ink, #1f2620);
+}
+
+.dx-modal-desc {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--muted, #6a6555);
+}
+
+.dx-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+/* Responsividade */
+@media (max-width: 1060px) {
+  .dossie-root .layout {
+    grid-template-columns: 1fr;
+  }
+  .dossie-root .side {
+    position: static;
+    order: -1;
+  }
+}
+
+@media (max-width: 700px) {
+  .dossie-root .page {
+    padding: 16px 16px 40px;
+  }
+  .dossie-root .ib {
+    padding: 16px;
+  }
+  .dossie-root .row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  .dossie-root .ih {
+    grid-template-columns: 40px minmax(0, 1fr);
+  }
+  .dossie-root .badge {
+    width: 40px;
+    height: 40px;
+  }
+  .ses-badge {
+    --s: 40px;
+  }
+  .ses-badge .tp-long {
+    display: none;
+  }
+  .ses-badge .tp-short {
+    display: inline;
+  }
+  .dossie-root .iright {
+    grid-column: 1 / -1;
+  }
+  .dossie-root .head-actions {
+    width: 100%;
+  }
+  .dossie-root .mets {
+    grid-template-columns: 1fr;
+  }
+  .dossie-root .picker {
+    left: 16px;
+  }
+}
+
+/* =========================================================================
+   Impressão Oficial Limpa, Timbrada e Formatada para Prontuário A4
+   ========================================================================= */
+
+/* Estilos de tela para os elementos de impressão (ocultos na tela) */
+.dossie-print-header,
+.dossie-print-footer {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 14mm 12mm 16mm 12mm;
+  }
+
+  /* Reset global de página e cores */
+  html, body {
+    background: #ffffff !important;
+    color: #111111 !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+    font-size: 9.5pt !important;
+    line-height: 1.45 !important;
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Ocultar ABSOLUTAMENTE toda a estrutura externa da plataforma (PlatformShell) */
+  .dash-root::before,
+  .dash-root aside.side,
+  .dash-root .topbar,
+  .dash-root .tabbar,
+  .dash-root .mobile-nav-sheet,
+  .dash-root .skip,
+  .dash-root .pending-banner,
+  .mobile-avatar-btn,
+  .side-foot {
+    display: none !important;
+  }
+
+  /* Destravar o layout de 2 colunas e rolagem da plataforma */
+  .dash-root,
+  .dash-root .dash-body,
+  .dash-root .app,
+  .dash-root .content {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: auto !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+  }
+
+  /* Ocultar elementos interativos, menus e botões da tela do Dossiê */
+  .dossie-root .crumbs,
+  .dossie-root .head-actions,
+  .dossie-root .bar,
+  .dossie-root .ifoot,
+  .dossie-root .chev,
+  .dossie-root .who svg,
+  .dossie-root .picker,
+  .dossie-root .menu,
+  .dossie-root aside.side,
+  .dossie-root .dossie-toast,
+  .dossie-root .toast,
+  .dossie-root .modal-backdrop,
+  .dossie-root .empty-state .btn,
+  .dossie-root .dx-sparkline,
+  .dossie-root .av,
+  .dossie-root section.card.head {
+    display: none !important;
+  }
+
+  /* Modo de impressão de sessão única: se ativado, oculta outros itens */
+  body.dossie-print-single .dossie-root .sum,
+  body.dossie-print-single .dossie-root .card.item:not(.dossie-print-target),
+  body.dossie-print-single .dossie-root .day:not(.dossie-print-target-day) {
+    display: none !important;
+  }
+
+  /* Estrutura principal do dossiê */
+  .dossie-root {
+    --bg: #ffffff !important;
+    background: #ffffff !important;
+    color: #111111 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .dossie-root .page {
+    padding: 0 !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+
+  .dossie-root .layout {
+    display: block !important;
+    grid-template-columns: 1fr !important;
+    gap: 0 !important;
+    margin: 0 !important;
+  }
+
+  .dossie-root .main {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Cabeçalho Oficial Clínico Timbrado */
+  .dossie-print-header {
+    display: block !important;
+    border-bottom: 2px solid #222222;
+    padding-bottom: 14px;
+    margin-bottom: 18px;
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  .dossie-print-header .dossie-print-topline {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 14px;
+  }
+
+  .dossie-print-brand {
+    font-size: 16pt;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #111111;
+    margin: 0 0 2px 0;
+    text-transform: uppercase;
+  }
+
+  .dossie-print-sub {
+    font-size: 9pt;
+    color: #555555;
+    margin: 0;
+  }
+
+  .dossie-print-date {
+    text-align: right;
+    font-size: 8.5pt;
+    color: #444444;
+  }
+
+  .dossie-print-sigilo {
+    display: inline-block;
+    margin-top: 4px;
+    font-size: 7.5pt;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: #2f6b31;
+    background: #eef6ee;
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid #c2dfc3;
+  }
+
+  .dossie-print-patient-box {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px 14px;
+    background: #f8f6f0;
+    border: 1px solid #dcd7ca;
+    border-radius: 6px;
+    padding: 10px 14px;
+  }
+
+  .dossie-print-field {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .dossie-print-field .lbl {
+    font-size: 7.5pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #666666;
+    letter-spacing: 0.04em;
+  }
+
+  .dossie-print-field .val {
+    font-size: 9.5pt;
+    font-weight: 600;
+    color: #111111;
+  }
+
+  /* Resumo Métricas (Sumário de 4 cards em grade limpa) */
+  .dossie-root .sum {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 8px !important;
+    margin: 0 0 16px 0 !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .dossie-root .sum-it {
+    all: unset !important;
+    display: block !important;
+    background: #faf8f5 !important;
+    border: 1px solid #dcd7ca !important;
+    border-radius: 6px !important;
+    padding: 8px 12px !important;
+    box-shadow: none !important;
+  }
+
+  .dossie-root .sum-it .l {
+    font-size: 7.5pt !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    color: #555555 !important;
+    display: block !important;
+    margin-bottom: 2px !important;
+  }
+
+  .dossie-root .sum-it .v {
+    font-size: 15pt !important;
+    font-weight: 800 !important;
+    color: #111111 !important;
+    display: block !important;
+    line-height: 1.1 !important;
+  }
+
+  .dossie-root .sum-it .sub {
+    font-size: 7.5pt !important;
+    color: #666666 !important;
+    display: block !important;
+    margin-top: 2px !important;
+  }
+
+  /* Divisores de Data (.day) */
+  .dossie-root .day {
+    font-size: 10pt !important;
+    font-weight: 700 !important;
+    color: #111111 !important;
+    border-bottom: 1px solid #c8c3b5 !important;
+    padding: 10px 0 4px 0 !important;
+    margin: 16px 0 10px 0 !important;
+    text-transform: capitalize !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
+  /* Cartões das Intervenções (Sessões, Dramatizações, Histórias) */
+  .dossie-root .card.item {
+    background: #ffffff !important;
+    border: 1px solid #c8c3b5 !important;
+    border-radius: 6px !important;
+    box-shadow: none !important;
+    margin: 0 0 12px 0 !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    overflow: visible !important;
+  }
+
+  /* Cabeçalho do Card (.ih) */
+  .dossie-root .ih {
+    background: #f8f6f0 !important;
+    border-bottom: 1px solid #dcd7ca !important;
+    border-radius: 6px 6px 0 0 !important;
+    padding: 8px 12px !important;
+    cursor: default !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    width: 100% !important;
+    text-align: left !important;
+  }
+
+  .dossie-root .badge {
+    width: 26px !important;
+    height: 26px !important;
+    font-size: 9pt !important;
+    border-radius: 6px !important;
+    background: #e9e4d7 !important;
+    color: #222222 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+  }
+
+  .dossie-root .badge svg {
+    width: 14px !important;
+    height: 14px !important;
+  }
+
+  .dossie-root .kind {
+    font-size: 7.5pt !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    color: #2f6b31 !important;
+    letter-spacing: 0.04em !important;
+  }
+
+  .dossie-root .ititle {
+    font-size: 11pt !important;
+    font-weight: 700 !important;
+    color: #111111 !important;
+    margin: 1px 0 !important;
+  }
+
+  .dossie-root .imeta {
+    font-size: 8pt !important;
+    color: #555555 !important;
+    display: flex !important;
+    gap: 8px !important;
+    flex-wrap: wrap !important;
+  }
+
+  .dossie-root .iright {
+    margin-left: auto !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+  }
+
+  .dossie-root .pill {
+    border: 1px solid #b8b3a5 !important;
+    background: #ffffff !important;
+    color: #111111 !important;
+    font-size: 8pt !important;
+    padding: 1px 6px !important;
+    border-radius: 4px !important;
+    white-space: nowrap !important;
+  }
+
+  /* Corpo do Card (.ib) - FORÇADO SEMPRE VISÍVEL E LIMPO */
+  .dossie-root .ib,
+  .dossie-root .item[data-open] .ib,
+  .dossie-root .item .ib {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    padding: 10px 14px !important;
+    border-top: none !important;
+    max-height: none !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  .dossie-root .row {
+    display: grid !important;
+    grid-template-columns: 140px minmax(0, 1fr) !important;
+    gap: 10px !important;
+    font-size: 9pt !important;
+    line-height: 1.4 !important;
+  }
+
+  .dossie-root .row > span:first-child {
+    font-weight: 700 !important;
+    font-size: 7.5pt !important;
+    text-transform: uppercase !important;
+    color: #555555 !important;
+    letter-spacing: 0.04em !important;
+    padding-top: 1px !important;
+  }
+
+  .dossie-root .quote {
+    background: #fbf9f4 !important;
+    border-left: 3px solid #2f6b31 !important;
+    padding: 4px 8px !important;
+    font-style: italic !important;
+    color: #222222 !important;
+    border-radius: 0 4px 4px 0 !important;
+  }
+
+  .dossie-root .qa {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 6px !important;
+  }
+
+  .dossie-root .qa > div {
+    display: grid !important;
+    grid-template-columns: 20px minmax(0, 1fr) !important;
+    gap: 8px !important;
+    font-size: 8.5pt !important;
+  }
+
+  .dossie-root .qa .n {
+    background: #eeebe3 !important;
+    color: #333333 !important;
+    font-weight: 700 !important;
+    width: 18px !important;
+    height: 18px !important;
+    border-radius: 3px !important;
+    font-size: 7.5pt !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .dossie-root .qa q {
+    display: block !important;
+    font-weight: 600 !important;
+    color: #222222 !important;
+    font-size: 8.5pt !important;
+  }
+
+  .dossie-root .qa p {
+    margin: 2px 0 0 0 !important;
+    color: #333333 !important;
+    font-size: 8.5pt !important;
+  }
+
+  .dossie-root .tags {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 4px !important;
+  }
+
+  .dossie-root .tags .tag {
+    background: #f2eee6 !important;
+    border: 1px solid #d4cfc2 !important;
+    color: #222222 !important;
+    font-size: 7.5pt !important;
+    padding: 2px 6px !important;
+    border-radius: 3px !important;
+  }
+
+  /* Rodapé Oficial de Validação e Assinatura */
+  .dossie-print-footer {
+    display: block !important;
+    margin-top: 30px;
+    padding-top: 14px;
+    border-top: 1px solid #c8c3b5;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .dossie-print-disclaimer {
+    font-size: 8pt;
+    color: #666666;
+    line-height: 1.4;
+    margin-bottom: 24px;
+    text-align: justify;
+  }
+
+  .dossie-print-sign-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 32px;
+    margin-bottom: 20px;
+  }
+
+  .dossie-print-sign-box {
+    flex: 1;
+    text-align: center;
+  }
+
+  .dossie-print-sign-line {
+    border-top: 1px solid #111111;
+    margin-bottom: 6px;
+    height: 1px;
+    width: 100%;
+  }
+
+  .dossie-print-sign-title {
+    font-size: 8.5pt;
+    font-weight: 700;
+    color: #111111;
+  }
+
+  .dossie-print-sign-crp {
+    font-size: 8pt;
+    color: #555555;
+    margin-top: 2px;
+  }
+
+  .dossie-print-page-foot {
+    font-size: 7.5pt;
+    color: #888888;
+    text-align: center;
+    border-top: 1px dashed #dcd7ca;
+    padding-top: 8px;
+    margin-top: 10px;
+  }
+}
+
+/* =========================================================================
+   Tela: Gestão dos Pacientes do Dossiê Clínico (Lista & Cartões)
+   ========================================================================= */
+
+/* Cabeçalho da Lista de Pacientes (Hub) */
+.dossie-root header.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px 24px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+.dossie-root header.head h1 {
+  margin: 6px 0 4px;
+  font: 700 30px/36px var(--font-sans);
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.dossie-root header.head p {
+  margin: 0;
+  max-width: 620px;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 22px;
+}
+.dossie-root header.head .head-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Resumo métricas (4 cards) */
+.dossie-root .sum,
+.dash-root .dossie-root .sum {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+  margin-top: 0 !important;
+}
+.dossie-root .sum-it,
+.dash-root .dossie-root .sum-it {
+  all: unset;
+  box-sizing: border-box;
+  cursor: default;
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: border-color 0.15s;
+}
+.dossie-root .sum-it.click,
+.dash-root .dossie-root .sum-it.click {
+  cursor: pointer;
+}
+.dossie-root .sum-it.click:hover,
+.dash-root .dossie-root .sum-it.click:hover {
+  border-color: var(--line-strong);
+}
+.dossie-root .sum-it:focus-visible,
+.dash-root .dossie-root .sum-it:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.dossie-root .sum-it .t {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.dossie-root .sum-it .v {
+  font: 500 28px/32px var(--font-mono);
+  color: var(--ink);
+}
+.dossie-root .sum-it .s {
+  font-size: 12px;
+  color: var(--muted);
+}
+.dossie-root .sum-it.warn {
+  background: var(--warn-bg);
+  border-color: #e8c98f;
+}
+.dossie-root .sum-it.warn .t,
+.dossie-root .sum-it.warn .s,
+.dossie-root .sum-it.warn .v {
+  color: var(--warn-ink);
+}
+.dossie-root .dot {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 26px;
+}
+
+/* Barra de ferramentas (Toolbar) */
+.dossie-root .tools,
+.dash-root .dossie-root .tools {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin-top: 0 !important;
+}
+.dossie-root .search,
+.dash-root .dossie-root .search {
+  flex: 1 1 280px !important;
+  max-width: none !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  height: 42px !important;
+  padding: 0 12px !important;
+  border-radius: var(--r-md) !important;
+  border: 1px solid var(--line) !important;
+  background: var(--card) !important;
+  box-shadow: none !important;
+  color: var(--ink) !important;
+}
+.dossie-root .search:focus-within,
+.dash-root .dossie-root .search:focus-within {
+  border-color: var(--action) !important;
+  box-shadow: 0 0 0 3px rgba(43, 92, 53, 0.12) !important;
+}
+.dossie-root .search input,
+.dash-root .dossie-root .search input {
+  flex: 1 !important;
+  min-width: 0 !important;
+  border: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  font: 400 14px var(--font-sans) !important;
+  color: var(--ink) !important;
+}
+.dossie-root .search .kbd,
+.dash-root .dossie-root .search .kbd,
+.dossie-root .kbd,
+.dash-root .dossie-root .kbd {
+  display: inline-block !important;
+  font: 500 11px/1 var(--font-mono) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 5px !important;
+  padding: 3px 5px !important;
+  color: var(--muted) !important;
+  background: var(--sunken) !important;
+}
+.dossie-root .seg {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--sunken);
+  border: 1px solid var(--line);
+  max-width: 100%;
+  overflow-x: auto;
+}
+.dossie-root .seg button {
+  all: unset;
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  box-sizing: border-box;
+  transition: all 0.15s;
+}
+.dossie-root .seg button:hover {
+  color: var(--ink);
+}
+.dossie-root .seg button:focus-visible {
+  outline: 2px solid var(--focus);
+}
+.dossie-root .seg button[aria-pressed="true"] {
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: 0 1px 2px rgba(40, 34, 20, 0.08);
+}
+.dossie-root .seg .n {
+  font: 500 11px/1 var(--font-mono);
+  padding: 3px 6px;
+  border-radius: 999px;
+  background: var(--line);
+  color: var(--ink);
+}
+.dossie-root .seg button[aria-pressed="true"] .n {
+  background: var(--select);
+  color: var(--action-hover);
+}
+.dossie-root .seg.icons button {
+  padding: 0 9px;
+}
+.dossie-root .sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.dossie-root .sort select {
+  height: 40px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--line);
+  background: var(--card);
+  padding: 0 10px;
+  font: 600 13px var(--font-sans);
+  color: var(--ink);
+  outline: none;
+  cursor: pointer;
+}
+
+.dash-root .dossie-root .page {
+  padding: 24px 0 64px;
+  max-width: 1240px;
+}
+
+/* Lista / Tabela */
+.dossie-root .table,
+.dash-root .dossie-root .table {
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-card);
+  margin-top: 0 !important;
+  -webkit-overflow-scrolling: touch;
+}
+.dossie-root .thead,
+.dossie-root .tr {
+  display: grid;
+  grid-template-columns: minmax(180px, 2.2fr) minmax(130px, 1.2fr) minmax(150px, 1.2fr) minmax(130px, 1fr) 250px;
+  gap: 16px;
+  align-items: center;
+  padding: 0 20px;
+  min-width: 840px;
+}
+.dossie-root .thead {
+  height: 42px;
+  border-bottom: 1px solid var(--line);
+  background: var(--sunken);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.dossie-root .tr {
+  min-height: 78px;
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.dossie-root .tr:last-child {
+  border-bottom: 0;
+}
+.dossie-root .tr:hover {
+  background: #f8f5ee;
+}
+.dossie-root .tr:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
+.dossie-root .pt {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.dossie-root .pt .av,
+.dossie-root .pc .av {
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  background: var(--dark);
+  color: var(--on-dark);
+  display: grid;
+  place-items: center;
+  font: 600 13px/1 var(--font-mono);
+  flex: 0 0 44px;
+}
+.dossie-root .pt .av.arq,
+.dossie-root .pc .av.arq {
+  background: var(--line);
+  color: var(--muted);
+}
+.dossie-root .pt b {
+  display: block;
+  font-size: 15px;
+  line-height: 21px;
+  color: var(--ink);
+}
+.dossie-root .pt small {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dossie-root .last b {
+  display: block;
+  font-size: 14px;
+  color: var(--ink);
+}
+.dossie-root .last small {
+  font-size: 12px;
+  color: var(--muted);
+}
+.dossie-root .flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 3px;
+  font: 600 11px/1 var(--font-sans);
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--warn-bg);
+  color: var(--warn-ink);
+}
+.dossie-root .flag.arq {
+  background: var(--sunken);
+  color: var(--muted);
+  border: 1px solid var(--line);
+}
+.dossie-root .mood {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.dossie-root .mood svg {
+  flex: 0 0 auto;
+}
+.dossie-root .mood b {
+  font: 500 16px/1 var(--font-mono);
+  color: var(--ink);
+}
+.dossie-root .mood .d {
+  font: 600 11px/1 var(--font-sans);
+  padding: 3px 6px;
+  border-radius: 999px;
+  background: var(--select);
+  color: var(--action-hover);
+}
+.dossie-root .mood .d.down {
+  background: var(--warn-bg);
+  color: var(--warn-ink);
+}
+.dossie-root .mood .d.eq {
+  background: var(--sunken);
+  color: var(--muted);
+}
+.dossie-root .recs {
+  display: flex;
+  gap: 6px;
+}
+.dossie-root .rec {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 8px;
+  font: 500 13px/1 var(--font-mono);
+}
+.dossie-root .rec .icon {
+  width: 15px;
+  height: 15px;
+}
+.dossie-root .rec.zero {
+  opacity: 0.45;
+}
+.dossie-root .acts,
+.dash-root .dossie-root .acts {
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  gap: 8px !important;
+  position: relative !important;
+  white-space: nowrap !important;
+}
+.dossie-root .acts .btn,
+.dash-root .dossie-root .acts .btn {
+  flex-shrink: 0 !important;
+  flex-grow: 0 !important;
+  margin: 0 !important;
+}
+.dossie-root .menu {
+  position: absolute;
+  right: 0;
+  top: 40px;
+  z-index: 30;
+  min-width: 230px;
+  padding: 6px;
+  border-radius: 12px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-pop);
+  display: none;
+  flex-direction: column;
+}
+.dossie-root .menu.open {
+  display: flex;
+}
+.dossie-root .menu button {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--ink);
+}
+.dossie-root .menu button:hover,
+.dossie-root .menu button:focus-visible {
+  background: var(--sunken);
+}
+.dossie-root .menu hr {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: 6px 0;
+}
+.dossie-root .menu .danger {
+  color: var(--danger);
+}
+
+/* Cartões */
+.dossie-root .grid,
+.dash-root .dossie-root .grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)) !important;
+  gap: 16px !important;
+  margin-top: 0 !important;
+}
+.dossie-root .pc {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  cursor: pointer;
+  position: relative;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.dossie-root .pc:hover {
+  border-color: var(--line-strong);
+  box-shadow: 0 8px 24px rgba(31, 38, 32, 0.08);
+}
+.dossie-root .pc:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.dossie-root .pc-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.dossie-root .pc .q {
+  font-size: 14px;
+  color: var(--muted);
+  min-height: 21px;
+}
+.dossie-root .pc-mid {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--sunken);
+}
+.dossie-root .pc-foot {
+  display: flex;
+  gap: 8px;
+}
+.dossie-root .pc-foot .btn-primary {
+  flex: 1;
+}
+
+.dossie-root .empty,
+.dash-root .dossie-root .empty {
+  padding: 48px 24px !important;
+  text-align: center !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 10px !important;
+  color: var(--muted) !important;
+  background: var(--card) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: var(--r-lg) !important;
+  box-shadow: var(--shadow-card) !important;
+  font-size: 15px !important;
+  margin-top: 0 !important;
+}
+.dossie-root .empty h3 {
+  margin: 0;
+  font: 700 18px/24px var(--font-sans);
+  color: var(--ink);
+}
+.dossie-root .foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  line-height: 17px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+/* Modais e Formulários */
+.dossie-root .modal,
+.dossie-root form.modal {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-pop);
+  color: var(--ink);
+}
+.dossie-root .modal h2 {
+  margin: 0;
+  font: 700 20px/26px var(--font-sans);
+  color: var(--ink);
+}
+.dossie-root .field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.dossie-root .field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.dossie-root .input,
+.dossie-root input.input,
+.dossie-root textarea.input {
+  height: 44px;
+  padding: 0 12px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--line-strong);
+  background: var(--card);
+  color: var(--ink);
+  font: inherit;
+  box-sizing: border-box;
+}
+.dossie-root .input:focus,
+.dossie-root input.input:focus,
+.dossie-root textarea.input:focus {
+  outline: 0;
+  border-color: var(--action);
+  box-shadow: 0 0 0 3px rgba(43, 92, 53, 0.12);
+}
+.dossie-root textarea.input {
+  height: auto;
+  padding: 10px 12px;
+  resize: vertical;
+}
+.dossie-root .hint {
+  font-size: 12px;
+  color: var(--muted);
+}
+.dossie-root .err {
+  font-size: 12px;
+  color: var(--danger);
+  display: none;
+}
+.dossie-root .err.show {
+  display: block;
+}
+.dossie-root .modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.dossie-root .toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%) translateY(20px);
+  opacity: 0;
+  background: var(--ink);
+  color: var(--on-dark);
+  padding: 10px 16px;
+  border-radius: var(--r-md);
+  font-size: 14px;
+  transition: opacity 0.2s, transform 0.2s;
+  pointer-events: none;
+  z-index: 100;
+}
+.dossie-root .toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+@media (max-width: 1060px) {
+  .dossie-root .thead {
+    display: none !important;
+  }
+  .dossie-root .tr {
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    grid-template-areas: "pt acts" "last mood" "recs recs" !important;
+    padding: 14px 16px !important;
+    gap: 10px 12px !important;
+  }
+  .dossie-root .c-pt {
+    grid-area: pt !important;
+  }
+  .dossie-root .c-last {
+    grid-area: last !important;
+  }
+  .dossie-root .c-mood {
+    grid-area: mood !important;
+    justify-self: end !important;
+  }
+  .dossie-root .c-recs {
+    grid-area: recs !important;
+  }
+  .dossie-root .c-acts {
+    grid-area: acts !important;
+  }
+  .dossie-root .sum,
+  .dash-root .dossie-root .sum {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+@media (max-width: 640px) {
+  .dossie-root .head-actions {
+    width: 100% !important;
+  }
+  .dossie-root .head-actions .btn {
+    flex: 1 !important;
+  }
+  .dossie-root .c-acts .lbl {
+    display: none !important;
+  }
+}
+
+
