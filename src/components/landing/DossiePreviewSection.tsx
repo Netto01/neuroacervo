@@ -172,7 +172,7 @@ export function DossiePreviewSection() {
             <ul className="dx-list">
               <li className="dx-item">
                 <span className="dx-ic" aria-hidden="true">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
                     <path d="M4 6h16M4 12h10M4 18h7" />
                     <circle cx="19" cy="18" r="2" />
                   </svg>
@@ -184,7 +184,7 @@ export function DossiePreviewSection() {
               </li>
               <li className="dx-item">
                 <span className="dx-ic" aria-hidden="true">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
                     <path d="M3 17l5-5 4 3 8-8" />
                     <path d="M15 7h5v5" />
                   </svg>
@@ -196,7 +196,7 @@ export function DossiePreviewSection() {
               </li>
               <li className="dx-item">
                 <span className="dx-ic" aria-hidden="true">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
                     <path d="M12 20h9" />
                     <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
                   </svg>
@@ -208,7 +208,7 @@ export function DossiePreviewSection() {
               </li>
               <li className="dx-item">
                 <span className="dx-ic" aria-hidden="true">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
                     <rect x="4" y="11" width="16" height="10" rx="2" />
                     <path d="M8 11V7a4 4 0 0 1 8 0v4" />
                   </svg>
@@ -224,7 +224,7 @@ export function DossiePreviewSection() {
               <Link className="dx-btn dx-btn-primary" href="/recursos-interativos">
                 Explorar recursos interativos
                 <span className="arr" aria-hidden="true">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">
                     <path d="M7 17L17 7M8 7h9v9" />
                   </svg>
                 </span>
@@ -232,7 +232,7 @@ export function DossiePreviewSection() {
               <a className="dx-btn dx-btn-ghost" href="#planos">
                 Ver os planos
                 <span className="arr" aria-hidden="true">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">
                     <path d="M5 12h14M13 6l6 6-6 6" />
                   </svg>
                 </span>
