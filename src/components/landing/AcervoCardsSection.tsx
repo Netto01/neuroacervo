@@ -9,7 +9,7 @@ export function AcervoCardsSection() {
           <span className="meta-grp">
             <span>O acervo</span>
             <span className="dot-mark">•</span>
-            <span>Sete tipos de material</span>
+            <span>Oito recursos essenciais</span>
           </span>
           <span>001 / 006</span>
         </div>
@@ -72,6 +72,21 @@ export function AcervoCardsSection() {
             <svg className="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>
             <h3>PDFs <span>e artigos</span></h3>
             <p>Materiais de referência selecionados e organizados por tema.</p>
+            <span className="arrow-mark" aria-hidden="true">→</span>
+          </a>
+          <a className="card feature feature-wide" href="/recursos-interativos/pacientes">
+            <div className="feature-content">
+              <div className="num">08<span className="tag">Novo · Clínico</span></div>
+              <svg className="icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+                <polyline points="10 9 9 9 8 9" />
+              </svg>
+              <h3>Prontuário do paciente <span>&amp; dossiê clínico digital</span></h3>
+              <p>Linha do tempo unificada de atendimentos, evolução clínica com indicadores de humor e crença, sessões vinculadas e impressão oficial em folha A4 com carimbo e assinatura.</p>
+            </div>
             <span className="arrow-mark" aria-hidden="true">→</span>
           </a>
         </div>

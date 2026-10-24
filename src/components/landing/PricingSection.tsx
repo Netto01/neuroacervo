@@ -110,6 +110,7 @@ export function PricingSection() {
             </div>
             <ul className="feat">
               <li><svg viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></svg><span>Todos os PDFs e todas as aulas</span></li>
+              <li><svg viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></svg><span><b>Prontuário do paciente</b> com linha do tempo e dossiê</span></li>
               <li><svg viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></svg><span><b>Baralhos interativos</b> para usar online</span></li>
               <li><svg viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></svg><span><b>Histórias temáticas</b> e demais recursos online</span></li>
               <li><svg viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></svg><span>Novos recursos interativos todo mês</span></li>
@@ -193,6 +194,12 @@ export function PricingSection() {
                 <th scope="row">Aulas gravadas em módulos</th>
                 <td className="no"><span className="dash-icon" aria-label="Não incluído">—</span></td>
                 <td className="yes"><svg viewBox="0 0 24 24" aria-label="Incluído"><path d="m5 12 4.5 4.5L19 7"/></svg></td>
+                <td className="yes col-feat"><svg viewBox="0 0 24 24" aria-label="Incluído"><path d="m5 12 4.5 4.5L19 7"/></svg></td>
+              </tr>
+              <tr>
+                <th scope="row">Prontuário do paciente com dossiê e impressão A4</th>
+                <td className="no"><span className="dash-icon" aria-label="Não incluído">—</span></td>
+                <td className="no"><span className="dash-icon" aria-label="Não incluído">—</span></td>
                 <td className="yes col-feat"><svg viewBox="0 0 24 24" aria-label="Incluído"><path d="m5 12 4.5 4.5L19 7"/></svg></td>
               </tr>
               <tr>

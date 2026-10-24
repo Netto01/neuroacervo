@@ -6,15 +6,15 @@ export function HeroSection() {
     <section className="hero" aria-labelledby="h-hero">
       <div className="container hero-grid">
         <div className="hero-copy">
-          <a className="hero-pill" href="#acervo">
-            <b>Acervo</b>Guias, laudos, anamnese e aulas
+          <a className="hero-pill" href="#dossie">
+            <b>Novo</b>Prontuário do paciente &amp; dossiê clínico
           </a>
           <span className="label">Para acadêmicos de psi, psicólogos e neuropsicólogos</span>
           <h1 className="display" id="h-hero">
             Avaliação neuropsicológica <em>com método</em>, num só <em>acervo</em><span className="dot">.</span>
           </h1>
           <p className="lead">
-            Guias rápidos de aplicação e interpretação, modelos de laudo, roteiros de anamnese, compêndios de estudo e aulas, organizados para a rotina clínica e prontos para consulta.
+            Guias rápidos de aplicação e interpretação, modelos de laudo, roteiros de anamnese, compêndios de estudo, aulas e prontuário do paciente com dossiê clínico, organizados para a rotina clínica e prontos para consulta.
           </p>
           <div className="hero-actions">
             <a className="btn btn-primary" href="#planos">
@@ -32,8 +32,8 @@ export function HeroSection() {
           </div>
           <div className="hero-stats">
             <div className="stat">
-              <span className="ring acc">07</span>
-              <span className="stat-label"><b>Tipos de material</b>num só lugar</span>
+              <span className="ring acc">08</span>
+              <span className="stat-label"><b>Recursos essenciais</b>com prontuário clínico</span>
             </div>
             <div className="stat">
               <span className="ring">PDF</span>
