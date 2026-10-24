@@ -97,9 +97,9 @@ const STA_CONFIG: Record<AssinanteItem['st'], [string, string]> = {
 };
 
 const PRECO_MAP: Record<string, string> = {
-  Consulta: 'R$ 19,90/mês',
-  Estudo: 'R$ 39,90/mês',
-  Prática: 'R$ 49,90/mês'
+  Consulta: 'R$ 24,90/mês',
+  Estudo: 'R$ 44,90/mês',
+  Prática: 'R$ 69,90/mês'
 };
 
 export default function AdminPage() {
@@ -416,10 +416,10 @@ export default function AdminPage() {
     const praticaMensal = pratica.filter(a => a.ciclo === 'mensal');
 
     // MRR real
-    const mrr = (consulta.length * 19.90) +
-                (estudo.length * 39.90) +
-                (praticaMensal.length * 49.90) +
-                (praticaAnual.length * (399.00 / 12));
+    const mrr = (consulta.length * 24.90) +
+                (estudo.length * 44.90) +
+                (praticaMensal.length * 69.90) +
+                (praticaAnual.length * (699.00 / 12));
 
     const ticketMedio = ativas.length > 0 ? (mrr / ativas.length) : 0;
 
@@ -452,10 +452,10 @@ export default function AdminPage() {
     // Métricas SaaS Avançadas (Fallback Local)
     const arr = mrr * 12;
     const mrrEmRisco = pendentes.reduce((acc, sub) => {
-      if (sub.plano === 'Consulta') return acc + 19.90;
-      if (sub.plano === 'Estudo') return acc + 39.90;
+      if (sub.plano === 'Consulta') return acc + 24.90;
+      if (sub.plano === 'Estudo') return acc + 44.90;
       if (sub.plano === 'Prática') {
-        return acc + (sub.ciclo === 'anual' ? (399.00 / 12) : 49.90);
+        return acc + (sub.ciclo === 'anual' ? (699.00 / 12) : 69.90);
       }
       return acc;
     }, 0);
@@ -473,9 +473,9 @@ export default function AdminPage() {
       estudoCount: estudo.length,
       praticaCount: pratica.length,
       praticaAnualCount: praticaAnual.length,
-      consultaReceita: consulta.length * 19.90,
-      estudoReceita: estudo.length * 39.90,
-      praticaReceita: (praticaMensal.length * 49.90) + (praticaAnual.length * (399.00 / 12)),
+      consultaReceita: consulta.length * 24.90,
+      estudoReceita: estudo.length * 44.90,
+      praticaReceita: (praticaMensal.length * 69.90) + (praticaAnual.length * (699.00 / 12)),
       mrr,
       arr,
       ltv,
@@ -513,10 +513,10 @@ export default function AdminPage() {
       });
 
       const mrrDoMes = subsAteOMes.reduce((acc, sub) => {
-        if (sub.plano === 'Consulta') return acc + 19.90;
-        if (sub.plano === 'Estudo') return acc + 39.90;
+        if (sub.plano === 'Consulta') return acc + 24.90;
+        if (sub.plano === 'Estudo') return acc + 44.90;
         if (sub.plano === 'Prática') {
-          return acc + (sub.ciclo === 'anual' ? (399.00 / 12) : 49.90);
+          return acc + (sub.ciclo === 'anual' ? (699.00 / 12) : 69.90);
         }
         return acc;
       }, 0);
@@ -1320,7 +1320,7 @@ export default function AdminPage() {
                 <p className="sub">Ativos hoje</p>
                 <div className="plan-rows">
                   <div className="prow">
-                    <span className="n">Consulta<small>R$ 19,90</small></span>
+                    <span className="n">Consulta<small>R$ 24,90</small></span>
                     <span className="track">
                       <span
                         className="fill"
@@ -1334,7 +1334,7 @@ export default function AdminPage() {
                     <span className="c">{assinantesStats.consultaCount}</span>
                   </div>
                   <div className="prow">
-                    <span className="n">Estudo<small>R$ 39,90</small></span>
+                    <span className="n">Estudo<small>R$ 44,90</small></span>
                     <span className="track">
                       <span
                         className="fill"
@@ -1348,7 +1348,7 @@ export default function AdminPage() {
                     <span className="c">{assinantesStats.estudoCount}</span>
                   </div>
                   <div className="prow top">
-                    <span className="n">Prática<small>R$ 49,90</small></span>
+                    <span className="n">Prática<small>R$ 69,90</small></span>
                     <span className="track">
                       <span
                         className="fill"
@@ -1901,7 +1901,7 @@ export default function AdminPage() {
                 </div>
                 <h3>Consulta</h3>
                 <div className="price">
-                  R$ 19,90<small>/mês</small>
+                  R$ 24,90<small>/mês</small>
                 </div>
                 <dl>
                   <dt>Assinantes ativos</dt>
@@ -1920,7 +1920,7 @@ export default function AdminPage() {
                 </div>
                 <h3>Estudo</h3>
                 <div className="price">
-                  R$ 39,90<small>/mês</small>
+                  R$ 44,90<small>/mês</small>
                 </div>
                 <dl>
                   <dt>Assinantes ativos</dt>
@@ -1939,7 +1939,7 @@ export default function AdminPage() {
                 </div>
                 <h3>Prática</h3>
                 <div className="price">
-                  R$ 49,90<small>/mês · R$ 399/ano</small>
+                  R$ 69,90<small>/mês · R$ 699/ano</small>
                 </div>
                 <dl>
                   <dt>Assinantes ativos</dt>
@@ -1966,9 +1966,9 @@ export default function AdminPage() {
                     <thead>
                       <tr>
                         <th scope="col">Tipo de material</th>
-                        <th scope="col">Consulta<small>R$ 19,90</small></th>
-                        <th scope="col">Estudo<small>R$ 39,90</small></th>
-                        <th scope="col" className="col-p">Prática<small>R$ 49,90</small></th>
+                        <th scope="col">Consulta<small>R$ 24,90</small></th>
+                        <th scope="col">Estudo<small>R$ 44,90</small></th>
+                        <th scope="col" className="col-p">Prática<small>R$ 69,90</small></th>
                       </tr>
                     </thead>
                     <tbody>
@@ -2368,8 +2368,8 @@ export default function AdminPage() {
       >
         {selectedAssinante && (() => {
           const preco = selectedAssinante.plano === 'Prática' && selectedAssinante.ciclo === 'anual'
-            ? 'R$ 399,00/ano'
-            : PRECO_MAP[selectedAssinante.plano] || 'R$ 19,90/mês';
+            ? 'R$ 699,00/ano'
+            : PRECO_MAP[selectedAssinante.plano] || 'R$ 24,90/mês';
           const valor = preco.split('/')[0];
           const hist = [
             ['05/10/2026', valor, selectedAssinante.st === 'pendente' ? 'Recusado' : 'Pago'],

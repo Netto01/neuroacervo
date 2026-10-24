@@ -32,7 +32,7 @@ const PLANOS: PlanoItem[] = [
     nome: 'Consulta',
     tipo: 'Leitura',
     cor: '#9c3f33',
-    mensal: 19.9,
+    mensal: 24.9,
     icone: (
       <>
         <path d="M7 3h7l5 5v13H7z" />
@@ -52,7 +52,7 @@ const PLANOS: PlanoItem[] = [
     nome: 'Estudo',
     tipo: 'Aulas',
     cor: '#2f6b31',
-    mensal: 39.9,
+    mensal: 44.9,
     icone: (
       <>
         <rect x="3" y="5" width="18" height="13" rx="2" />
@@ -72,8 +72,8 @@ const PLANOS: PlanoItem[] = [
     nome: 'Prática',
     tipo: 'Clínico',
     cor: '#15140f',
-    mensal: 49.9,
-    anual: 399,
+    mensal: 69.9,
+    anual: 699,
     icone: (
       <>
         <rect x="4" y="4" width="11" height="15" rx="2" />
@@ -83,6 +83,7 @@ const PLANOS: PlanoItem[] = [
     desc: 'Para quem avalia e quer ferramentas digitais para usar em sessão com o paciente.',
     base: 'Tudo do Estudo, mais:',
     itens: [
+      '<b>Prontuário do Paciente</b> & Dossiê Clínico',
       '<b>Baralho de Funções Executivas</b> interativo',
       '<b>Histórias Temáticas</b> ilustradas (infantil e adulto)',
       '<b>Cronômetro Clínico</b> com contagem de erros',
@@ -97,6 +98,7 @@ const COMP: [string, number, number, number][] = [
   ['Compêndios de estudo e instrumentos', 1, 1, 1],
   ['Aulas gravadas em módulos', 0, 1, 1],
   ['Estudos de caso clínicos', 0, 1, 1],
+  ['Prontuário do Paciente & Dossiê Clínico', 0, 0, 1],
   ['Baralho de Funções Executivas', 0, 0, 1],
   ['Histórias Temáticas ilustradas', 0, 0, 1],
   ['Cronômetro Clínico', 0, 0, 1],
@@ -379,7 +381,7 @@ function UpgradeInner() {
                   aria-pressed={ciclo === 'anual'}
                   onClick={() => setCiclo('anual')}
                 >
-                  Anual <span className={cx('eco')}>Prática −33%</span>
+                  Anual <span className={cx('eco')}>Prática −17%</span>
                 </button>
               </div>
             </div>

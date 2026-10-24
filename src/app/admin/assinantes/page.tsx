@@ -42,9 +42,9 @@ const STA_CONFIG: Record<string, [string, string]> = {
 };
 
 const PRECO_MAP: Record<string, string> = {
-  Consulta: 'R$ 19,90/mês',
-  Estudo: 'R$ 39,90/mês',
-  Prática: 'R$ 49,90/mês'
+  Consulta: 'R$ 24,90/mês',
+  Estudo: 'R$ 44,90/mês',
+  Prática: 'R$ 69,90/mês'
 };
 
 
@@ -750,8 +750,8 @@ export default function AdminAssinantesPage() {
       >
         {selectedAssinante && (() => {
           const preco = selectedAssinante.plano === 'Prática' && selectedAssinante.ciclo === 'anual'
-            ? 'R$ 399,00/ano'
-            : PRECO_MAP[selectedAssinante.plano] || 'R$ 19,90/mês';
+            ? 'R$ 699,00/ano'
+            : PRECO_MAP[selectedAssinante.plano] || 'R$ 24,90/mês';
           const valor = preco.split('/')[0];
           const hist = [
             ['05/10/2026', valor, selectedAssinante.st === 'pendente' ? 'Recusado' : 'Pago'],

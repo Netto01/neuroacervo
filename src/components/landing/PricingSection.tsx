@@ -37,7 +37,7 @@ export function PricingSection() {
                 aria-pressed={isAnual}
                 onClick={() => setBillingCycle('anual')}
               >
-                Anual <b>−33%</b>
+                Anual <b>−17%</b>
               </button>
             </div>
             <span className="billing-note">O pagamento anual está disponível no plano Prática.</span>
@@ -52,7 +52,7 @@ export function PricingSection() {
             <p className="for">Para quem quer os materiais de consulta para baixar e usar.</p>
             <div className="price">
               <span className="cur">R$</span>
-              <span className="val">19<small>,90</small></span>
+              <span className="val">24<small>,90</small></span>
               <span className="per">/mês</span>
             </div>
             <div className="price-note">Cobrança mensal</div>
@@ -76,7 +76,7 @@ export function PricingSection() {
             <p className="for">Para quem quer os materiais e as aulas gravadas em módulos.</p>
             <div className="price">
               <span className="cur">R$</span>
-              <span className="val">39<small>,90</small></span>
+              <span className="val">44<small>,90</small></span>
               <span className="per">/mês</span>
             </div>
             <div className="price-note">Cobrança mensal</div>
@@ -101,12 +101,12 @@ export function PricingSection() {
             <div className="price">
               <span className="cur">R$</span>
               <span className="val">
-                {isAnual ? '399' : <>49<small>,90</small></>}
+                {isAnual ? '699' : <>69<small>,90</small></>}
               </span>
               <span className="per">{isAnual ? '/ano' : '/mês'}</span>
             </div>
             <div className="price-note">
-              {isAnual ? 'Equivale a R$ 33,25 por mês' : 'Só R$ 10 a mais que o plano Estudo'}
+              {isAnual ? 'Equivale a R$ 58,25 por mês' : 'Só R$ 25 a mais que o plano Estudo'}
             </div>
             <ul className="feat">
               <li><svg viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></svg><span>Todos os PDFs e todas as aulas</span></li>
@@ -118,7 +118,7 @@ export function PricingSection() {
             </ul>
             {isAnual && (
               <p className="upsell">
-                No anual você paga R$ 399 de uma vez, o equivalente a R$ 33,25 por mês.
+                No anual você paga R$ 699 de uma vez, o equivalente a R$ 58,25 por mês.
               </p>
             )}
             <Link
@@ -143,14 +143,14 @@ export function PricingSection() {
                 <th scope="col" className="col-plan">
                   <div className="th-plan">
                     <span className="th-title">Consulta</span>
-                    <small className="th-price">R$ 19,90<span className="th-period">/mês</span></small>
+                    <small className="th-price">R$ 24,90<span className="th-period">/mês</span></small>
                     <Link href="/cadastro?plano=consulta&ciclo=mensal" className="btn-table-cta">Assinar</Link>
                   </div>
                 </th>
                 <th scope="col" className="col-plan">
                   <div className="th-plan">
                     <span className="th-title">Estudo</span>
-                    <small className="th-price">R$ 39,90<span className="th-period">/mês</span></small>
+                    <small className="th-price">R$ 44,90<span className="th-period">/mês</span></small>
                     <Link href="/cadastro?plano=estudo&ciclo=mensal" className="btn-table-cta">Assinar</Link>
                   </div>
                 </th>
@@ -160,11 +160,11 @@ export function PricingSection() {
                     <span className="th-title">Prática</span>
                     {billingCycle === 'anual' ? (
                       <small className="th-price th-price-promo">
-                        <span className="th-val">R$ 33,25</span><span className="th-period">/mês</span>
-                        <span className="th-subtext">R$ 399/ano</span>
+                        <span className="th-val">R$ 58,25</span><span className="th-period">/mês</span>
+                        <span className="th-subtext">R$ 699/ano</span>
                       </small>
                     ) : (
-                      <small className="th-price">R$ 49,90<span className="th-period">/mês</span></small>
+                      <small className="th-price">R$ 69,90<span className="th-period">/mês</span></small>
                     )}
                     <Link href={`/cadastro?plano=pratica&ciclo=${billingCycle}`} className="btn-table-cta btn-table-feat">Assinar</Link>
                   </div>
@@ -226,9 +226,9 @@ export function PricingSection() {
                 <td className="no"><span className="dash-icon" aria-label="Não disponível">—</span></td>
                 <td className="col-feat">
                   {billingCycle === 'anual' ? (
-                    <span className="anual-highlight">R$ 399/ano <em>(-33%)</em></span>
+                    <span className="anual-highlight">R$ 699/ano <em>(-17%)</em></span>
                   ) : (
-                    <span>R$ 399/ano</span>
+                    <span>R$ 699/ano</span>
                   )}
                 </td>
               </tr>

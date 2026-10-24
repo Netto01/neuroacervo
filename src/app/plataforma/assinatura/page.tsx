@@ -84,12 +84,12 @@ export default function AssinaturaPage() {
   const planoFallback = useMemo(() => {
     const raw = planInfo.tipo;
     if (raw === 'pratica' || isAdmin) {
-      return { id: 'pratica', nome: isAdmin ? 'Admin' : 'Prática', n: 3, mensal: '49,90', anual: '399' };
+      return { id: 'pratica', nome: isAdmin ? 'Admin' : 'Prática', n: 3, mensal: '69,90', anual: '699' };
     }
     if (raw === 'estudo') {
-      return { id: 'estudo', nome: 'Estudo', n: 2, mensal: '39,90', anual: '319' };
+      return { id: 'estudo', nome: 'Estudo', n: 2, mensal: '44,90', anual: '449' };
     }
-    return { id: 'consulta', nome: 'Consulta', n: 1, mensal: '19,90', anual: '159' };
+    return { id: 'consulta', nome: 'Consulta', n: 1, mensal: '24,90', anual: '249' };
   }, [planInfo.tipo, isAdmin]);
 
   // Dados consolidados (prioriza o que vem real do Stripe)

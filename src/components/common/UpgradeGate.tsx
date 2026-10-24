@@ -146,7 +146,7 @@ export function UpgradeGate({
         id: 'estudo',
         nome: 'Estudo',
         ordem: 2,
-        preco: '<b>R$ 39,90</b>/mês',
+        preco: '<b>R$ 44,90</b>/mês',
         desc: 'Tudo do Consulta, mais aulas gravadas em módulos e estudos de caso clínicos.',
         libera: true,
         tagTexto: 'Libera esta área'
@@ -157,7 +157,7 @@ export function UpgradeGate({
         id: 'pratica',
         nome: 'Prática',
         ordem: 3,
-        preco: '<b>R$ 49,90</b>/mês ou R$ 399/ano',
+        preco: '<b>R$ 69,90</b>/mês ou R$ 699/ano',
         desc: 'Tudo do Estudo, mais os recursos interativos e novas ferramentas práticas todo mês.',
         libera: ordemAtual === 2, // Destaque se já for estudo, caso contrário opção avançada
         tagTexto: 'Inclui aulas + interativos'
@@ -170,7 +170,7 @@ export function UpgradeGate({
         id: 'estudo',
         nome: 'Estudo',
         ordem: 2,
-        preco: '<b>R$ 39,90</b>/mês',
+        preco: '<b>R$ 44,90</b>/mês',
         desc: 'Tudo do Consulta, mais aulas gravadas em módulos e estudos de caso clínicos.',
         libera: false,
         tagTexto: 'Não inclui os interativos',
@@ -182,7 +182,7 @@ export function UpgradeGate({
         id: 'pratica',
         nome: 'Prática',
         ordem: 3,
-        preco: '<b>R$ 49,90</b>/mês ou R$ 399/ano',
+        preco: '<b>R$ 69,90</b>/mês ou R$ 699/ano',
         desc: 'Tudo do Estudo, mais os recursos interativos e novas ferramentas práticas todo mês.',
         libera: true,
         tagTexto: 'Libera esta área'
@@ -197,7 +197,7 @@ export function UpgradeGate({
         id: 'pratica',
         nome: 'Prática',
         ordem: 3,
-        preco: '<b>R$ 49,90</b>/mês ou R$ 399/ano',
+        preco: '<b>R$ 69,90</b>/mês ou R$ 699/ano',
         desc: 'Acesso completo com todas as videoaulas e ferramentas interativas.',
         libera: true,
         tagTexto: 'Acesso completo'

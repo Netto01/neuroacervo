@@ -403,7 +403,7 @@ function CadastroContent() {
                       <span style={{ color: 'var(--ink-mute)', marginRight: '6px' }}>Plano selecionado:</span>
                       <strong style={{ color: 'var(--ink)', fontFamily: 'var(--sans)' }}>{planDef.nome}</strong>
                       <span style={{ marginLeft: '6px', color: 'var(--accent-strong)', fontWeight: 600 }}>
-                        {selectedBillingCycle === 'anual' ? 'R$ 399/ano' : planDef.precoMensal}
+                        {selectedBillingCycle === 'anual' ? (planDef.precoAnual || 'R$ 699/ano') : planDef.precoMensal}
                       </span>
                     </div>
                     <Link href="/#planos" style={{ color: 'var(--ink-mute)', textDecoration: 'underline', fontSize: '12px' }}>

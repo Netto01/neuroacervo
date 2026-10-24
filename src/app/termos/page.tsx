@@ -187,9 +187,9 @@ export default function TermosPage() {
                 </tr>
               </thead>
               <tbody>
-                <tr><td><strong>Consulta</strong></td><td>PDFs do acervo</td><td>R$ 19,90/mês</td></tr>
-                <tr><td><strong>Estudo</strong></td><td>PDFs e aulas gravadas</td><td>R$ 39,90/mês</td></tr>
-                <tr><td><strong>Prática</strong></td><td>Todo o acervo, aulas e recursos interativos</td><td>R$ 49,90/mês ou R$ 399/ano</td></tr>
+                <tr><td><strong>Consulta</strong></td><td>PDFs do acervo</td><td>R$ 24,90/mês</td></tr>
+                <tr><td><strong>Estudo</strong></td><td>PDFs e aulas gravadas</td><td>R$ 44,90/mês</td></tr>
+                <tr><td><strong>Prática</strong></td><td>Todo o acervo, aulas, prontuário e recursos interativos</td><td>R$ 69,90/mês ou R$ 699/ano</td></tr>
               </tbody>
             </table>
             <ul className="termos-l">

@@ -106,15 +106,27 @@ export async function GET(req: NextRequest) {
         const prodId = typeof prod === 'string' ? prod : prod?.id;
         const prodName = typeof prod === 'object' && prod && 'name' in prod ? (prod.name || '').toLowerCase() : '';
 
-        if (prodId === 'prod_VO24kRYDVe6R5T' || prodName.includes('consulta') || Math.abs(valorReal - 19.9) < 0.5) {
+        if (
+          prodId === 'prod_VO24kRYDVe6R5T' ||
+          prodName.includes('consulta') ||
+          Math.abs(valorReal - 24.9) < 0.5 ||
+          Math.abs(valorReal - 19.9) < 0.5
+        ) {
           consultaCount += qty;
-        } else if (prodId === 'prod_VO28kweV8p9TJh' || prodName.includes('estudo') || Math.abs(valorReal - 39.9) < 0.5) {
+        } else if (
+          prodId === 'prod_VO28kweV8p9TJh' ||
+          prodName.includes('estudo') ||
+          Math.abs(valorReal - 44.9) < 0.5 ||
+          Math.abs(valorReal - 39.9) < 0.5
+        ) {
           estudoCount += qty;
         } else if (
           prodId === 'prod_VO29qu4QY6mc8I' ||
           prodName.includes('pratica') ||
           prodName.includes('prática') ||
+          Math.abs(valorReal - 69.9) < 0.5 ||
           Math.abs(valorReal - 49.9) < 0.5 ||
+          Math.abs(valorReal - 699) < 2 ||
           Math.abs(valorReal - 399) < 2
         ) {
           praticaCount += qty;
@@ -227,10 +239,10 @@ export async function GET(req: NextRequest) {
     const ltvEstimado = ticketMedio > 0 ? Number((ticketMedio / churnDecimal).toFixed(2)) : 0;
 
     // Receita por Plano detalhada
-    const consultaReceita = Number((consultaCount * 19.90).toFixed(2));
-    const estudoReceita = Number((estudoCount * 39.90).toFixed(2));
+    const consultaReceita = Number((consultaCount * 24.90).toFixed(2));
+    const estudoReceita = Number((estudoCount * 44.90).toFixed(2));
     const praticaMensalCount = Math.max(0, praticaCount - praticaAnualCount);
-    const praticaReceita = Number(((praticaMensalCount * 49.90) + (praticaAnualCount * (399 / 12))).toFixed(2));
+    const praticaReceita = Number(((praticaMensalCount * 69.90) + (praticaAnualCount * (699 / 12))).toFixed(2));
 
     return NextResponse.json({
       success: true,

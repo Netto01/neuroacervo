@@ -10,10 +10,10 @@ type PlanoKey = 'consulta' | 'estudo' | 'pratica';
 type CicloKey = 'mensal' | 'anual';
 
 const PRECOS = {
-  consulta: { mensal: { valor: '19,90', per: '/mês', priceKey: 'price_consulta_mensal' } },
-  estudo:   { mensal: { valor: '39,90', per: '/mês', priceKey: 'price_estudo_mensal' } },
-  pratica:  { mensal: { valor: '49,90', per: '/mês', priceKey: 'price_pratica_mensal' },
-              anual:  { valor: '399',   per: '/ano', priceKey: 'price_pratica_anual' } }
+  consulta: { mensal: { valor: '24,90', per: '/mês', priceKey: 'price_consulta_mensal' } },
+  estudo:   { mensal: { valor: '44,90', per: '/mês', priceKey: 'price_estudo_mensal' } },
+  pratica:  { mensal: { valor: '69,90', per: '/mês', priceKey: 'price_pratica_mensal' },
+              anual:  { valor: '699',   per: '/ano', priceKey: 'price_pratica_anual' } }
 };
 
 const NOMES: Record<PlanoKey, string> = {
@@ -231,7 +231,7 @@ function PlanosInner() {
             <span className="preco">
               <span className="valor">
                 <small>R$</small>
-                <b>19,90</b>
+                <b>24,90</b>
                 <span>/mês</span>
               </span>
               <span className="nota">
@@ -276,7 +276,7 @@ function PlanosInner() {
             <span className="preco">
               <span className="valor">
                 <small>R$</small>
-                <b>39,90</b>
+                <b>44,90</b>
                 <span>/mês</span>
               </span>
               <span className="nota">
@@ -325,19 +325,20 @@ function PlanosInner() {
             <span className="preco">
               <span className="valor">
                 <small>R$</small>
-                <b id="pPratica">{isAnual ? '399' : '49,90'}</b>
+                <b id="pPratica">{isAnual ? '699' : '69,90'}</b>
                 <span id="pPer">{isAnual ? '/ano' : '/mês'}</span>
               </span>
               <span className="nota" id="nPratica">
                 {isAnual ? (
-                  <>Equivale a R$ 33,25/mês · <s>R$ 598,80</s> no mensal</>
+                  <>Equivale a R$ 58,25/mês · <s>R$ 838,80</s> no mensal</>
                 ) : (
-                  'Ou R$ 399/ano no plano anual.'
+                  'Ou R$ 699/ano no plano anual.'
                 )}
               </span>
             </span>
             <ul className="inc">
               <li className="base">Tudo do Estudo, mais:</li>
+              <li>Prontuário do paciente com linha do tempo e dossiê</li>
               <li>Baralhos interativos para usar online</li>
               <li>Histórias temáticas e demais recursos online</li>
               <li>Novos recursos interativos todo mês</li>

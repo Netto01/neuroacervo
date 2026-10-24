@@ -10,14 +10,14 @@ import { STRIPE_PLANS } from '@/config/plans';
 // Mapeamento direto e verificado dos preços na conta Stripe de produção
 const STRIPE_PRICES_MAP: Record<string, { mensal: string; anual?: string }> = {
   consulta: {
-    mensal: 'price_1UNFzt4tkFt5D3AyhwChug8K' // R$ 19,90/mês
+    mensal: 'price_1UU8Ob4tkFt5D3AyWNe4nZFz' // R$ 24,90/mês
   },
   estudo: {
-    mensal: 'price_1UNG4A4tkFt5D3AyO9jPp9YU' // R$ 39,90/mês
+    mensal: 'price_1UU8QH4tkFt5D3AytxwWdHV0' // R$ 44,90/mês
   },
   pratica: {
-    mensal: 'price_1UNG544tkFt5D3Aylakaifea', // R$ 49,90/mês
-    anual:  'price_1UNG5S4tkFt5D3AyWfb1HXZK'  // R$ 399,00/ano
+    mensal: 'price_1UU8RI4tkFt5D3AyCSqZvq5x', // R$ 69,90/mês
+    anual:  'price_1UU8RI4tkFt5D3Ay2F1GX0lN'  // R$ 699,00/ano
   }
 };
 
