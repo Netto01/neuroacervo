@@ -146,6 +146,7 @@ function PdfPageItem({ pageNum, pdfDoc, zoom, watermarkText, forceVisible }: Pdf
       ref={containerRef}
       className="pw"
       data-page={pageNum}
+      data-rendered={isRendered ? '1' : '0'}
       role="img"
       aria-label={`Página ${pageNum}`}
       style={{
@@ -352,20 +353,145 @@ function LeitorContent() {
     };
   }, []);
 
-  const handlePrint = () => {
+  // Aguarda até todas as páginas do PDF estarem desenhadas nos canvases
+  const waitAllPagesRendered = (expected: number, timeoutMs = 25000) =>
+    new Promise<HTMLCanvasElement[]>((resolve, reject) => {
+      const start = Date.now();
+      const check = () => {
+        const wraps = Array.from(
+          document.querySelectorAll<HTMLDivElement>('.leitor-root .pages .pw')
+        );
+        const ready = wraps.length >= expected && wraps.every(w => w.dataset.rendered === '1');
+        if (ready) {
+          resolve(wraps.map(w => w.querySelector('canvas')).filter(Boolean) as HTMLCanvasElement[]);
+          return;
+        }
+        if (Date.now() - start > timeoutMs) {
+          reject(new Error('timeout'));
+          return;
+        }
+        setTimeout(check, 150);
+      };
+      check();
+    });
+
+  // Gera a imagem da página com a marca d'água do assinante aplicada
+  const pageToImage = (src: HTMLCanvasElement): string => {
+    const c = document.createElement('canvas');
+    c.width = src.width;
+    c.height = src.height;
+    const ctx = c.getContext('2d');
+    if (!ctx) return src.toDataURL('image/jpeg', 0.92);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, c.width, c.height);
+    ctx.drawImage(src, 0, 0);
+    const fontPx = Math.max(12, Math.round(c.width * 0.02));
+    ctx.font = `500 ${fontPx}px "JetBrains Mono", ui-monospace, monospace`;
+    ctx.fillStyle = 'rgba(21, 20, 15, 0.10)';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const text = watermarkText.toUpperCase();
+    [0.22, 0.5, 0.78].forEach(pos => {
+      ctx.save();
+      ctx.translate(c.width / 2, c.height * pos);
+      ctx.rotate((-28 * Math.PI) / 180);
+      ctx.fillText(text, 0, 0);
+      ctx.restore();
+    });
+    return c.toDataURL('image/jpeg', 0.92);
+  };
+
+  // Imprime as imagens num iframe isolado: uma folha A4 por página, sem herdar o layout do app
+  const printImagesInIframe = async (images: string[]) => {
+    const iframe = document.createElement('iframe');
+    iframe.setAttribute('aria-hidden', 'true');
+    iframe.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden;';
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentDocument;
+    const win = iframe.contentWindow;
+    if (!doc || !win) {
+      iframe.remove();
+      window.print();
+      return;
+    }
+
+    const safeTitle = escapeHtml(material.title || 'NeuroAcervo');
+    const pagesHtml = images
+      .map(src => `<div class="p"><img src="${src}" alt=""></div>`)
+      .join('');
+
+    doc.open();
+    doc.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>${safeTitle}</title>
+<style>
+@page { size: A4 portrait; margin: 0; }
+html, body { margin: 0; padding: 0; background: #fff; }
+.p { width: 210mm; height: 296mm; display: flex; align-items: center; justify-content: center; overflow: hidden; break-inside: avoid; page-break-inside: avoid; }
+.p + .p { break-before: page; page-break-before: always; }
+.p img { display: block; max-width: 100%; max-height: 100%; width: auto; height: auto; }
+* { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+</style></head><body>${pagesHtml}</body></html>`);
+    doc.close();
+
+    // Garante que todas as imagens foram decodificadas antes de imprimir
+    const imgs = Array.from(doc.images);
+    await Promise.all(
+      imgs.map(img =>
+        img.complete
+          ? Promise.resolve()
+          : new Promise<void>(res => {
+              img.onload = () => res();
+              img.onerror = () => res();
+            })
+      )
+    );
+
+    const cleanup = () => setTimeout(() => iframe.remove(), 500);
+    win.addEventListener('afterprint', cleanup, { once: true });
+    win.focus();
+    win.print();
+    // Fallback para navegadores que não disparam afterprint no iframe
+    setTimeout(() => {
+      if (document.body.contains(iframe)) iframe.remove();
+    }, 60000);
+  };
+
+  const handlePrint = async () => {
+    // Guias em HTML (sem PDF) usam a impressão por CSS
+    if (!pdfDoc) {
+      window.print();
+      return;
+    }
+
     setIsPreparingPrint(true);
     setIsPrinting(true);
     showToast('Preparando páginas para impressão…');
 
-    // Aguarda montagem e desenho dos canvases do PDF
-    setTimeout(() => {
+    try {
+      const canvases = await waitAllPagesRendered(totalPages);
+      const images = canvases.map(pageToImage);
+      await printImagesInIframe(images);
+    } catch {
+      showToast('Não foi possível preparar todas as páginas. Tente novamente ou use "Baixar PDF".');
+    } finally {
       setIsPreparingPrint(false);
-      window.print();
-      setTimeout(() => {
-        setIsPrinting(false);
-      }, 1000);
-    }, 600);
+      setIsPrinting(false);
+    }
   };
+
+  // Ctrl/Cmd+P também usa a impressão isolada (evita folhas em branco do layout do app)
+  const handlePrintRef = useRef(handlePrint);
+  handlePrintRef.current = handlePrint;
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
+        e.preventDefault();
+        handlePrintRef.current();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   // Referências
   const viewerRef = useRef<HTMLDivElement>(null);
