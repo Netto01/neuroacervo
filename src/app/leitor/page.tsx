@@ -31,9 +31,10 @@ interface PdfPageItemProps {
   pdfDoc: any;
   zoom: number;
   watermarkText: string;
+  forceVisible?: boolean;
 }
 
-function PdfPageItem({ pageNum, pdfDoc, zoom, watermarkText }: PdfPageItemProps) {
+function PdfPageItem({ pageNum, pdfDoc, zoom, watermarkText, forceVisible }: PdfPageItemProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const renderTaskRef = useRef<any>(null);
@@ -41,9 +42,24 @@ function PdfPageItem({ pageNum, pdfDoc, zoom, watermarkText }: PdfPageItemProps)
     width: Math.round(794 * zoom),
     height: Math.round(1123 * zoom),
   });
-  // Páginas 1 e 2 carregam imediatamente; as outras aguardam aproximação no scroll
-  const [isVisible, setIsVisible] = useState(pageNum <= 2);
+  // Páginas 1 e 2 carregam imediatamente; as outras aguardam aproximação no scroll ou ordem de impressão
+  const [isVisible, setIsVisible] = useState(pageNum <= 2 || Boolean(forceVisible));
   const [isRendered, setIsRendered] = useState(false);
+
+  // Garante que todas as páginas sejam carregadas caso a impressão do navegador seja disparada
+  useEffect(() => {
+    const handleBeforePrint = () => {
+      setIsVisible(true);
+    };
+    window.addEventListener('beforeprint', handleBeforePrint);
+    return () => window.removeEventListener('beforeprint', handleBeforePrint);
+  }, []);
+
+  useEffect(() => {
+    if (forceVisible) {
+      setIsVisible(true);
+    }
+  }, [forceVisible]);
 
   // Lazy loading inteligente: renderiza quando a página estiver a 800px da tela
   useEffect(() => {
@@ -320,6 +336,36 @@ function LeitorContent() {
   const [notesState, setNotesState] = useState<'salvo' | 'salvando' | 'erro'>('salvo');
   const [copiedNotes, setCopiedNotes] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Estados de impressão do documento
+  const [isPrinting, setIsPrinting] = useState(false);
+  const [isPreparingPrint, setIsPreparingPrint] = useState(false);
+
+  useEffect(() => {
+    const handleBefore = () => setIsPrinting(true);
+    const handleAfter = () => setIsPrinting(false);
+    window.addEventListener('beforeprint', handleBefore);
+    window.addEventListener('afterprint', handleAfter);
+    return () => {
+      window.removeEventListener('beforeprint', handleBefore);
+      window.removeEventListener('afterprint', handleAfter);
+    };
+  }, []);
+
+  const handlePrint = () => {
+    setIsPreparingPrint(true);
+    setIsPrinting(true);
+    showToast('Preparando páginas para impressão…');
+
+    // Aguarda montagem e desenho dos canvases do PDF
+    setTimeout(() => {
+      setIsPreparingPrint(false);
+      window.print();
+      setTimeout(() => {
+        setIsPrinting(false);
+      }, 1000);
+    }, 600);
+  };
 
   // Referências
   const viewerRef = useRef<HTMLDivElement>(null);
@@ -868,6 +914,7 @@ function LeitorContent() {
           <symbol id="i-focus" viewBox="0 0 24 24"><path d="M4 9V5h4M20 9V5h-4M4 15v4h4M20 15v4h-4"/></symbol>
           <symbol id="i-full" viewBox="0 0 24 24"><path d="M9 4H4v5M15 4h5v5M9 20H4v-5M15 20h5v-5"/></symbol>
           <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></symbol>
+          <symbol id="i-print" viewBox="0 0 24 24"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></symbol>
           <symbol id="i-bookmark" viewBox="0 0 24 24"><path d="M6 4h12v17l-6-4-6 4z"/></symbol>
           <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></symbol>
           <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
@@ -928,13 +975,26 @@ function LeitorContent() {
           <button 
             className="btn solid" 
             type="button"
-            onClick={() => {
-              window.print();
-            }}
+            disabled={isPreparingPrint}
+            onClick={handlePrint}
+            title="Imprimir documento chancelado (Ctrl+P)"
           >
-            <svg className="ico"><use href="#i-down"/></svg>
-            <span className="lbl-t">Imprimir / Salvar PDF</span>
+            <svg className="ico"><use href="#i-print"/></svg>
+            <span className="lbl-t">{isPreparingPrint ? 'Preparando…' : 'Imprimir'}</span>
           </button>
+          {pdfUrl && (
+            <a 
+              className="btn" 
+              href={pdfUrl} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              download 
+              title="Baixar arquivo PDF original"
+            >
+              <svg className="ico"><use href="#i-down"/></svg>
+              <span className="lbl-t">Baixar PDF</span>
+            </a>
+          )}
         </div>
       </header>
 
@@ -1038,6 +1098,7 @@ function LeitorContent() {
                   pdfDoc={pdfDoc}
                   zoom={zoom}
                   watermarkText={watermarkText}
+                  forceVisible={isPrinting}
                 />
               ))
             ) : pdfUrl && pdfError ? (
