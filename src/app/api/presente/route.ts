@@ -33,7 +33,7 @@ function isRateLimited(key: string, maxAttempts = 5, windowMs = 10 * 60 * 1000):
 
 /* ── Gerar Link de Download (R2 com validade de 7 dias ou Fallback Público) ── */
 async function generateDownloadUrl(): Promise<string> {
-  const zipFileName = 'presente-escalas-neuroacervo.zip';
+  const zipFileName = process.env.PRESENTE_ZIP_KEY || 'presente.zip';
 
   // Se as credenciais do Cloudflare R2 estiverem configuradas, gera URL assinada válida por 7 dias (604.800 seg)
   if (process.env.R2_ACCESS_KEY_ID && process.env.R2_SECRET_ACCESS_KEY) {
@@ -50,12 +50,8 @@ async function generateDownloadUrl(): Promise<string> {
     }
   }
 
-  // Fallback: URL do CDN do R2 ou caminho público da aplicação
-  if (process.env.NEXT_PUBLIC_R2_PUBLIC_URL) {
-    return `${process.env.NEXT_PUBLIC_R2_PUBLIC_URL.replace(/\/+$/, '')}/${zipFileName}`;
-  }
-
-  return `https://www.neuroacervo.com.br/${zipFileName}`;
+  // Fallback: URL direta do Cloudflare R2 fornecida
+  return 'https://pub-46b7a58b503e44bdb8e86a63a0cf51ba.r2.dev/presente.zip';
 }
 
 /* ── Template HTML do E-mail (Identidade Visual da Marca) ── */
