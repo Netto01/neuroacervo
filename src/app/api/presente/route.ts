@@ -54,7 +54,7 @@ async function generateDownloadUrl(): Promise<string> {
   return 'https://pub-46b7a58b503e44bdb8e86a63a0cf51ba.r2.dev/presente.zip';
 }
 
-/* ── Template HTML do E-mail (Identidade Visual da Marca) ── */
+/* ── Template HTML Editorial do E-mail ── */
 function buildPresenteEmailHtml({
   nome,
   downloadUrl,
@@ -62,7 +62,8 @@ function buildPresenteEmailHtml({
   nome?: string;
   downloadUrl: string;
 }): string {
-  const saudacao = nome && nome.trim() ? `Olá, ${nome.trim()}!` : 'Olá!';
+  const primeiroNome = nome && nome.trim() ? nome.trim().split(' ')[0] : '';
+  const saudacao = primeiroNome ? `Olá, ${primeiroNome}!` : 'Olá!';
 
   return `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -72,23 +73,23 @@ function buildPresenteEmailHtml({
   <title>Seu presente chegou: escalas para a avaliação</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #efe7d2; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #15140f; -webkit-font-smoothing: antialiased;">
-  <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #efe7d2; padding: 32px 16px;">
+  <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #efe7d2; padding: 36px 14px;">
     <tr>
       <td align="center">
-        <!-- Card Principal -->
-        <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 580px; background-color: #f7f1de; border: 1px solid rgba(21, 20, 15, 0.12); border-radius: 16px; overflow: hidden; box-shadow: 0 12px 30px rgba(21, 20, 15, 0.06);">
+        <!-- Container Principal -->
+        <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 590px; background-color: #f7f1de; border: 1.5px solid rgba(21, 20, 15, 0.14); border-radius: 18px; overflow: hidden; box-shadow: 0 16px 40px rgba(21, 20, 15, 0.08);">
           
-          <!-- Cabeçalho com Logo -->
+          <!-- Topo Editorial -->
           <tr>
-            <td style="padding: 32px 36px 20px 36px; border-bottom: 1px solid rgba(21, 20, 15, 0.08);">
+            <td style="padding: 32px 36px 22px 36px; border-bottom: 1px solid rgba(21, 20, 15, 0.1); background-color: #fbf7ec;">
               <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0">
                 <tr>
                   <td>
-                    <span style="font-family: 'Courier New', Courier, monospace; font-size: 11px; font-weight: bold; letter-spacing: 0.14em; text-transform: uppercase; color: #2f6b31;">
-                      NEUROACERVO · ACERVO CLÍNICO
-                    </span>
-                    <h1 style="margin: 6px 0 0 0; font-size: 24px; font-weight: 800; color: #15140f; line-height: 1.2;">
-                      Seu presente chegou
+                    <div style="display: inline-block; padding: 4px 10px; border-radius: 6px; background-color: #dafeaa; color: #15140f; font-family: 'Courier New', Courier, monospace; font-size: 11px; font-weight: bold; letter-spacing: 0.12em; text-transform: uppercase;">
+                      PRESENTE · 5 ESCALAS EM PDF
+                    </div>
+                    <h1 style="margin: 14px 0 0 0; font-size: 26px; font-weight: 800; color: #15140f; line-height: 1.15; letter-spacing: -0.03em;">
+                      Seu pacote de escalas chegou.
                     </h1>
                   </td>
                 </tr>
@@ -96,75 +97,102 @@ function buildPresenteEmailHtml({
             </td>
           </tr>
 
-          <!-- Corpo do E-mail -->
+          <!-- Conteúdo da Mensagem -->
           <tr>
             <td style="padding: 32px 36px 36px 36px;">
-              <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #15140f;">
+              <p style="margin: 0 0 18px 0; font-size: 16px; font-weight: 600; line-height: 1.5; color: #15140f;">
                 ${saudacao}
               </p>
               
-              <p style="margin: 0 0 20px 0; font-size: 15px; line-height: 1.65; color: #2a2620;">
-                Aqui está o seu pacote com as <strong>5 escalas em PDF</strong> selecionadas para a prática clínica da avaliação neuropsicológica e psicológica:
+              <p style="margin: 0 0 18px 0; font-size: 15px; line-height: 1.65; color: #2a2620;">
+                Cansou de caçar escalas na internet e encontrar arquivos com baixa resolução, links quebrados ou versões sem fonte confiável?
               </p>
 
-              <!-- Lista das 5 Escalas -->
-              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border: 1px solid rgba(21, 20, 15, 0.1); border-radius: 12px; margin-bottom: 28px; padding: 18px 20px;">
+              <p style="margin: 0 0 24px 0; font-size: 15px; line-height: 1.65; color: #2a2620;">
+                Para facilitar a sua rotina clínica, separei as <strong>5 escalas essenciais</strong> mais utilizadas na identificação dos transtornos que mais aparecem na clínica:
+              </p>
+
+              <!-- Grade das 5 Escalas -->
+              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border: 1.5px solid rgba(21, 20, 15, 0.1); border-radius: 12px; margin-bottom: 28px; padding: 18px 20px;">
                 <tr>
                   <td>
-                    <ul style="margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.8; color: #15140f;">
-                      <li><strong>AQ-10</strong> — Rastreio de traços autistas (adultos)</li>
-                      <li><strong>ASRS-18</strong> — Rastreio de TDAH no adulto (critérios DSM-5)</li>
-                      <li><strong>GAD-7</strong> — Avaliação de ansiedade generalizada (adultos)</li>
-                      <li><strong>SCARED (Versão Crianças)</strong> — Rastreio de transtornos de ansiedade na infância</li>
-                      <li><strong>SCARED (Versão Pais)</strong> — Heterorrelato complementar para pais/responsáveis</li>
-                    </ul>
+                    <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td style="padding: 7px 0; border-bottom: 1px dashed rgba(21, 20, 15, 0.08); font-size: 14px; color: #15140f;">
+                          <strong style="color: #2f6b31;">AQ-10</strong> — Rastreio de traços autistas (Adultos)
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 7px 0; border-bottom: 1px dashed rgba(21, 20, 15, 0.08); font-size: 14px; color: #15140f;">
+                          <strong style="color: #2f6b31;">ASRS-18</strong> — Rastreio de sintomas de TDAH (Adultos / DSM-5)
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 7px 0; border-bottom: 1px dashed rgba(21, 20, 15, 0.08); font-size: 14px; color: #15140f;">
+                          <strong style="color: #2f6b31;">GAD-7</strong> — Avaliação de ansiedade generalizada (Adultos)
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 7px 0; border-bottom: 1px dashed rgba(21, 20, 15, 0.08); font-size: 14px; color: #15140f;">
+                          <strong style="color: #2f6b31;">SCARED (Crianças)</strong> — Ansiedade na infância (Autoaplicação)
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 7px 0 0 0; font-size: 14px; color: #15140f;">
+                          <strong style="color: #2f6b31;">SCARED (Pais)</strong> — Ansiedade na infância (Heterorrelato)
+                        </td>
+                      </tr>
+                    </table>
                   </td>
                 </tr>
               </table>
 
-              <!-- Botão de Download em Destaque -->
-              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 24px;">
+              <!-- Botão Principal de Download -->
+              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 16px;">
                 <tr>
                   <td align="center">
-                    <a href="${downloadUrl}" target="_blank" style="display: inline-block; background-color: #dafeaa; color: #15140f; font-size: 16px; font-weight: 800; text-decoration: none; padding: 16px 32px; border-radius: 12px; border: 1px solid rgba(21, 20, 15, 0.12); box-shadow: 0 4px 14px rgba(21, 20, 15, 0.08); text-align: center;">
-                      Baixar as escalas em PDF (.zip)
+                    <a href="${downloadUrl}" target="_blank" style="display: inline-block; background-color: #dafeaa; color: #15140f; font-size: 16px; font-weight: 800; text-decoration: none; padding: 18px 36px; border-radius: 12px; border: 1.5px solid #15140f; box-shadow: 0 4px 0 #15140f; text-align: center; letter-spacing: -0.01em;">
+                      Baixar as 5 escalas em PDF (.zip) &rarr;
                     </a>
                   </td>
                 </tr>
               </table>
 
-              <p style="margin: 0 0 24px 0; font-size: 12.5px; line-height: 1.5; color: #5a5448; text-align: center;">
-                <em>Este link de download é seguro e expira em 7 dias.</em>
+              <p style="margin: 0 0 28px 0; font-size: 12.5px; line-height: 1.5; color: #5a5448; text-align: center;">
+                <em>O arquivo <strong>presente-escalas-neuroacervo.zip</strong> também foi anexado diretamente a esta mensagem.</em>
               </p>
 
-              <!-- Bloco Informativo sobre Acervo Completo -->
-              <div style="background-color: rgba(47, 107, 49, 0.06); border-left: 3px solid #2f6b31; padding: 14px 16px; border-radius: 6px; margin-bottom: 28px;">
-                <p style="margin: 0; font-size: 13.5px; line-height: 1.55; color: #2a2620;">
-                  <strong>Importante:</strong> os PDFs enviados trazem as folhas de aplicação das escalas. As <strong>tabelas de corte, roteiros de correção detalhados e guias clínicos de interpretação</strong> fazem parte do acervo fechado da NeuroAcervo, disponível para assinantes a partir de <strong>R$ 24,90/mês</strong>.
+              <!-- Bloco Informativo sobre Correção e Interpretação -->
+              <div style="background-color: rgba(47, 107, 49, 0.07); border-left: 3.5px solid #2f6b31; padding: 16px 18px; border-radius: 8px; margin-bottom: 28px;">
+                <p style="margin: 0 0 8px 0; font-size: 13.5px; font-weight: 700; color: #2f6b31;">
+                  Precisa da correção e interpretação clínica?
                 </p>
-                <p style="margin: 10px 0 0 0; font-size: 13px;">
+                <p style="margin: 0 0 10px 0; font-size: 13px; line-height: 1.6; color: #2a2620;">
+                  As folhas de aplicação em PDF são gratuitas. Já os <strong>roteiros de correção, tabelas com pontos de corte normativos e modelos de laudo e síntese diagnóstica</strong> fazem parte da plataforma completa da NeuroAcervo, disponível a partir de <strong>R$ 24,90/mês</strong>.
+                </p>
+                <p style="margin: 0; font-size: 13px;">
                   <a href="https://www.neuroacervo.com.br/#planos" target="_blank" style="color: #2f6b31; font-weight: 700; text-decoration: underline;">
-                    Conhecer todos os recursos do acervo completo &rarr;
+                    Conhecer os planos e o acervo completo &rarr;
                   </a>
                 </p>
               </div>
 
-              <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #5a5448;">
-                Bom trabalho e ótimas avaliações,<br>
-                <strong>Equipe NeuroAcervo</strong>
+              <p style="margin: 0; font-size: 14.5px; line-height: 1.6; color: #5a5448;">
+                Ótimas avaliações e bom trabalho clínico,<br>
+                <strong style="color: #15140f;">Netto & Equipe NeuroAcervo</strong>
               </p>
             </td>
           </tr>
 
           <!-- Rodapé -->
           <tr>
-            <td style="padding: 20px 36px; background-color: #efe7d2; border-top: 1px solid rgba(21, 20, 15, 0.08); font-size: 11.5px; line-height: 1.6; color: #7c7768; text-align: center;">
+            <td style="padding: 24px 36px; background-color: #efe7d2; border-top: 1px solid rgba(21, 20, 15, 0.1); font-size: 11.5px; line-height: 1.6; color: #7c7768; text-align: center;">
               <p style="margin: 0 0 8px 0;">
-                Você recebeu esta mensagem porque solicitou o pacote gratuito de escalas em <a href="https://www.neuroacervo.com.br" style="color: #15140f; text-decoration: underline;">neuroacervo.com.br</a>.
+                NeuroAcervo — Hub de Avaliação Neuropsicológica · <a href="https://www.neuroacervo.com.br" style="color: #15140f; text-decoration: underline;">neuroacervo.com.br</a>
               </p>
               <p style="margin: 0;">
                 <a href="https://www.neuroacervo.com.br/termos" style="color: #7c7768; text-decoration: underline;">Termos de Uso</a> · 
-                <a href="https://www.neuroacervo.com.br/privacidade" style="color: #7c7768; text-decoration: underline;">Privacidade</a> · 
+                <a href="https://www.neuroacervo.com.br/privacidade" style="color: #7c7768; text-decoration: underline;">Política de Privacidade</a> · 
                 <a href="mailto:contato@neuroacervo.com.br?subject=Descadastrar" style="color: #7c7768; text-decoration: underline;">Cancelar recebimento</a>
               </p>
             </td>
