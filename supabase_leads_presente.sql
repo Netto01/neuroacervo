@@ -38,17 +38,16 @@ CREATE POLICY "Permitir inserção anônima de leads"
 DROP POLICY IF EXISTS "Permitir atualização anônima por email de leads" ON public.leads_presente;
 CREATE POLICY "Permitir atualização anônima por email de leads"
   ON public.leads_presente FOR UPDATE
-  USING (true);
+  USING (true)
+  WITH CHECK (true);
 
--- Permitir leitura apenas para administradores
+-- Permitir leitura para usuários autenticados (painel Supabase) e service_role
 DROP POLICY IF EXISTS "Apenas admins podem visualizar leads" ON public.leads_presente;
 CREATE POLICY "Apenas admins podem visualizar leads"
   ON public.leads_presente FOR SELECT
   USING (
-    coalesce((auth.jwt() -> 'user_metadata' ->> 'role'), '') = 'admin'
-    OR EXISTS (
-      SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'
-    )
+    auth.role() = 'service_role'
+    OR auth.role() = 'authenticated'
   );
 
 -- 4. Índices para performance

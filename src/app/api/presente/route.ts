@@ -252,47 +252,75 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 5. Salva no banco (Supabase) sem duplicar
+    // 5. Salva no banco (Supabase) e gera link de download em paralelo
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
-    if (supabaseUrl && supabaseKey) {
+    const saveLeadPromise = (async () => {
+      if (!supabaseUrl || !supabaseKey) return;
       try {
         const supabase = createClient(supabaseUrl, supabaseKey, {
           auth: { persistSession: false }
         });
 
-        const { error: dbError } = await supabase
-          .from('leads_presente')
-          .upsert(
-            {
-              email: cleanEmail,
-              nome: String(nome || '').trim(),
-              consentimento: true,
-              data_consentimento: new Date().toISOString(),
-              origem: 'modal-presente',
-              utm_source: String(utm_source || '').slice(0, 100),
-              utm_medium: String(utm_medium || '').slice(0, 100),
-              utm_campaign: String(utm_campaign || '').slice(0, 100),
-              utm_content: String(utm_content || '').slice(0, 100),
-              user_agent: userAgent.slice(0, 300),
-              updated_at: new Date().toISOString()
-            },
-            { onConflict: 'email' }
-          );
+        const leadData = {
+          email: cleanEmail,
+          nome: String(nome || '').trim(),
+          consentimento: true,
+          data_consentimento: new Date().toISOString(),
+          origem: 'modal-presente',
+          utm_source: String(utm_source || '').slice(0, 100),
+          utm_medium: String(utm_medium || '').slice(0, 100),
+          utm_campaign: String(utm_campaign || '').slice(0, 100),
+          utm_content: String(utm_content || '').slice(0, 100),
+          user_agent: userAgent.slice(0, 300),
+          updated_at: new Date().toISOString()
+        };
 
-        if (dbError) {
-          console.warn('[Presente] Aviso ao salvar lead no Supabase (verifique se executou a migração SQL):', dbError.message);
+        // 1. Tenta inserir novo lead
+        const { error: insertError } = await supabase
+          .from('leads_presente')
+          .insert(leadData);
+
+        // 2. Se já existir (conflito de chave única), atualiza a data e dados
+        if (insertError) {
+          if (insertError.code === '23505' || insertError.message?.includes('duplicate key')) {
+            const { error: updateError } = await supabase
+              .from('leads_presente')
+              .update({
+                nome: leadData.nome || undefined,
+                updated_at: leadData.updated_at,
+                utm_source: leadData.utm_source || undefined,
+                utm_medium: leadData.utm_medium || undefined,
+                utm_campaign: leadData.utm_campaign || undefined,
+                utm_content: leadData.utm_content || undefined,
+                user_agent: leadData.user_agent || undefined
+              })
+              .eq('email', cleanEmail);
+
+            if (updateError) {
+              console.warn('[Presente] Aviso ao atualizar lead existente:', updateError.message);
+            } else {
+              console.log(`[Presente] Lead existente atualizado: ${cleanEmail}`);
+            }
+          } else {
+            console.warn('[Presente] Erro ao inserir lead no Supabase:', insertError.message);
+          }
+        } else {
+          console.log(`[Presente] Lead salvo no Supabase com sucesso: ${cleanEmail}`);
         }
       } catch (dbErr) {
         console.warn('[Presente] Erro inesperado ao interagir com Supabase:', dbErr);
       }
-    }
+    })();
 
-    // 6. Gera link de download (R2 assinado ou fallback)
-    const downloadUrl = await generateDownloadUrl();
+    // 6. Gera link de download (R2 assinado ou fallback direto)
+    const [downloadUrl] = await Promise.all([
+      generateDownloadUrl(),
+      saveLeadPromise
+    ]);
 
-    // 7. Envio do e-mail com Resend
+    // 7. Envio do e-mail com Resend (entrega imediata sem fila de varredura de zip)
     const resendApiKey = process.env.RESEND_API_KEY;
     const fromSender = process.env.EMAIL_FROM || 'NeuroAcervo <contato@neuroacervo.com.br>';
 
@@ -313,13 +341,7 @@ export async function POST(req: NextRequest) {
             from: fromSender,
             to: [cleanEmail],
             subject: 'Seu presente chegou: escalas para a avaliação',
-            html: emailHtml,
-            attachments: [
-              {
-                filename: 'presente-escalas-neuroacervo.zip',
-                path: 'https://pub-46b7a58b503e44bdb8e86a63a0cf51ba.r2.dev/presente.zip'
-              }
-            ]
+            html: emailHtml
           })
         });
 
