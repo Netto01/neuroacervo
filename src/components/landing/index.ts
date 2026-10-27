@@ -10,3 +10,4 @@ export { PricingSection } from './PricingSection';
 export { FaqSection } from './FaqSection';
 export { CtaSection } from './CtaSection';
 export { LandingFooter } from './LandingFooter';
+export { PresenteModal } from './PresenteModal';

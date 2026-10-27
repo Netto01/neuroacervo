@@ -1,7 +1,13 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
+import { useNeuro } from '@/context/NeuroContext';
 
 export function HeroSection() {
+  const { currentUser, isLoadingUser } = useNeuro();
+  const isLogged = Boolean(currentUser);
+
   return (
     <section className="hero" aria-labelledby="h-hero">
       <div className="container hero-grid">
@@ -17,6 +23,36 @@ export function HeroSection() {
             Guias rápidos de aplicação e interpretação, modelos de laudo, roteiros de anamnese, compêndios de estudo, aulas e prontuário do paciente com dossiê clínico, organizados para a rotina clínica e prontos para consulta.
           </p>
           <div className="hero-actions">
+            {!isLogged && !isLoadingUser && (
+              <a 
+                href="#presente" 
+                className="na-gift" 
+                data-presente-open 
+                aria-label="Resgatar presente: 5 escalas grátis"
+                onClick={() => {
+                  if (typeof window !== 'undefined' && window.location.hash === '#presente') {
+                    window.dispatchEvent(new HashChangeEvent('hashchange'));
+                  }
+                }}
+              >
+                <span className="na-gift__ico" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="8" width="18" height="13" rx="2"/>
+                    <path d="M12 8v13M3 12h18M12 8c-1.5-3-5-4-5-1.5S10 8 12 8zm0 0c1.5-3 5-4 5-1.5S14 8 12 8z"/>
+                  </svg>
+                </span>
+                <span className="na-gift__txt">
+                  <span className="na-gift__t">Resgatar presente</span>
+                  <span className="na-gift__s">5 escalas · grátis</span>
+                </span>
+                <span className="na-gift__go" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 12h14M13 6l6 6-6 6"/>
+                  </svg>
+                </span>
+              </a>
+            )}
+
             <a className="btn btn-primary" href="#planos">
               Ver os planos 
               <span className="arrow">

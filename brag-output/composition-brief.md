@@ -1,42 +1,77 @@
 # Hyperframes Composition Brief: NeuroAcervo
 
 ## Objective
-Criar um vídeo de lançamento oficial curto (20 segundos), elegante e com padrão editorial de alta qualidade para o NeuroAcervo.
+Criar um vídeo de lançamento oficial e demonstração funcional completa do NeuroAcervo, destacando cada uma das funcionalidades principais do sistema em um ritmo dinâmico, elegante e profissional de 20 segundos.
 
 ## Output
 - Composition directory: `brag-output/composition/`
 - Rendered video: `brag-output/brag.mp4`
-- Poster image: `brag-output/brag.jpg`
-- Format: landscape — 1920x1080 @ 30fps
-- Duration: 20 seconds (600 frames)
+- Format: landscape — 1920x1080
+- Duration: 20 seconds (600 frames a 30fps)
 
 ## Source Material
 - Project root: `/Users/neto/Desktop/Pessoal_Netto`
-- Primary files read: `src/app/page.tsx`, `src/app/landing.css`, `src/components/landing/HeroSection.tsx`, `src/app/leitor/page.tsx`
+- Primary files referenced:
+  - `src/app/page.tsx`
+  - `src/components/landing/HeroSection.tsx`
+  - `src/components/landing/AcervoCardsSection.tsx`
+  - `src/components/landing/DossiePreviewSection.tsx`
+  - `src/app/recursos-interativos/pacientes/page.tsx`
+  - `src/app/recursos-interativos/pacientes/imprimir/page.tsx`
+  - `src/app/landing.css`
 - Product name: NeuroAcervo
 - Tagline: "Avaliação neuropsicológica com método, num só acervo."
-- Key UI to recreate: A prancha da curva de Gauss psicométrica (M 100 · DP 15), os cartões numerados dos tipos de materiais e a ficha do teste clínico com régua de escores (Span de dígitos).
+- Key UI moments to recreate:
+  - Prancha técnica com distribuição normal e guia de aplicação (Span de dígitos)
+  - Prontuário com paciente código `P-014` e linha do tempo unificada
+  - Gráfico de evolução clínica e dramatização de crenças
+  - Folha oficial de impressão A4 do Dossiê Clínico com carimbo profissional
+  - Encerramento com marca e planos
 
 ## Creative Direction
 - Tone preset: `polished`
-- Creative direction: "Editorial clínico de alta precisão, elegante e sem ruído"
-- Interpretation: Tipografia editorial clássica (Playfair Display) combinada com sans-serif moderno (Inter Tight), fundo papel suave com vinheta sutil, traçados geométricos matemáticos e animações fluidas baseadas em física e easing suave.
+- Creative direction: Showcase clínico premium — do caso ao laudo impresso
+- Interpretation: Estilo editorial nobre, transições nítidas, cartões de alta fidelidade visual, tipografia refinada e ritmo preciso.
+- Angle: O primeiro ecossistema que une todo o acervo teórico e prático (testes, laudos, aulas) a um prontuário clínico vivo com evolução e impressão oficial em A4.
+- Hook: A régua de percentis e a curva normal se formando com o título editorial.
+- Outro: "Do primeiro contato ao laudo. O ecossistema completo."
 
 ## Visual Identity
-- Background: `#efe7d2`
-- Text / Ink: `#15140f`
-- Primary Accent: `#2f6b31`
-- Highlight Accent: `#dafeaa`
-- Surface Bone: `#f7f1de`
-- Display font: `Playfair Display`, `Inter Tight`, serif, sans-serif
-- Body & Numbers font: `Inter`, `JetBrains Mono`, monospace
+- Background: `#fbf8ef` (paper) com momentos em `#12130f` (ink)
+- Card background: `#ffffff` / `#f4efdf` (bone)
+- Text primary: `#12130f`
+- Text muted: `#6a6555` / `#7a7462`
+- Accent: `#195232` (verde clínico profundo)
+- Lime: `#d8f545` (energia contemporânea)
+- Display font: `Newsreader`, 'Playfair Display', Georgia, serif
+- Interface font: `Inter`, -apple-system, sans-serif
+- Mono font: `IBM Plex Mono`, monospace
 
-## Storyboard & Timing
-- Scene 1 (0–120 frames / 0.0s–4.0s): O Rigor Psicométrico. Apresentação da curva de Gauss, escores padrão DP 15, e título editorial "Avaliação neuropsicológica *com método*."
-- Scene 2 (120–270 frames / 4.0s–9.0s): Os 4 Pilares do Acervo. Exibição dos cards numerados deslizando com elegância: 01 Guias Rápidos, 02 Modelos de Laudo, 03 Anamnese, 04 Compêndios.
-- Scene 3 (270–450 frames / 9.0s–15.0s): O Leitor Clínico em Ação. Ficha técnica Span de Dígitos, gráfico de percentis Pc 9–24, régua normativa e selo de modelo pronto para consulta.
-- Scene 4 (450–600 frames / 15.0s–20.0s): Logotipo NeuroAcervo, selo editorial "Edição 2026 · Uso Profissional" e chamada final.
+## Storyboard
+5 cenas com duração total de exatamente 20 segundos:
+1. **Scene 1 (0.0s – 4.0s): O Acervo Clínico**
+   - Título: "Avaliação neuropsicológica com método, num só acervo."
+   - 3 cartões: Guias Rápidos de Testes, Modelos de Laudo Editáveis e Roteiros de Anamnese.
+2. **Scene 2 (4.0s – 8.0s): Prontuário & Linha do Tempo**
+   - Paciente: `P-014 · Adulto · Sigilo LGPD`
+   - Linha do tempo de atendimentos conectando sessões com status e notas salvas.
+3. **Scene 3 (8.0s – 12.5s): Recursos Interativos & Evolução**
+   - Dramatização de crenças ativada.
+   - Gráfico de evolução desenhando a curva de humor e crença (35% → 82%).
+4. **Scene 4 (12.5s – 16.5s): Dossiê Clínico & Impressão A4**
+   - A folha oficial de impressão A4 centralizada com brasão, resumo da linha do tempo e carimbo de validação clínica.
+5. **Scene 5 (16.5s – 20.0s): Conclusão & Marca**
+   - Logotipo NeuroAcervo, selos dos 3 planos (Consulta, Estudo, Prática) e chamada para ação.
 
 ## Audio
-- Music: `happy-beats-business-moves-vol-11-by-ende-dot-app.mp3` copiado para `assets/music.mp3`
-- Treatment: Faixa limpa, ritmo moderno e refinado, sem distorções, com fade out suave no final.
+- Audio role: Trilha rítmica corporativa e moderna com beat limpo em 120 BPM.
+- Music file: `assets/music/happy-beats-business-moves-vol-1-by-ende-dot-app.mp3`
+- SFX:
+  - `assets/sfx/ui/` para cliques e transições
+  - `assets/sfx/impact/` para carimbo da folha A4 e encerramento
+- Audio-coupled moments:
+  - 0.8s: Revelação dos cartões com clique tátil
+  - 4.2s: Linha do tempo conectando nós
+  - 8.5s: Traçado do gráfico de evolução
+  - 13.8s: Carimbo do Dossiê A4
+  - 16.8s: Logo final com acorde harmônico
