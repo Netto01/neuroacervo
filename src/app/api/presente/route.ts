@@ -287,7 +287,13 @@ export async function POST(req: NextRequest) {
             from: fromSender,
             to: [cleanEmail],
             subject: 'Seu presente chegou: escalas para a avaliação',
-            html: emailHtml
+            html: emailHtml,
+            attachments: [
+              {
+                filename: 'presente-escalas-neuroacervo.zip',
+                path: 'https://pub-46b7a58b503e44bdb8e86a63a0cf51ba.r2.dev/presente.zip'
+              }
+            ]
           })
         });
 
