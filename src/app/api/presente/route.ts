@@ -110,7 +110,7 @@ function buildPresenteEmailHtml({
     <!-- Marca -->
     <tr><td class="px" style="padding:0 8px 18px;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
-        <td valign="middle" style="padding-right:9px;"><img src="https://www.neuroacervo.com.br/brand/email-simbolo.png" width="20" height="26" alt="" style="display:block;width:20px;height:26px;"></td>
+        <td valign="middle" style="padding-right:9px;"><img src="https://pub-46b7a58b503e44bdb8e86a63a0cf51ba.r2.dev/brand/email-simbolo.png" width="20" height="26" alt="NeuroAcervo" style="display:block;width:20px;height:26px;"></td>
         <td valign="middle" style="font-family:'Inter Tight',Arial,Helvetica,sans-serif;font-weight:800;font-size:19px;letter-spacing:-0.4px;color:#15140f;">NeuroAcervo</td>
       </tr></table>
     </td></tr>
