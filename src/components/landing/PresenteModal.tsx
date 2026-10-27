@@ -331,7 +331,10 @@ export function PresenteModal({
               <input 
                 tabIndex={-1} 
                 autoComplete="off" 
-                name="empresa" 
+                name="hp_verificacao_x9" 
+                data-lpignore="true"
+                data-1p-ignore="true"
+                data-form-type="other"
                 value={honeypot} 
                 onChange={(e) => setHoneypot(e.target.value)} 
               />
