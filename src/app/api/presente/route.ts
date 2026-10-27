@@ -63,7 +63,10 @@ function buildPresenteEmailHtml({
   downloadUrl: string;
 }): string {
   const nomeExibicao = nome && nome.trim() ? nome.trim() : 'colega';
-  const linkDownload = downloadUrl;
+  // Link no domínio próprio (redireciona ao arquivo), melhor para reputação anti-spam
+  const linkDownload = downloadUrl.startsWith('https://www.neuroacervo.com.br')
+    ? downloadUrl
+    : 'https://www.neuroacervo.com.br/api/presente/download';
   const assinatura = 'Netto';
   const linkDescadastro = 'mailto:contato@neuroacervo.com.br?subject=Descadastrar';
 
@@ -110,7 +113,7 @@ function buildPresenteEmailHtml({
     <!-- Marca -->
     <tr><td class="px" style="padding:0 8px 18px;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
-        <td valign="middle" style="padding-right:9px;"><img src="https://pub-46b7a58b503e44bdb8e86a63a0cf51ba.r2.dev/brand/email-simbolo.png" width="20" height="26" alt="NeuroAcervo" style="display:block;width:20px;height:26px;"></td>
+        <td valign="middle" style="padding-right:9px;"><img src="https://www.neuroacervo.com.br/brand/email-simbolo.png" width="20" height="26" alt="NeuroAcervo" style="display:block;width:20px;height:26px;"></td>
         <td valign="middle" style="font-family:'Inter Tight',Arial,Helvetica,sans-serif;font-weight:800;font-size:19px;letter-spacing:-0.4px;color:#15140f;">NeuroAcervo</td>
       </tr></table>
     </td></tr>
@@ -340,8 +343,32 @@ export async function POST(req: NextRequest) {
           body: JSON.stringify({
             from: fromSender,
             to: [cleanEmail],
+            reply_to: 'contato@neuroacervo.com.br',
             subject: 'Seu presente chegou: escalas para a avaliação',
-            html: emailHtml
+            html: emailHtml,
+            text: [
+              `Olá, ${String(nome || '').trim() || 'colega'}.`,
+              '',
+              'Aqui estão as 5 escalas que você pediu, em PDF e prontas para imprimir:',
+              '- AQ-10: autismo, adultos',
+              '- ASRS-18: TDAH, adultos',
+              '- GAD-7: ansiedade, adultos',
+              '- SCARED: ansiedade, versão crianças',
+              '- SCARED: ansiedade, versão pais',
+              '',
+              'Baixar as 5 escalas (link válido por 7 dias):',
+              'https://www.neuroacervo.com.br/api/presente/download',
+              '',
+              'A correção e a interpretação de cada escala estão no acervo completo: https://www.neuroacervo.com.br/#planos',
+              '',
+              'Netto',
+              'Criador do NeuroAcervo',
+              '',
+              'Para não receber mais e-mails, responda esta mensagem pedindo o descadastro.'
+            ].join('\n'),
+            headers: {
+              'List-Unsubscribe': '<mailto:contato@neuroacervo.com.br?subject=Descadastrar>'
+            }
           })
         });
 
