@@ -348,11 +348,24 @@ export async function POST(req: NextRequest) {
         if (!resendResponse.ok) {
           const resendErr = await resendResponse.text();
           console.error('[Presente] Erro retornado pela API do Resend:', resendResponse.status, resendErr);
-        } else {
-          console.log(`[Presente] E-mail enviado com sucesso para ${cleanEmail} via Resend.`);
+          let detalhe = '';
+          try {
+            detalhe = String(JSON.parse(resendErr)?.message || '');
+          } catch {
+            detalhe = resendErr.slice(0, 200);
+          }
+          return NextResponse.json(
+            { ok: false, error: 'Não foi possível enviar o e-mail agora. Tente novamente em instantes.', detalhe, status: resendResponse.status },
+            { status: 502 }
+          );
         }
+        console.log(`[Presente] E-mail enviado com sucesso para ${cleanEmail} via Resend.`);
       } catch (mailErr) {
         console.error('[Presente] Falha na requisição para o Resend:', mailErr);
+        return NextResponse.json(
+          { ok: false, error: 'Não foi possível enviar o e-mail agora. Tente novamente em instantes.' },
+          { status: 502 }
+        );
       }
     } else {
       console.log(`[Presente DEV] RESEND_API_KEY não configurada no .env.local. Simulando envio para ${cleanEmail}. Link gerado: ${downloadUrl}`);
