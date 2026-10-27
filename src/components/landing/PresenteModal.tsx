@@ -329,6 +329,8 @@ export function PresenteModal({
 
             <div className="npm-hp" aria-hidden="true">
               <input 
+                type="text"
+                readOnly
                 tabIndex={-1} 
                 autoComplete="off" 
                 name="hp_verificacao_x9" 
