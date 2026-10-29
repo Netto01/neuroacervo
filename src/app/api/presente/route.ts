@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { GetObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { r2Client, R2_BUCKET } from '@/lib/r2';
 import { sendMetaCapiLead } from '@/lib/metaCapi';
+import { generateDownloadUrl } from '@/lib/presenteDownload';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -30,29 +28,6 @@ function isRateLimited(key: string, maxAttempts = 5, windowMs = 10 * 60 * 1000):
 
   entry.count += 1;
   return false;
-}
-
-/* ── Gerar Link de Download (R2 com validade de 7 dias ou Fallback Público) ── */
-async function generateDownloadUrl(): Promise<string> {
-  const zipFileName = process.env.PRESENTE_ZIP_KEY || 'presente.zip';
-
-  // Se as credenciais do Cloudflare R2 estiverem configuradas, gera URL assinada válida por 7 dias (604.800 seg)
-  if (process.env.R2_ACCESS_KEY_ID && process.env.R2_SECRET_ACCESS_KEY) {
-    try {
-      const command = new GetObjectCommand({
-        Bucket: R2_BUCKET,
-        Key: zipFileName,
-      });
-      // 7 dias é o prazo máximo suportado pela assinatura SigV4 do S3
-      const signedUrl = await getSignedUrl(r2Client, command, { expiresIn: 604800 });
-      return signedUrl;
-    } catch (err) {
-      console.warn('[Presente] Não foi possível gerar URL assinada no R2, usando fallback:', err);
-    }
-  }
-
-  // Fallback: URL direta do Cloudflare R2 fornecida
-  return 'https://pub-46b7a58b503e44bdb8e86a63a0cf51ba.r2.dev/presente.zip';
 }
 
 /* ── Template HTML do E-mail (Estrutura Oficial NeuroAcervo) ── */

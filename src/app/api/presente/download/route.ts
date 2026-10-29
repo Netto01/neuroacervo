@@ -1,15 +1,36 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import {
+  generateDownloadUrl,
+  buildPresenteObrigadoHtml,
+  DEFAULT_WHATSAPP_GRUPO_URL
+} from '@/lib/presenteDownload';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-/**
- * Link de download do presente servido pelo próprio domínio do NeuroAcervo.
- * Os e-mails apontam para cá (e não direto para r2.dev) para melhorar a
- * reputação do e-mail nos filtros de spam; aqui redirecionamos ao arquivo.
- */
-const ZIP_PUBLICO = 'https://pub-46b7a58b503e44bdb8e86a63a0cf51ba.r2.dev/presente.zip';
+export async function GET(req: NextRequest) {
+  const downloadUrl = await generateDownloadUrl();
 
-export async function GET() {
-  return NextResponse.redirect(ZIP_PUBLICO, 302);
+  // Se for solicitado download direto sem página (ex: ?direct=1)
+  if (req.nextUrl.searchParams.get('direct') === '1') {
+    return NextResponse.redirect(downloadUrl, 302);
+  }
+
+  const whatsappGrupoUrl =
+    process.env.WHATSAPP_GRUPO_URL?.trim() ||
+    process.env.PRESENTE_WHATSAPP_URL?.trim() ||
+    DEFAULT_WHATSAPP_GRUPO_URL;
+
+  const html = buildPresenteObrigadoHtml({
+    downloadUrl,
+    whatsappGrupoUrl,
+  });
+
+  return new Response(html, {
+    status: 200,
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'no-store, max-age=0',
+    },
+  });
 }
