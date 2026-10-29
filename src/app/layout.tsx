@@ -32,6 +32,7 @@ export const viewport: Viewport = {
 };
 
 import { AppProviders } from "@/components/providers/AppProviders";
+import { MetaPixel } from "@/components/analytics/MetaPixel";
 
 export default function RootLayout({
   children,
@@ -63,6 +64,7 @@ export default function RootLayout({
             gtag('config', 'G-DP1370ZFPG');
           `}
         </Script>
+        <MetaPixel />
         <AppProviders>
           {children}
         </AppProviders>

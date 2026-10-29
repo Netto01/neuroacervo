@@ -157,6 +157,27 @@ export function PresenteModal({
         };
       }
 
+      // Gera eventID único antes do envio para desduplicação Pixel + CAPI
+      const eventID =
+        typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+          ? crypto.randomUUID()
+          : `lead_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+
+      // Captura cookies Meta e parâmetros de rastreamento do navegador
+      const getCookie = (name: string): string | undefined => {
+        if (typeof document === 'undefined') return undefined;
+        const match = document.cookie.match(new RegExp('(?:^|;\\s*)' + name + '=([^;]*)'));
+        return match ? decodeURIComponent(match[1]) : undefined;
+      };
+
+      const fbp = getCookie('_fbp');
+      const fbc = getCookie('_fbc');
+      const fbclid =
+        typeof window !== 'undefined'
+          ? new URLSearchParams(window.location.search).get('fbclid') || undefined
+          : undefined;
+      const eventSourceUrl = typeof window !== 'undefined' ? window.location.href : undefined;
+
       const res = await fetch('/api/presente', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -165,6 +186,11 @@ export function PresenteModal({
           email: cleanEmail,
           consentimento: true,
           honeypot,
+          event_id: eventID,
+          event_source_url: eventSourceUrl,
+          fbp,
+          fbc,
+          fbclid,
           ...utms
         })
       });
@@ -179,6 +205,28 @@ export function PresenteModal({
         } catch {}
 
         trackPresenteLeadEnviado(cleanEmail);
+
+        // Dispara o evento padrão Lead do Meta Pixel SOMENTE em sucesso, se não logado e se honeypot não preenchido
+        if (!isLogged && !honeypot) {
+          if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
+            try {
+              window.fbq(
+                'track',
+                'Lead',
+                {
+                  content_name: 'presente-escalas',
+                  content_category: 'lead-magnet',
+                  value: 0,
+                  currency: 'BRL',
+                },
+                { eventID }
+              );
+            } catch (pixelErr) {
+              console.debug('[Meta Pixel] Erro ao disparar evento Lead:', pixelErr);
+            }
+          }
+        }
+
         setIsSuccess(true);
       } else {
         setErrorMessage(data?.error || 'Não foi possível enviar o presente agora. Tente novamente em instantes.');

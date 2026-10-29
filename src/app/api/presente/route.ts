@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { r2Client, R2_BUCKET } from '@/lib/r2';
+import { sendMetaCapiLead } from '@/lib/metaCapi';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -213,6 +214,15 @@ export async function POST(req: NextRequest) {
     const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() || req.headers.get('x-real-ip') || '127.0.0.1';
     const userAgent = req.headers.get('user-agent') || '';
 
+    // Extração de cookies _fbp e _fbc enviados pelo navegador
+    const cookieHeader = req.headers.get('cookie') || '';
+    const extractCookie = (name: string): string | undefined => {
+      const match = cookieHeader.match(new RegExp('(?:^|;\\s*)' + name + '=([^;]*)'));
+      return match ? decodeURIComponent(match[1]) : undefined;
+    };
+    const fbpFromCookie = extractCookie('_fbp');
+    const fbcFromCookie = extractCookie('_fbc');
+
     // 1. Extração do corpo
     const body = await req.json().catch(() => null);
     if (!body || typeof body !== 'object') {
@@ -227,7 +237,12 @@ export async function POST(req: NextRequest) {
       utm_source = '',
       utm_medium = '',
       utm_campaign = '',
-      utm_content = ''
+      utm_content = '',
+      event_id = '',
+      event_source_url = '',
+      fbp = '',
+      fbc = '',
+      fbclid = '',
     } = body;
 
     // 2. Honeypot silencioso (se preenchido, é bot)
@@ -398,7 +413,23 @@ export async function POST(req: NextRequest) {
       console.log(`[Presente DEV] RESEND_API_KEY não configurada no .env.local. Simulando envio para ${cleanEmail}. Link gerado: ${downloadUrl}`);
     }
 
-    // 8. Resposta de sucesso (nunca expor erros internos)
+    // 8. Envio do evento Lead para a Meta Conversions API (CAPI)
+    // Disparado após salvar o lead com sucesso, com timeout curto e sem travar a resposta
+    if (event_id) {
+      await sendMetaCapiLead({
+        eventId: String(event_id),
+        email: cleanEmail,
+        nome: String(nome || '').trim(),
+        eventSourceUrl: String(event_source_url || '').trim() || req.headers.get('referer') || 'https://www.neuroacervo.com.br/#presente',
+        ip,
+        userAgent,
+        fbpCookie: fbp || fbpFromCookie,
+        fbcCookie: fbc || fbcFromCookie,
+        fbclid: fbclid || undefined,
+      });
+    }
+
+    // 9. Resposta de sucesso (nunca expor erros internos)
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error('[Presente] Erro inesperado no endpoint:', error);
