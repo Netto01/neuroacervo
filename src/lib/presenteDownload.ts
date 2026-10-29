@@ -1,27 +1,19 @@
-import { GetObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { r2Client, R2_BUCKET } from '@/lib/r2';
 
 export const FALLBACK_ZIP_URL = 'https://pub-46b7a58b503e44bdb8e86a63a0cf51ba.r2.dev/presente.zip';
 export const DEFAULT_WHATSAPP_GRUPO_URL = 'https://chat.whatsapp.com/IJnaVmDO5R95PFNcJdduRG?s=cl&p=i&mlu=4&ilr=4&iam=2';
 
 /**
- * Gera URL de download para o arquivo zip do presente (URL assinada do Cloudflare R2 válida por 7 dias ou fallback público)
+ * Retorna a URL pública direta e segura para download do arquivo zip do presente.
+ * Utiliza o CDN público do Cloudflare R2, evitando URLs pré-assinadas S3 que falham no navegador com XML de erro de autorização.
  */
 export async function generateDownloadUrl(): Promise<string> {
-  const zipFileName = process.env.PRESENTE_ZIP_KEY || 'presente.zip';
+  const customUrl = process.env.PRESENTE_ZIP_PUBLIC_URL?.trim();
+  if (customUrl) return customUrl;
 
-  if (process.env.R2_ACCESS_KEY_ID && process.env.R2_SECRET_ACCESS_KEY) {
-    try {
-      const command = new GetObjectCommand({
-        Bucket: R2_BUCKET,
-        Key: zipFileName,
-      });
-      const signedUrl = await getSignedUrl(r2Client, command, { expiresIn: 604800 });
-      return signedUrl;
-    } catch (err) {
-      console.warn('[Presente] Não foi possível gerar URL assinada no R2, usando fallback:', err);
-    }
+  const publicBase = (process.env.R2_PUBLIC_URL || process.env.NEXT_PUBLIC_R2_PUBLIC_URL || '').trim();
+  if (publicBase) {
+    const key = process.env.PRESENTE_ZIP_KEY || 'presente.zip';
+    return `${publicBase.replace(/\/+$/, '')}/${key.replace(/^\/+/, '')}`;
   }
 
   return FALLBACK_ZIP_URL;
@@ -119,7 +111,7 @@ h1 em,h2 em{font-family:'Playfair Display',Georgia,serif;font-style:italic;font-
     <div>
       <p class="kick mono">Presente entregue</p>
       <h1>Seu download <em>começou</em>.</h1>
-      <p class="sub">As 5 escalas estão num arquivo .zip. Se o download não começar em alguns segundos, <a href="${downloadUrl}" id="dl">clique aqui para baixar</a>.</p>
+      <p class="sub">As 5 escalas estão num arquivo .zip. Se o download não começar em alguns segundos, <a href="${downloadUrl}" id="dl" download="escalas-neuroacervo.zip">clique aqui para baixar</a>.</p>
     </div>
   </section>
 
@@ -158,11 +150,23 @@ h1 em,h2 em{font-family:'Playfair Display',Georgia,serif;font-style:italic;font-
 </main>
 
 <script>
-/* Inicia o download automaticamente ~1s após abrir a página. */
+/* Inicia o download automaticamente ~1s após abrir a página sem descarregar a página de obrigado. */
 (function(){
-  var a=document.getElementById('dl'); if(!a) return;
-  var href=a.getAttribute('href'); if(!href || href.indexOf('{{')===0) return;
-  setTimeout(function(){ window.location.href=href; }, 1000);
+  var a = document.getElementById('dl'); if (!a) return;
+  var href = a.getAttribute('href'); if (!href || href.indexOf('{{') === 0) return;
+  setTimeout(function(){
+    try {
+      var dlLink = document.createElement('a');
+      dlLink.href = href;
+      dlLink.setAttribute('download', 'escalas-neuroacervo.zip');
+      dlLink.style.display = 'none';
+      document.body.appendChild(dlLink);
+      dlLink.click();
+      document.body.removeChild(dlLink);
+    } catch(e) {
+      window.location.assign(href);
+    }
+  }, 1000);
 })();
 </script>
 </body>
