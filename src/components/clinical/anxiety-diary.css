@@ -1,0 +1,488 @@
+/* =========================================================================
+   ESTILOS DO DIÁRIO DA ANSIEDADE (AC)
+   Compatibilidade Total: Safari (macOS & iOS), Chrome, Firefox, Edge
+   ========================================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&family=Playfair+Display:ital,wght@1,500&display=swap');
+
+/* ============ Tokens NeuroAcervo ============ */
+:root {
+  --bg: #efe7d2;
+  --surface: #f7f1de;
+  --paper: #fffdf6;
+  --ink: #15140f;
+  --mute: #5a5448;
+  --soft: #8a8270;
+  --accent: #2f6b31;
+  --accent2: #488b49;
+  --pop: #dafeaa;
+  --line: rgba(21, 20, 15, 0.12);
+  --line2: rgba(21, 20, 15, 0.07);
+  --a: #2e4c78;
+  --a-bg: #e7edf6;
+  --r: #8a5317;
+  --r-bg: #f6ecdf;
+  --c: #2f6b31;
+  --c-bg: #e6f0df;
+  --e: #6a4870;
+  --e-bg: #f0e8f1;
+  --f-d: 'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --f-s: 'Playfair Display', Georgia, serif;
+  --f-m: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --f-t: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ============ Base de Cartão NeuroAcervo ============ */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 2px 0 var(--line2), 0 14px 30px rgba(21, 20, 15, 0.06);
+  box-sizing: border-box;
+  overflow: hidden;
+  color: var(--ink);
+  font-family: var(--f-t);
+}
+
+.card-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 20px 22px 0;
+}
+
+.card-bd {
+  padding: 16px 22px 22px;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--f-m);
+  font-weight: 500;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.tag::before {
+  content: '';
+  width: 18px;
+  height: 2px;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.ttl {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.ico {
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ink);
+  color: var(--pop);
+}
+
+.ico svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
+
+.card h3 {
+  margin: 2px 0 0;
+  font-family: var(--f-d);
+  font-weight: 800;
+  font-size: 19px;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  color: var(--ink);
+}
+
+.card h3 em {
+  font-family: var(--f-s);
+  font-style: italic;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--accent);
+}
+
+.count {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--bg);
+  font-family: var(--f-m);
+  font-size: 11px;
+  color: var(--mute);
+  vertical-align: 2px;
+}
+
+/* ============ 2. Diário de ansiedade (Painel Profissional) ============ */
+.filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter label {
+  font-family: var(--f-m);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--soft);
+  white-space: nowrap;
+}
+
+/* Safari Fix: Explicit -webkit-appearance: none */
+.filter select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  height: 40px;
+  padding: 0 34px 0 14px;
+  border-radius: 11px;
+  border: 1.5px solid var(--line);
+  background: var(--paper)
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2315140f' stroke-width='2.5' stroke-linecap='round'><path d='m6 9 6 6 6-6'/></svg>")
+    no-repeat right 12px center;
+  font: 600 14px var(--f-t);
+  color: var(--ink);
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.filter select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(47, 107, 49, 0.15);
+}
+
+.empty {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px;
+  border-radius: 14px;
+  border: 1.5px dashed rgba(21, 20, 15, 0.18);
+  background: var(--paper);
+}
+
+.empty i {
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--soft);
+}
+
+.empty i svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
+
+.empty b {
+  display: block;
+  font-family: var(--f-d);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+}
+
+.empty span {
+  display: block;
+  margin-top: 2px;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--mute);
+}
+
+.diary {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+/* Safari Fix: minmax(0, 1fr) prevents text overflow */
+.entry {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  gap: 14px;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: 13px;
+  background: var(--paper);
+  border: 1px solid var(--line2);
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-sizing: border-box;
+}
+
+.entry:hover {
+  border-color: var(--line);
+}
+
+.entry.is-converted {
+  border-left: 3px solid var(--accent);
+}
+
+.entry time {
+  font-family: var(--f-m);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--mute);
+  text-align: center;
+  line-height: 1.3;
+  min-width: 52px;
+  flex-shrink: 0;
+}
+
+.entry time b {
+  display: block;
+  font-family: var(--f-d);
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.entry p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--ink);
+  min-width: 0;
+  word-break: break-word;
+}
+
+.entry p small {
+  display: block;
+  color: var(--mute);
+  font-size: 12.5px;
+  margin-top: 2px;
+}
+
+.lvl {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--f-m);
+  font-size: 11px;
+  color: var(--mute);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.meter {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+
+.meter i {
+  flex: 0 0 6px;
+  width: 6px;
+  height: 18px;
+  border-radius: 3px;
+  background: rgba(21, 20, 15, 0.1);
+  transition: background-color 0.15s;
+}
+
+.lvl.l1 .meter i:nth-child(-n + 3) {
+  background: #7fb069;
+}
+
+.lvl.l2 .meter i:nth-child(-n + 6) {
+  background: #d19a2a;
+}
+
+.lvl.l3 .meter i:nth-child(-n + 9) {
+  background: #c2412f;
+}
+
+.btn-convert-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 9px;
+  font: 700 12px var(--f-d);
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: transform 0.12s, box-shadow 0.12s, background-color 0.12s;
+  white-space: nowrap;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  flex-shrink: 0;
+}
+
+.btn-convert-pill.convert-ready {
+  background: var(--ink);
+  color: var(--pop);
+  box-shadow: 0 2px 0 #000;
+}
+
+.btn-convert-pill.convert-ready:hover {
+  transform: translateY(-1px);
+  -webkit-transform: translateY(-1px);
+  box-shadow: 0 3px 0 #000;
+}
+
+.btn-convert-pill.converted-badge {
+  background: var(--c-bg);
+  color: var(--c);
+  border-color: rgba(47, 107, 49, 0.25);
+  cursor: default;
+}
+
+/* ============ Mobile Responsive ============ */
+@media (max-width: 720px) {
+  .entry {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 10px;
+  }
+  .entry .lvl {
+    grid-column: 1 / -1;
+    justify-content: space-between;
+  }
+  .entry .btn-convert-pill {
+    grid-column: 1 / -1;
+    justify-content: center;
+    width: 100%;
+  }
+}
+
+/* ============ Formulário de Auto-Registro do Paciente ============ */
+.anxiety-diary-container {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 20px;
+  background: var(--paper);
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  box-shadow: 0 2px 0 var(--line2), 0 12px 28px rgba(21, 20, 15, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-sizing: border-box;
+}
+
+.ac-orientation-banner {
+  background: var(--c-bg);
+  border: 1px solid rgba(47, 107, 49, 0.25);
+  border-left: 4px solid var(--accent);
+  border-radius: 10px;
+  padding: 14px 16px;
+  color: var(--ink);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+.anxiety-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.anxiety-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.anxiety-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.anxiety-input,
+.anxiety-textarea {
+  width: 100%;
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--ink);
+  background: var(--paper);
+  transition: border-color 0.15s, box-shadow 0.15s;
+  min-height: 44px;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.anxiety-input:focus,
+.anxiety-textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(47, 107, 49, 0.15);
+}
+
+.intensity-buttons-grid {
+  display: grid;
+  grid-template-columns: repeat(11, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.intensity-btn {
+  height: 44px;
+  border-radius: 8px;
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-appearance: none;
+  appearance: none;
+  transition: all 0.12s;
+}
+
+.intensity-btn.selected {
+  background: var(--ink);
+  color: var(--pop);
+  border-color: #000;
+  box-shadow: 0 2px 0 #000;
+}

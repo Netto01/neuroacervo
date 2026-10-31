@@ -1,0 +1,1274 @@
+/* =========================================================
+   NeuroAcervo · App do paciente (3 telas em 1 arquivo)
+   Ansiedade · Situação · Meus registros
+   Compatibilidade Total: Safari (macOS & iOS), Chrome, Firefox, Edge
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@700;800&family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@1,500&display=swap');
+
+:root {
+  --bg: #f7f1de;
+  --field: #fffdf6;
+  --ink: #15140f;
+  --mute: #5a5448;
+  --soft: #958d7a;
+  --line: rgba(21, 20, 15, 0.1);
+  --accent: #2f6b31;
+  --pop: #dafeaa;
+  --low: #5f9a4c;
+  --mid: #d19a2a;
+  --high: #c2412f;
+  --a: #2e4c78;
+  --r: #8a5317;
+  --c: #2f6b31;
+  --e: #6a4870;
+  --f-d: 'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --f-s: 'Playfair Display', Georgia, serif;
+  --f-t: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.paciente-diario-root {
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--f-t);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+  box-sizing: border-box;
+}
+
+.paciente-diario-root * {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.paciente-diario-root button,
+.paciente-diario-root input,
+.paciente-diario-root textarea {
+  font: inherit;
+  color: inherit;
+}
+
+.paciente-diario-root button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.paciente-diario-root .wrap {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 16px 20px calc(120px + constant(safe-area-inset-bottom));
+  padding: 16px 20px calc(120px + env(safe-area-inset-bottom, 0px));
+}
+
+/* ---------- Topo ---------- */
+.paciente-diario-root .top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 44px;
+}
+
+.paciente-diario-root .back {
+  width: 36px;
+  height: 36px;
+  margin-left: -8px;
+  border: 0;
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  cursor: pointer;
+  color: var(--ink);
+  transition: background 0.15s ease;
+}
+
+.paciente-diario-root .back:hover {
+  background: rgba(21, 20, 15, 0.05);
+}
+
+.paciente-diario-root .back svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.paciente-diario-root .who {
+  margin-left: auto;
+  font-size: 13px;
+  color: var(--soft);
+}
+
+.paciente-diario-root .who b {
+  color: var(--mute);
+  font-weight: 600;
+}
+
+/* ---------- Abas ---------- */
+.paciente-diario-root .tabs {
+  display: flex;
+  gap: 22px;
+  margin: 20px 0 0;
+  border-bottom: 1px solid var(--line);
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.paciente-diario-root .tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.paciente-diario-root .tab {
+  position: relative;
+  border: 0;
+  background: none;
+  padding: 0 0 12px;
+  cursor: pointer;
+  font: 600 15px var(--f-t);
+  color: var(--soft);
+  white-space: nowrap;
+  transition: color 0.15s ease;
+}
+
+.paciente-diario-root .tab[aria-selected="true"] {
+  color: var(--ink);
+}
+
+.paciente-diario-root .tab[aria-selected="true"]::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--ink);
+}
+
+.paciente-diario-root .tab:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+/* ---------- Título ---------- */
+.paciente-diario-root .hero {
+  padding: 28px 0 8px;
+}
+
+.paciente-diario-root h1 {
+  margin: 0;
+  font-family: var(--f-d);
+  font-weight: 800;
+  font-size: 30px;
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+}
+
+.paciente-diario-root h1 em {
+  font-family: var(--f-s);
+  font-style: italic;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--accent);
+}
+
+.paciente-diario-root .hero p {
+  margin: 10px 0 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--mute);
+}
+
+/* ---------- Perguntas ---------- */
+.paciente-diario-root .q {
+  padding: 26px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.paciente-diario-root .q:last-of-type {
+  border-bottom: 0;
+}
+
+.paciente-diario-root .lbl {
+  display: block;
+  font-family: var(--f-d);
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: -0.015em;
+  line-height: 1.3;
+}
+
+.paciente-diario-root .lbl .opt {
+  font-family: var(--f-t);
+  font-weight: 400;
+  font-size: 13px;
+  color: var(--soft);
+  letter-spacing: 0;
+}
+
+.paciente-diario-root .help {
+  display: block;
+  margin-top: 4px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--soft);
+}
+
+.paciente-diario-root .step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--k);
+}
+
+.paciente-diario-root .step::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--k);
+}
+
+.paciente-diario-root .q.a { --k: var(--a); }
+.paciente-diario-root .q.r { --k: var(--r); }
+.paciente-diario-root .q.c { --k: var(--c); }
+.paciente-diario-root .q.e { --k: var(--e); }
+
+.paciente-diario-root textarea,
+.paciente-diario-root .inp {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--field);
+  font-size: 16px;
+  line-height: 1.5;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.paciente-diario-root textarea {
+  min-height: 84px;
+  resize: none;
+  overflow: hidden;
+}
+
+.paciente-diario-root textarea::placeholder,
+.paciente-diario-root .inp::placeholder {
+  color: #b0a893;
+}
+
+.paciente-diario-root textarea:focus,
+.paciente-diario-root .inp:focus {
+  outline: none;
+  border-color: var(--k, var(--accent));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--k, var(--accent)) 14%, transparent);
+}
+
+.paciente-diario-root [aria-invalid="true"] {
+  border-color: var(--high) !important;
+}
+
+.paciente-diario-root .err {
+  display: none;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--high);
+}
+
+.paciente-diario-root [aria-invalid="true"] + .err {
+  display: block;
+}
+
+/* Quando: texto + "alterar" */
+.paciente-diario-root .when {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.paciente-diario-root .when-v {
+  font-size: 15px;
+  color: var(--mute);
+}
+
+.paciente-diario-root .when-v b {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.paciente-diario-root .linkbtn {
+  border: 0;
+  background: none;
+  padding: 0;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--accent);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.paciente-diario-root .when-edit {
+  display: none;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.paciente-diario-root .when-edit.on {
+  display: grid;
+}
+
+.paciente-diario-root .when-edit input {
+  width: 100%;
+  height: 46px;
+  padding: 0 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--field);
+  font-size: 15px;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Intensidade */
+.paciente-diario-root .lvl {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.paciente-diario-root .lvl-n {
+  font-family: var(--f-d);
+  font-weight: 800;
+  font-size: 40px;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--lk);
+}
+
+.paciente-diario-root .lvl-w {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--lk);
+}
+
+.paciente-diario-root input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 32px;
+  margin: 6px 0 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.paciente-diario-root input[type=range]::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--low), var(--mid) 50%, var(--high));
+}
+
+.paciente-diario-root input[type=range]::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--low), var(--mid) 50%, var(--high));
+}
+
+.paciente-diario-root input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 26px;
+  height: 26px;
+  margin-top: -10px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid var(--ink);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.paciente-diario-root input[type=range]::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid var(--ink);
+}
+
+.paciente-diario-root input[type=range]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 6px;
+  border-radius: 999px;
+}
+
+.paciente-diario-root .scale {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--soft);
+}
+
+.paciente-diario-root .support {
+  display: none;
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #fbefea;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #6e2a1f;
+}
+
+.paciente-diario-root .support.on {
+  display: block;
+}
+
+/* Sensações */
+.paciente-diario-root .chips {
+  clear: both;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 14px;
+}
+
+.paciente-diario-root .chip {
+  position: relative;
+  display: inline-block;
+}
+
+.paciente-diario-root .chip input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  margin: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.paciente-diario-root .chip span {
+  display: inline-block;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--field);
+  font-size: 14px;
+  color: var(--mute);
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  user-select: none;
+}
+
+.paciente-diario-root .chip input:checked + span {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
+
+.paciente-diario-root .chip input:focus-visible + span {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Efeitos (2 campos) */
+.paciente-diario-root .pair {
+  display: grid;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+.paciente-diario-root .pair label {
+  display: block;
+  margin-top: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--mute);
+}
+
+.paciente-diario-root .pair textarea {
+  margin-top: 6px;
+  min-height: 64px;
+}
+
+/* Compartilhar */
+.paciente-diario-root .share {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  cursor: pointer;
+  position: relative;
+}
+
+.paciente-diario-root .share input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.paciente-diario-root .sw {
+  flex: none;
+  position: relative;
+  width: 44px;
+  height: 26px;
+  margin-top: 1px;
+  border-radius: 999px;
+  background: #d8d1bf;
+  transition: background 0.15s;
+}
+
+.paciente-diario-root .sw::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s;
+}
+
+.paciente-diario-root .share input:checked + .sw {
+  background: var(--accent);
+}
+
+.paciente-diario-root .share input:checked + .sw::after {
+  transform: translateX(18px);
+}
+
+.paciente-diario-root .share input:focus-visible + .sw {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.paciente-diario-root .share b {
+  display: block;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.paciente-diario-root .share small {
+  display: block;
+  margin-top: 2px;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--soft);
+}
+
+/* Painéis */
+.paciente-diario-root [role="tabpanel"][hidden] {
+  display: none !important;
+}
+
+/* Rodapé fixo */
+.paciente-diario-root .bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 16px 20px calc(16px + constant(safe-area-inset-bottom));
+  padding: 16px 20px calc(16px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(180deg, rgba(247, 241, 222, 0), var(--bg) 28%);
+  z-index: 50;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+.paciente-diario-root .bar-in {
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.paciente-diario-root .save {
+  width: 100%;
+  height: 54px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--ink);
+  color: var(--pop);
+  font: 700 16px var(--f-d);
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  transition: transform 0.1s, opacity 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.paciente-diario-root .save:active {
+  transform: scale(0.99);
+}
+
+.paciente-diario-root .save:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.paciente-diario-root .save:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.paciente-diario-root .note {
+  margin: 8px 0 0;
+  text-align: center;
+  font-size: 12px;
+  color: var(--soft);
+}
+
+.paciente-diario-root .fail {
+  display: none;
+  margin: 0 0 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #fbefea;
+  color: #8f2d20;
+  font-size: 13.5px;
+  text-align: center;
+}
+
+.paciente-diario-root .fail.on {
+  display: block;
+}
+
+/* Sucesso */
+.paciente-diario-root .done {
+  display: none;
+  padding: 72px 0 0;
+  text-align: center;
+}
+
+.paciente-diario-root .done .ok {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: var(--pop);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.paciente-diario-root .done .ok svg {
+  width: 28px;
+  height: 28px;
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.paciente-diario-root .done h2 {
+  margin: 20px 0 0;
+  font-family: var(--f-d);
+  font-weight: 800;
+  font-size: 28px;
+  letter-spacing: -0.035em;
+}
+
+.paciente-diario-root .done h2 em {
+  font-family: var(--f-s);
+  font-style: italic;
+  font-weight: 500;
+  color: var(--accent);
+}
+
+.paciente-diario-root .done p {
+  margin: 10px auto 0;
+  max-width: 340px;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--mute);
+}
+
+.paciente-diario-root .done .acts {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 28px;
+}
+
+.paciente-diario-root .done .see {
+  height: 46px;
+  padding: 0 20px;
+  border-radius: 12px;
+  border: 0;
+  background: var(--ink);
+  color: var(--pop);
+  font: 700 15px var(--f-d);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.paciente-diario-root .done .again {
+  height: 46px;
+  padding: 0 20px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--field);
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.paciente-diario-root.is-done .form-area,
+.paciente-diario-root.is-done .bar,
+.paciente-diario-root.is-done .tabs,
+.paciente-diario-root.is-done #p-reg {
+  display: none !important;
+}
+
+.paciente-diario-root.is-done .done {
+  display: block;
+}
+
+/* ===== Meus registros ===== */
+#p-reg .hero {
+  padding: 28px 0 4px;
+}
+
+.paciente-diario-root .new {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  height: 54px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--ink);
+  color: var(--pop);
+  font: 700 16px var(--f-d);
+  cursor: pointer;
+}
+
+.paciente-diario-root .new svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+}
+
+.paciente-diario-root .new:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.paciente-diario-root[data-view="reg"] .new {
+  display: flex;
+}
+
+.paciente-diario-root[data-view="reg"] .save,
+.paciente-diario-root[data-view="reg"] .note,
+.paciente-diario-root[data-view="reg"] .fail {
+  display: none !important;
+}
+
+.paciente-diario-root[data-view="reg"] #form {
+  display: none !important;
+}
+
+/* Resumo */
+.paciente-diario-root .sum {
+  margin-top: 20px;
+  padding: 18px;
+  border-radius: 16px;
+  background: var(--field);
+  border: 1px solid var(--line);
+}
+
+.paciente-diario-root .sum-row {
+  display: flex;
+  gap: 22px;
+}
+
+.paciente-diario-root .stat b {
+  display: block;
+  font-family: var(--f-d);
+  font-weight: 800;
+  font-size: 26px;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.paciente-diario-root .stat span {
+  display: block;
+  margin-top: 4px;
+  font-size: 12.5px;
+  color: var(--soft);
+}
+
+.paciente-diario-root .chart {
+  margin-top: 16px;
+}
+
+.paciente-diario-root .chart-hd {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--soft);
+  margin-bottom: 8px;
+}
+
+/* Garante renderização perfeita no Safari WebKit */
+.paciente-diario-root .bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 64px;
+}
+
+.paciente-diario-root .bars i {
+  flex: 1 1 0;
+  display: block;
+  border-radius: 4px 4px 2px 2px;
+  background: rgba(21, 20, 15, 0.08);
+  min-height: 4px;
+}
+
+.paciente-diario-root .bars i[data-v] {
+  background: var(--k);
+}
+
+.paciente-diario-root .days {
+  display: flex;
+  gap: 4px;
+  margin-top: 6px;
+  font-size: 10px;
+  color: var(--soft);
+  text-align: center;
+}
+
+.paciente-diario-root .days span {
+  flex: 1 1 0;
+  display: block;
+}
+
+.paciente-diario-root .legend {
+  display: flex;
+  gap: 14px;
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--soft);
+}
+
+.paciente-diario-root .legend span::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  margin-right: 6px;
+  background: var(--k);
+  vertical-align: 0;
+}
+
+/* Filtro */
+.paciente-diario-root .seg {
+  display: flex;
+  gap: 5px;
+  margin: 24px 0 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.paciente-diario-root .seg::-webkit-scrollbar {
+  display: none;
+}
+
+.paciente-diario-root .seg button {
+  flex: none;
+  height: 36px;
+  padding: 0 11px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--field);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--mute);
+  cursor: pointer;
+}
+
+.paciente-diario-root .seg button[aria-pressed="true"] {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
+
+.paciente-diario-root .seg button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Lista */
+.paciente-diario-root .day {
+  margin-top: 22px;
+}
+
+.paciente-diario-root .day h2 {
+  margin: 0 0 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--soft);
+  text-transform: uppercase;
+}
+
+.paciente-diario-root .item {
+  border-bottom: 1px solid var(--line);
+}
+
+.paciente-diario-root .item:last-child {
+  border-bottom: 0;
+}
+
+/* Safari-hardened head: flex em vez de grid dentro de button */
+.paciente-diario-root .head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.paciente-diario-root .head:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 10px;
+}
+
+.paciente-diario-root .ico {
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--field);
+  border: 1px solid var(--line);
+}
+
+.paciente-diario-root .ico svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: var(--mute);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.paciente-diario-root .ttl {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.paciente-diario-root .ttl b {
+  display: block;
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.paciente-diario-root .ttl span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  margin-top: 3px;
+  font-size: 12.5px;
+  color: var(--soft);
+}
+
+.paciente-diario-root .priv {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.paciente-diario-root .priv svg {
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.paciente-diario-root .priv.on {
+  color: var(--accent);
+}
+
+.paciente-diario-root .rt {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.paciente-diario-root .rlvl {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--f-d);
+  font-weight: 800;
+  font-size: 17px;
+  color: var(--k);
+}
+
+.paciente-diario-root .rlvl i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--k);
+}
+
+.paciente-diario-root .arc {
+  display: flex;
+  gap: 3px;
+}
+
+.paciente-diario-root .arc i {
+  width: 6px;
+  height: 18px;
+  border-radius: 3px;
+  background: var(--k);
+  opacity: 0.9;
+}
+
+.paciente-diario-root .arc i.off {
+  opacity: 0.18;
+}
+
+/* Detalhe */
+.paciente-diario-root .det {
+  display: none;
+  padding: 0 0 16px 56px;
+}
+
+.paciente-diario-root .item.open .det {
+  display: block;
+}
+
+.paciente-diario-root .item.open .chev {
+  transform: rotate(180deg);
+}
+
+.paciente-diario-root .chev {
+  width: 16px;
+  height: 16px;
+  margin-left: 2px;
+  fill: none;
+  stroke: var(--soft);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  transition: transform 0.15s;
+  vertical-align: middle;
+}
+
+.paciente-diario-root .f {
+  margin-top: 12px;
+}
+
+.paciente-diario-root .f:first-child {
+  margin-top: 0;
+}
+
+.paciente-diario-root .f small {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--k, var(--soft));
+}
+
+.paciente-diario-root .f small::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--k, var(--soft));
+}
+
+.paciente-diario-root .f p {
+  margin: 3px 0 0;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+.paciente-diario-root .tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.paciente-diario-root .tags span {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--field);
+  border: 1px solid var(--line);
+  font-size: 12.5px;
+  color: var(--mute);
+}
+
+.paciente-diario-root .rshare {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--field);
+  border: 1px solid var(--line);
+  font-size: 13.5px;
+  color: var(--mute);
+}
+
+.paciente-diario-root .rshare b {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.paciente-diario-root .rsw {
+  flex: none;
+  position: relative;
+  width: 40px;
+  height: 24px;
+  border: 0;
+  padding: 0;
+  border-radius: 999px;
+  background: #d8d1bf;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.paciente-diario-root .rsw::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s;
+}
+
+.paciente-diario-root .rsw[aria-checked="true"] {
+  background: var(--accent);
+}
+
+.paciente-diario-root .rsw[aria-checked="true"]::after {
+  transform: translateX(16px);
+}
+
+.paciente-diario-root .rsw:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* Vazio */
+.paciente-diario-root .empty {
+  display: none;
+  padding: 56px 12px;
+  text-align: center;
+}
+
+.paciente-diario-root .empty.on {
+  display: block;
+}
+
+.paciente-diario-root .empty b {
+  display: block;
+  font-family: var(--f-d);
+  font-weight: 800;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+}
+
+.paciente-diario-root .empty p {
+  margin: 8px auto 0;
+  max-width: 300px;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--mute);
+}
+
+/* Toast */
+.paciente-diario-root .toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(92px + constant(safe-area-inset-bottom));
+  bottom: calc(92px + env(safe-area-inset-bottom, 0px));
+  transform: translate(-50%, 20px);
+  opacity: 0;
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 13.5px;
+  transition: opacity 0.2s, transform 0.2s;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 100;
+}
+
+.paciente-diario-root .toast.on {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .paciente-diario-root * {
+    transition: none !important;
+  }
+}

@@ -45,6 +45,7 @@ interface ItemSessao {
   resp: string;
   comb: string;
   prox: string;
+  triplices?: any[];
 }
 
 interface ItemDrama {
@@ -361,6 +362,19 @@ function ImpressaoDossieInner() {
           return;
         }
 
+        // Busca tríplices contingências registradas no banco ou no cache local
+        let todasTriplices: any[] = [];
+        if (isSupabaseConfigured) {
+          try {
+            const { data: trData } = await supabase
+              .from('triple_rows')
+              .select('*')
+              .is('deleted_at', null)
+              .order('position', { ascending: true });
+            if (trData) todasTriplices = trData;
+          } catch {}
+        }
+
         // Mapeamento dinâmico das sessões reais do paciente
         const itensMapeados: ItemImpressao[] = [];
 
@@ -369,11 +383,41 @@ function ImpressaoDossieInner() {
           const dataStr = (d.dataSessao || s.updated_at || s.created_at || new Date().toISOString()).slice(0, 10);
 
           if (s.resource_type === 'evolucao') {
+            const numSessao = typeof d.numeroSessao === 'number' ? d.numeroSessao : itensMapeados.filter((x) => x.tipo === 'sessao').length + 1;
+
+            // Filtra tríplices vinculadas a esta sessão
+            let triplicesDaSessao = todasTriplices.filter(
+              (tr) => tr.session_id === s.id || tr.session_id === s.resource_id || tr.session_id === `sessao_${numSessao}`
+            );
+
+            // Fallback para cache do localStorage
+            if (triplicesDaSessao.length === 0 && typeof window !== 'undefined') {
+              for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i);
+                if (
+                  k &&
+                  k.startsWith('na_triplice_cache_') &&
+                  (k.includes(s.resource_id) || (s.id && k.includes(s.id)) || k.includes(`sessao_${numSessao}`))
+                ) {
+                  try {
+                    const raw = localStorage.getItem(k);
+                    if (raw) {
+                      const parsed = JSON.parse(raw);
+                      if (Array.isArray(parsed) && parsed.length > 0) {
+                        triplicesDaSessao = parsed;
+                        break;
+                      }
+                    }
+                  } catch {}
+                }
+              }
+            }
+
             itensMapeados.push({
               id: s.id || `sessao_${s.resource_id}`,
               tipo: 'sessao',
               data: dataStr,
-              n: typeof d.numeroSessao === 'number' ? d.numeroSessao : itensMapeados.filter((x) => x.tipo === 'sessao').length + 1,
+              n: numSessao,
               mod: d.modalidade?.toLowerCase() === 'online' ? 'Online' : 'Presencial',
               dur: typeof d.duracao === 'number' ? d.duracao : 50,
               humor: typeof d.humor === 'number' ? d.humor : 5,
@@ -383,7 +427,8 @@ function ImpressaoDossieInner() {
               vinc: Array.isArray(d.recursosVinculados) ? [...d.recursosVinculados] : [],
               resp: d.resposta || d.evolucaoClinica || 'Sessão produtiva, boa aliança terapêutica.',
               comb: d.combinados || d.tarefasCombinados || 'Manter registros da semana.',
-              prox: d.proxima || d.planoProximaSessao || ''
+              prox: d.proxima || d.planoProximaSessao || '',
+              triplices: triplicesDaSessao
             });
           } else if (s.resource_type === 'dramatizacao') {
             const rodadasFormatadas: RodadaDrama[] = Array.isArray(d.rodadas) && d.rodadas.length
@@ -1022,6 +1067,48 @@ function ImpressaoDossieInner() {
                     <div className="row">
                       <span className="lab">Próxima sessão</span>
                       <div><p>{x.prox}</p></div>
+                    </div>
+                  )}
+
+                  {x.triplices && x.triplices.length > 0 && (
+                    <div className="row full" style={{ marginTop: '14px' }}>
+                      <span className="lab">Grade da Tríplice Contingência (AC)</span>
+                      <table className="rounds" style={{ width: '100%', marginTop: '6px', fontSize: '11px' }}>
+                        <thead>
+                          <tr>
+                            <th style={{ width: '28%', textAlign: 'left' }}>Antecedente (A)</th>
+                            <th style={{ width: '38%', textAlign: 'left' }}>Resposta (R: Ação, Pensamento, Sensação)</th>
+                            <th style={{ width: '20%', textAlign: 'left' }}>Consequência (C)</th>
+                            <th style={{ width: '14%', textAlign: 'left' }}>Efeitos</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {x.triplices.map((tr: any, triIdx: number) => (
+                            <tr key={triIdx}>
+                              <td style={{ verticalAlign: 'top', padding: '6px' }}>
+                                {tr.antecedent || '—'}
+                              </td>
+                              <td style={{ verticalAlign: 'top', padding: '6px' }}>
+                                {tr.response_action && <div style={{ marginBottom: '2px' }}><b>Fez:</b> {tr.response_action}</div>}
+                                {tr.response_thought && <div style={{ marginBottom: '2px' }}><b>Pensou:</b> “{tr.response_thought}”</div>}
+                                {tr.response_body && <div><b>Sentiu no corpo:</b> {tr.response_body}</div>}
+                              </td>
+                              <td style={{ verticalAlign: 'top', padding: '6px' }}>
+                                {tr.consequence || '—'}
+                              </td>
+                              <td style={{ verticalAlign: 'top', padding: '6px' }}>
+                                {tr.effect_short && <div><b>Curto:</b> {tr.effect_short}</div>}
+                                {tr.effect_long && <div><b>Longo:</b> {tr.effect_long}</div>}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                      {incPrivado && x.triplices[0]?.note && (
+                        <div style={{ marginTop: '8px', fontSize: '11px', color: '#92400e', background: '#fffbeb', padding: '6px 8px', borderRadius: '4px', border: '1px dashed #f59e0b' }}>
+                          <b>🔒 Observação Privada do Profissional:</b> {x.triplices[0].note}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

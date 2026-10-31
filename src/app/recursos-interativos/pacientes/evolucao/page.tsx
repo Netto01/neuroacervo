@@ -7,11 +7,18 @@ import {
   getAllUserInteractiveSessions,
   getInteractiveSession,
   saveInteractiveSession,
+  ensureInteractiveSessionRecord,
+  getUserPatients,
+  saveUserPatient,
   StoredSessionRecord,
   EvolucaoSessionData
 } from '@/lib/supabase';
+import { TripliceGrid } from '@/components/clinical/TripliceGrid';
+import { AnxietyDiaryProfessionalPanel } from '@/components/clinical/AnxietyDiaryProfessionalPanel';
 import { HISTORIAS } from '@/data/historiasClinicas';
 import './evolucao-detalhe.css';
+import '@/components/clinical/anxiety-diary.css';
+import '@/components/clinical/triplice-grid.css';
 
 function tituloHistoria(resourceId: string) {
   const [faixaId, numStr] = resourceId.split('_');
@@ -206,6 +213,11 @@ function EvolucaoContent() {
   const [isPending, setIsPending] = useState<boolean>(false);
   const [toast, setToast] = useState<string | null>(null);
 
+  // IDs no banco de dados para a Grade da Tríplice Contingência
+  const [patientDbId, setPatientDbId] = useState<string>('');
+  const [sessionDbId, setSessionDbId] = useState<string>('');
+  const [tripliceRefreshKey, setTripliceRefreshKey] = useState<number>(0);
+
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
   const toastTimer = useRef<NodeJS.Timeout | null>(null);
 
@@ -221,6 +233,36 @@ function EvolucaoContent() {
 
     async function carregar() {
       try {
+        // Recupera ou assegura o ID do paciente na tabela user_patients
+        try {
+          const pacientesCadastrados = await getUserPatients();
+          const pEncontrado = pacientesCadastrados.find(
+            (p) => (p.code || '').trim().toLowerCase() === pacienteCodigo.trim().toLowerCase()
+          );
+          if (pEncontrado?.id) {
+            setPatientDbId(pEncontrado.id);
+          } else {
+            await saveUserPatient(pacienteCodigo);
+            const atualizados = await getUserPatients();
+            const pNovo = atualizados.find(
+              (p) => (p.code || '').trim().toLowerCase() === pacienteCodigo.trim().toLowerCase()
+            );
+            if (pNovo?.id) setPatientDbId(pNovo.id);
+          }
+        } catch {}
+
+        // Assegura o UUID da sessão para FK sólida com triple_rows
+        const targetResId = resourceIdParam || `sessao_${sessao}`;
+        try {
+          const sessRec = await ensureInteractiveSessionRecord('evolucao', targetResId, pacienteCodigo, {
+            numeroSessao: sessao,
+            dataSessao: data
+          });
+          if (sessRec?.id) {
+            setSessionDbId(sessRec.id);
+          }
+        } catch {}
+
         const todas = await getAllUserInteractiveSessions();
         if (!ativo) return;
 
@@ -708,8 +750,15 @@ function EvolucaoContent() {
           {/* Seção 1: Atendimento */}
           <section className={`card sec ${s1Ok ? 'ok' : ''}`} id="s1">
             <div className="sec-head">
-              <span className="sec-n">1</span>
+              <span className="ico" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <rect x="3" y="4" width="18" height="18" rx="2" />
+                  <path d="M16 2v4M8 2v4M3 10h18" />
+                  <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01" />
+                </svg>
+              </span>
               <div>
+                <span className="tag">Processo 01</span>
                 <h2>Atendimento</h2>
                 <p>Dados da sessão de hoje.</p>
               </div>
@@ -798,8 +847,16 @@ function EvolucaoContent() {
           {/* Seção 2: Como o paciente chegou */}
           <section className={`card sec ${s2Ok ? 'ok' : ''}`} id="s2">
             <div className="sec-head">
-              <span className="sec-n">2</span>
+              <span className="ico" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+                  <line x1="9" y1="9" x2="9.01" y2="9" />
+                  <line x1="15" y1="9" x2="15.01" y2="9" />
+                </svg>
+              </span>
               <div>
+                <span className="tag">Processo 02</span>
                 <h2>Como o paciente chegou</h2>
                 <p>Humor e comportamento observados.</p>
               </div>
@@ -909,8 +966,14 @@ function EvolucaoContent() {
           {/* Seção 3: O que aconteceu na sessão */}
           <section className={`card sec ${s3Ok ? 'ok' : ''}`} id="s3">
             <div className="sec-head">
-              <span className="sec-n">3</span>
+              <span className="ico" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+                  <path d="M8 10h.01M12 10h.01M16 10h.01" />
+                </svg>
+              </span>
               <div>
+                <span className="tag">Processo 03</span>
                 <h2>O que aconteceu na sessão</h2>
                 <p>Temas, intervenções e como o paciente respondeu.</p>
               </div>
@@ -1090,19 +1153,97 @@ function EvolucaoContent() {
               </div>
             </div>
 
-            <div className="field">
-              <label htmlFor="resposta">Resposta do paciente</label>
-              <textarea
-                id="resposta"
-                name="resposta"
-                className="ta"
-                rows={3}
-                placeholder="Como reagiu às intervenções, o que percebeu, o que mudou."
-                value={resposta}
-                onChange={(e) => {
-                  setResposta(e.target.value);
-                  triggerAutoSave();
+            {/* ================= 1. Resposta do paciente ================= */}
+            <div
+              className="card"
+              style={{
+                background: 'var(--surface)',
+                border: '1px solid var(--line)',
+                borderRadius: '18px',
+                marginTop: '16px'
+              }}
+            >
+              <div className="card-bd">
+                <div className="lbl">
+                  <b>Resposta do paciente</b>
+                  <span>Opcional</span>
+                </div>
+                <textarea
+                  className="resp-field"
+                  id="resp"
+                  rows={4}
+                  placeholder="Como reagiu às intervenções, o que percebeu, o que mudou desde a última sessão…"
+                  value={resposta}
+                  onChange={(e) => {
+                    setResposta(e.target.value);
+                    triggerAutoSave();
+                  }}
+                />
+                <div className="hints" aria-label="Sugestões para começar">
+                  <button
+                    className="hint"
+                    type="button"
+                    onClick={() => {
+                      setResposta((prev) => (prev ? prev.trim() + ' ' : '') + 'Aderiu à tarefa de casa. ');
+                      triggerAutoSave();
+                    }}
+                  >
+                    Aderiu à tarefa de casa
+                  </button>
+                  <button
+                    className="hint"
+                    type="button"
+                    onClick={() => {
+                      setResposta((prev) => (prev ? prev.trim() + ' ' : '') + 'Relatou melhora do sono. ');
+                      triggerAutoSave();
+                    }}
+                  >
+                    Relatou melhora do sono
+                  </button>
+                  <button
+                    className="hint"
+                    type="button"
+                    onClick={() => {
+                      setResposta((prev) => (prev ? prev.trim() + ' ' : '') + 'Resistência à intervenção. ');
+                      triggerAutoSave();
+                    }}
+                  >
+                    Resistência à intervenção
+                  </button>
+                  <button
+                    className="hint"
+                    type="button"
+                    onClick={() => {
+                      setResposta((prev) => (prev ? prev.trim() + ' ' : '') + 'Insight sobre o padrão. ');
+                      triggerAutoSave();
+                    }}
+                  >
+                    Insight sobre o padrão
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* ================= 2. Diário de ansiedade ================= */}
+            <div style={{ marginTop: '22px' }}>
+              <AnxietyDiaryProfessionalPanel
+                patientId={patientDbId || pacienteCodigo}
+                sessionId={sessionDbId || (resourceIdParam || `sessao_${sessao}`)}
+                patientCode={pacienteCodigo}
+                patientName={pacienteCodigo}
+                onEpisodeConverted={() => {
+                  setTripliceRefreshKey((k) => k + 1);
                 }}
+              />
+            </div>
+
+            {/* ================= 3. Tríplice contingência ================= */}
+            <div style={{ marginTop: '22px' }}>
+              <TripliceGrid
+                key={tripliceRefreshKey}
+                patientId={patientDbId || pacienteCodigo}
+                sessionId={sessionDbId || (resourceIdParam || `sessao_${sessao}`)}
+                patientCode={pacienteCodigo}
               />
             </div>
           </section>
@@ -1110,8 +1251,14 @@ function EvolucaoContent() {
           {/* Seção 4: Combinados e próximos passos */}
           <section className={`card sec ${s4Ok ? 'ok' : ''}`} id="s4">
             <div className="sec-head">
-              <span className="sec-n">4</span>
+              <span className="ico" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M9 11l3 3L22 4" />
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                </svg>
+              </span>
               <div>
+                <span className="tag">Processo 04</span>
                 <h2>Combinados e próximos passos</h2>
                 <p>O que fica para a semana e para a próxima sessão.</p>
               </div>

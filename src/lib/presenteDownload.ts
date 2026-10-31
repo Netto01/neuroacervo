@@ -1,4 +1,3 @@
-
 export const FALLBACK_ZIP_URL = 'https://pub-46b7a58b503e44bdb8e86a63a0cf51ba.r2.dev/presente.zip';
 export const DEFAULT_WHATSAPP_GRUPO_URL = 'https://chat.whatsapp.com/IJnaVmDO5R95PFNcJdduRG?s=cl&p=i&mlu=4&ilr=4&iam=2';
 

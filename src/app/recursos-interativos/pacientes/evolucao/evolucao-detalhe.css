@@ -263,7 +263,51 @@
 .ev-root .sec-head {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
+}
+
+.ev-root .sec-head .ico {
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ink, #15140f);
+  color: var(--pop, #dafeaa);
+}
+
+.ev-root .sec-head .ico svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
+
+.ev-root .sec-head .tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--f-m, 'JetBrains Mono', monospace);
+  font-weight: 600;
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent, #2f6b31);
+  margin-bottom: 2px;
+}
+
+.ev-root .sec-head .tag::before {
+  content: '';
+  width: 14px;
+  height: 2px;
+  background: currentColor;
+  flex-shrink: 0;
 }
 
 .ev-root .sec-n {
@@ -843,6 +887,303 @@
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
+}
+
+/* =========================================================================
+   Tokens e Componentes NeuroAcervo para Resposta, Diário e Tríplice
+   ========================================================================= */
+.ev-root {
+  --bg: #efe7d2;
+  --surface: #f7f1de;
+  --paper: #fffdf6;
+  --ink: #15140f;
+  --mute: #5a5448;
+  --soft: #8a8270;
+  --accent: #2f6b31;
+  --accent2: #488b49;
+  --pop: #dafeaa;
+  --line: rgba(21, 20, 15, 0.12);
+  --line2: rgba(21, 20, 15, 0.07);
+  --a: #2e4c78;
+  --a-bg: #e7edf6;
+  --r: #8a5317;
+  --r-bg: #f6ecdf;
+  --c: #2f6b31;
+  --c-bg: #e6f0df;
+  --e: #6a4870;
+  --e-bg: #f0e8f1;
+  --f-d: 'Inter Tight', system-ui, -apple-system, sans-serif;
+  --f-s: 'Playfair Display', Georgia, serif;
+  --f-m: 'JetBrains Mono', ui-monospace, monospace;
+  --f-t: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.ev-root .card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 2px 0 var(--line2), 0 14px 30px rgba(21, 20, 15, 0.06);
+}
+
+.ev-root .card-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 20px 22px 0;
+}
+
+.ev-root .card-bd {
+  padding: 16px 22px 22px;
+}
+
+.ev-root .ttl {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.ev-root .ico {
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ink);
+  color: var(--pop);
+}
+
+.ev-root .ico svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
+
+.ev-root .tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--f-m);
+  font-weight: 500;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.ev-root .tag::before {
+  content: '';
+  width: 18px;
+  height: 2px;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.ev-root .ttl h3 {
+  margin: 2px 0 0;
+  font-family: var(--f-d);
+  font-weight: 800;
+  font-size: 19px;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  color: var(--ink);
+}
+
+.ev-root .ttl h3 em {
+  font-family: var(--f-s);
+  font-style: italic;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--accent);
+}
+
+.ev-root .count {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--line);
+  font-family: var(--f-m);
+  font-size: 11px;
+  color: var(--mute);
+  vertical-align: 2px;
+}
+
+/* 1. Resposta do paciente */
+.ev-root .lbl {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.ev-root .lbl b {
+  font-family: var(--f-d);
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+
+.ev-root .lbl span {
+  font-family: var(--f-m);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--soft);
+}
+
+.ev-root .resp-field {
+  width: 100%;
+  min-height: 118px;
+  resize: vertical;
+  padding: 14px 16px;
+  border-radius: 13px;
+  border: 1.5px solid var(--line);
+  background: var(--paper);
+  color: var(--ink);
+  font: 400 15px/1.6 var(--f-t);
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.ev-root .resp-field::placeholder {
+  color: #a69e8a;
+}
+
+.ev-root .resp-field:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(47, 107, 49, 0.12);
+}
+
+.ev-root .hints {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.ev-root .hint {
+  border: 1px dashed rgba(21, 20, 15, 0.22);
+  background: transparent;
+  border-radius: 999px;
+  padding: 5px 11px;
+  font: 500 12.5px var(--f-t);
+  color: var(--mute);
+  cursor: pointer;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.ev-root .hint:hover {
+  background: var(--paper);
+  color: var(--ink);
+  border-style: solid;
+}
+
+/* 2. Diário de ansiedade */
+.ev-root .filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ev-root .filter label {
+  font-family: var(--f-m);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--soft);
+  white-space: nowrap;
+}
+
+.ev-root .filter select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  height: 40px;
+  padding: 0 34px 0 14px;
+  border-radius: 11px;
+  border: 1.5px solid var(--line);
+  background: var(--paper)
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2315140f' stroke-width='2.5' stroke-linecap='round'><path d='m6 9 6 6 6-6'/></svg>")
+    no-repeat right 12px center;
+  font: 600 14px var(--f-t);
+  color: var(--ink);
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.ev-root .filter select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(47, 107, 49, 0.15);
+}
+
+.ev-root .empty {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  border-radius: 14px;
+  border: 1.5px dashed rgba(21, 20, 15, 0.18);
+  background: var(--paper);
+}
+
+.ev-root .empty i {
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--soft);
+}
+
+.ev-root .empty i svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ev-root .empty b {
+  display: block;
+  font-family: var(--f-d);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.ev-root .empty span {
+  display: block;
+  margin-top: 3px;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--mute);
 }
 
 /* Impressão Timbrada */

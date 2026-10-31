@@ -524,6 +524,72 @@ export async function saveInteractiveSession(
 
 export const saveUserSession = saveInteractiveSession;
 
+export async function ensureInteractiveSessionRecord(
+  resourceType: string,
+  resourceId: string,
+  patientCode: string,
+  initialData: InteractiveSessionData = {}
+): Promise<{ id: string; isNew: boolean } | null> {
+  const localKey = `na_session_${resourceType}_${resourceId}_${patientCode}`;
+
+  if (!isSupabaseConfigured) {
+    let localId = '';
+    if (typeof window !== 'undefined') {
+      try {
+        const existing = localStorage.getItem(`na_session_uuid_${localKey}`);
+        if (existing) {
+          localId = existing;
+        } else {
+          localId = 'sess_' + Math.random().toString(36).substring(2, 10);
+          localStorage.setItem(`na_session_uuid_${localKey}`, localId);
+        }
+      } catch {}
+    }
+    return { id: localId || 'sess-local-id', isNew: false };
+  }
+
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user?.id) return null;
+
+    // 1. Tenta recuperar sessão existente
+    const { data: existing } = await supabase
+      .from('user_interactive_sessions')
+      .select('id')
+      .eq('user_id', session.user.id)
+      .eq('resource_type', resourceType)
+      .eq('resource_id', resourceId)
+      .eq('patient_code', patientCode)
+      .maybeSingle();
+
+    if (existing?.id) {
+      return { id: existing.id, isNew: false };
+    }
+
+    // 2. Se não existir, insere e obtém o UUID gerado
+    const { data: inserted, error } = await supabase
+      .from('user_interactive_sessions')
+      .upsert({
+        user_id: session.user.id,
+        resource_type: resourceType,
+        resource_id: resourceId,
+        patient_code: patientCode,
+        data: initialData,
+        updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'user_id,resource_type,resource_id,patient_code'
+      })
+      .select('id')
+      .single();
+
+    if (error || !inserted?.id) return null;
+    return { id: inserted.id, isNew: true };
+  } catch {
+    return null;
+  }
+}
+
+
 export async function deleteInteractiveSession(
   resourceType: string,
   resourceId: string,

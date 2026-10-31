@@ -17,13 +17,15 @@ import {
   UserPatientRecord,
   EvolucaoSessionData
 } from '@/lib/supabase';
+import { FormulationWorkspace } from '@/components/clinical/FormulationWorkspace';
+import { PatientDiaryShareModal } from '@/components/clinical/PatientDiaryShareModal';
 import './dossie-clinico.css';
 
 /* =========================================================================
    Tipos Unificados do Dossiê Clínico
    ========================================================================= */
 
-type AbaDossie = 'tudo' | 'sessao' | 'drama' | 'hist';
+type AbaDossie = 'tudo' | 'sessao' | 'formulacao' | 'drama' | 'hist';
 
 interface SessaoItem {
   id: string;
@@ -216,6 +218,7 @@ function IconSprite() {
       <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
       <symbol id="i-video" viewBox="0 0 24 24"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="m16 10 6-3v10l-6-3"/></symbol>
       <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+      <symbol id="i-phone" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></symbol>
       <symbol id="i-edit" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></symbol>
       <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></symbol>
       <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></symbol>
@@ -436,6 +439,10 @@ function DossieClinicoInner() {
   const [menuAberto, setMenuAberto] = useState<'nova' | 'mais' | 'picker' | null>(null);
   const [buscaPicker, setBuscaPicker] = useState('');
   const [modal, setModal] = useState<'novo' | 'editar' | 'excluir' | null>(null);
+  const [shareDiaryModal, setShareDiaryModal] = useState(false);
+  const [sharePatientCode, setSharePatientCode] = useState('');
+  const [qrAberto, setQrAberto] = useState(false);
+  const [linkCopiado, setLinkCopiado] = useState(false);
 
   // Form states
   const [formCodigo, setFormCodigo] = useState('');
@@ -816,6 +823,7 @@ function DossieClinicoInner() {
     return {
       tudo: it.length,
       sessao: it.filter((x) => x.tipo === 'sessao').length,
+      formulacao: 'AC',
       drama: it.filter((x) => x.tipo === 'drama').length,
       hist: it.filter((x) => x.tipo === 'hist').length
     };
@@ -1523,6 +1531,17 @@ function DossieClinicoInner() {
                         >
                           <Icon id="evo" sm /> Sessão {p.ses + 1}
                         </button>
+                        <button
+                          type="button"
+                          className="btn"
+                          title="Copiar link ou QR code do Diário de Ansiedade do paciente"
+                          onClick={() => {
+                            setSharePatientCode(p.cod);
+                            setShareDiaryModal(true);
+                          }}
+                        >
+                          <Icon id="phone" sm /> Diário
+                        </button>
                       </div>
                     </article>
                   );
@@ -1755,12 +1774,15 @@ function DossieClinicoInner() {
             </div>
           </div>
 
-          {/* Breadcrumb de Navegação */}
-          <nav className="crumbs" aria-label="Caminho">
-            <Link href="/recursos-interativos" style={{ textDecoration: 'none' }}>
-              <Icon id="back" sm /> Recursos Interativos
+          {/* Trilha */}
+          <nav className="crumbs" aria-label="Trilha">
+            <Link href="/recursos-interativos" style={{ textDecoration: 'none', color: 'inherit' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
             </Link>
-            <Icon id="chev" sm />
+            <Link href="/recursos-interativos" style={{ textDecoration: 'none', color: 'inherit' }}>
+              Recursos Interativos
+            </Link>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
             <Link
               href="/recursos-interativos/pacientes"
               style={{ textDecoration: 'none', color: 'inherit' }}
@@ -1768,213 +1790,290 @@ function DossieClinicoInner() {
             >
               Dossiê clínico
             </Link>
-            <Icon id="chev" sm />
-            <b>{pacienteAtual?.codigo || 'Paciente'}</b>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+            <b aria-current="page">{pacienteAtual?.codigo || 'Paciente'}</b>
           </nav>
 
-          {/* Cabeçalho do Paciente com Seletor e Ações */}
-          <section className="card head">
-            <span className="av">{extrairIniciais(pacienteAtual?.codigo || 'P')}</span>
-
-            <div style={{ minWidth: 0 }}>
-              <button
-                type="button"
-                className="who"
-                aria-haspopup="true"
-                aria-expanded={menuAberto === 'picker'}
-                onClick={() => setMenuAberto(menuAberto === 'picker' ? null : 'picker')}
-              >
-                <h1>{pacienteAtual?.codigo}</h1>
-                <Icon id="down" sm />
-              </button>
-
-              <div className="meta">
-                <span>
-                  <Icon id="cal" sm /> Caso aberto em {formatarData(pacienteAtual?.aberto || '')}
-                </span>
-                {pacienteAtual?.nota && <span>· {pacienteAtual.nota}</span>}
-                <span>
-                  <Icon id="lock" sm /> Sigilo profissional
-                </span>
+          {/* Cabeçalho do Paciente (Estrutura Unificada com Faixa Acesso do Paciente) */}
+          <header className="hd">
+            <div className="hd-main">
+              <div className="av" aria-hidden="true">
+                {extrairIniciais(pacienteAtual?.codigo || 'P01')}
               </div>
-            </div>
-
-            {/* Menu Dropdown de Seleção de Paciente */}
-            <div className={`menu picker ${menuAberto === 'picker' ? 'open' : ''}`} role="menu">
-              <label className="s">
-                <Icon id="search" sm />
-                <span className="sr-only">Buscar paciente</span>
-                <input
-                  placeholder="Buscar paciente"
-                  value={buscaPicker}
-                  onChange={(e) => setBuscaPicker(e.target.value)}
-                  autoFocus
-                />
-              </label>
-              <div style={{ maxHeight: '240px', overflowY: 'auto' }}>
-                {pacientes
-                  .filter((p) => !buscaPicker || p.codigo.toLowerCase().includes(buscaPicker.toLowerCase()))
-                  .map((p) => (
-                    <button
-                      key={p.codigo}
-                      type="button"
-                      role="menuitem"
-                      aria-current={p.codigo === pacienteAtual?.codigo}
-                      onClick={() => selecionarPaciente(p.codigo)}
-                    >
-                      <span className="av" style={{ width: '32px', height: '32px', borderRadius: '9px', fontSize: '11px' }}>
-                        {extrairIniciais(p.codigo)}
-                      </span>
-                      <span>
-                        {p.codigo}
-                        <small>{p.itens.length} registros</small>
-                      </span>
-                    </button>
-                  ))}
+              <div className="id">
+                <button
+                  className="name"
+                  type="button"
+                  aria-haspopup="listbox"
+                  aria-expanded={menuAberto === 'picker'}
+                  onClick={() => setMenuAberto(menuAberto === 'picker' ? null : 'picker')}
+                >
+                  {pacienteAtual?.codigo || 'Paciente'}
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div className="meta">
+                  <span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>
+                    Caso aberto em {formatarData(pacienteAtual?.aberto || '')}
+                  </span>
+                  {pacienteAtual?.nota && <span>· {pacienteAtual.nota}</span>}
+                  <span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+                    Sigilo profissional
+                  </span>
+                </div>
               </div>
-              <hr />
-              <button
-                type="button"
-                role="menuitem"
-                onClick={() => {
-                  setMenuAberto(null);
-                  setFormCodigo('');
-                  setFormNota('');
-                  setModal('novo');
-                }}
-              >
-                <Icon id="plus" sm />
-                Novo paciente
-              </button>
-            </div>
 
-            {/* Ações Principais do Topo */}
-            <div className="head-actions">
-              <button
-                type="button"
-                className="btn btn-sub"
-                onClick={() => router.push('/recursos-interativos/pacientes')}
-                title="Voltar para a lista geral de pacientes"
-                style={{ height: '40px', padding: '0 14px', borderRadius: '10px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-              >
-                <Icon id="back" sm /> Todos os pacientes
-              </button>
+              {/* Menu Dropdown de Seleção de Paciente */}
+              <div className={`menu picker ${menuAberto === 'picker' ? 'open' : ''}`} role="menu" style={{ left: '80px', top: '76px' }}>
+                <label className="s">
+                  <Icon id="search" sm />
+                  <span className="sr-only">Buscar paciente</span>
+                  <input
+                    placeholder="Buscar paciente"
+                    value={buscaPicker}
+                    onChange={(e) => setBuscaPicker(e.target.value)}
+                    autoFocus
+                  />
+                </label>
+                <div style={{ maxHeight: '240px', overflowY: 'auto' }}>
+                  {pacientes
+                    .filter((p) => !buscaPicker || p.codigo.toLowerCase().includes(buscaPicker.toLowerCase()))
+                    .map((p) => (
+                      <button
+                        key={p.codigo}
+                        type="button"
+                        role="menuitem"
+                        aria-current={p.codigo === pacienteAtual?.codigo}
+                        onClick={() => selecionarPaciente(p.codigo)}
+                      >
+                        <span className="av" style={{ width: '32px', height: '32px', borderRadius: '9px', fontSize: '11px' }}>
+                          {extrairIniciais(p.codigo)}
+                        </span>
+                        <span>
+                          {p.codigo}
+                          <small>{p.itens.length} registros</small>
+                        </span>
+                      </button>
+                    ))}
+                </div>
+                <hr />
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setMenuAberto(null);
+                    setFormCodigo('');
+                    setFormNota('');
+                    setModal('novo');
+                  }}
+                >
+                  <Icon id="plus" sm />
+                  Novo paciente
+                </button>
+              </div>
 
-              <button type="button" className="btn" onClick={imprimirDossieCompleto}>
-                <Icon id="print" /> Imprimir dossiê
-              </button>
-
-              <div style={{ position: 'relative' }}>
+              <div className="acts">
                 <button
                   type="button"
                   className="btn"
-                  aria-haspopup="true"
-                  aria-expanded={menuAberto === 'nova'}
-                  onClick={() => setMenuAberto(menuAberto === 'nova' ? null : 'nova')}
+                  onClick={() => router.push('/recursos-interativos/pacientes')}
                 >
-                  <Icon id="plus" /> Nova intervenção <Icon id="down" sm />
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+                  <span>Todos os pacientes</span>
                 </button>
 
-                <div className={`menu ${menuAberto === 'nova' ? 'open' : ''}`} role="menu" style={{ right: 0, top: '46px' }}>
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onClick={() => {
-                      setMenuAberto(null);
-                      router.push(`/recursos-interativos/dramatizacao?paciente=${encodeURIComponent(pacienteAtual?.codigo || '')}`);
-                    }}
-                  >
-                    <span className="mi t-drama"><Icon id="drama" /></span>
-                    <span>
-                      Dramatização dos dois lados
-                      <small>Debate em rodadas com troca de papéis</small>
-                    </span>
-                  </button>
-
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onClick={() => {
-                      setMenuAberto(null);
-                      router.push(`/recursos-interativos/historias?paciente=${encodeURIComponent(pacienteAtual?.codigo || '')}`);
-                    }}
-                  >
-                    <span className="mi t-hist"><Icon id="book" /></span>
-                    <span>
-                      História clínica estruturada
-                      <small>Caso por faixa etária, em etapas</small>
-                    </span>
-                  </button>
-
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onClick={() => {
-                      setMenuAberto(null);
-                      router.push(`/recursos-interativos/pacientes/evolucoes?paciente=${encodeURIComponent(pacienteAtual?.codigo || '')}`);
-                    }}
-                  >
-                    <span className="mi t-sessao"><Icon id="evo" /></span>
-                    <span>
-                      Histórico completo de evoluções
-                      <small>Linha do tempo e busca textual de sessões</small>
-                    </span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Botão Primário: Registrar Próxima Sessão */}
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={() =>
-                  router.push(`/recursos-interativos/pacientes/evolucao?paciente=${encodeURIComponent(pacienteAtual?.codigo || '')}`)
-                }
-              >
-                <Icon id="evo" /> Registrar sessão {sessoesCronologicas.length + 1}
-              </button>
-
-              {/* Menu Mais Opções */}
-              <div style={{ position: 'relative' }}>
                 <button
                   type="button"
-                  className="btn btn-icon"
-                  aria-label="Mais opções"
-                  aria-haspopup="true"
-                  onClick={() => setMenuAberto(menuAberto === 'mais' ? null : 'mais')}
+                  className="btn"
+                  onClick={imprimirDossieCompleto}
+                  aria-label="Imprimir dossiê"
                 >
-                  <Icon id="more" />
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 9V3h10v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 14h10v7H7z"/></svg>
+                  <span>Imprimir dossiê</span>
                 </button>
 
-                <div className={`menu ${menuAberto === 'mais' ? 'open' : ''}`} role="menu" style={{ right: 0, top: '46px' }}>
+                <div style={{ position: 'relative' }}>
                   <button
                     type="button"
-                    role="menuitem"
-                    onClick={() => {
-                      setMenuAberto(null);
-                      setFormCodigo(pacienteAtual?.codigo || '');
-                      setFormNota(pacienteAtual?.nota || '');
-                      setModal('editar');
-                    }}
+                    className="btn"
+                    aria-haspopup="menu"
+                    aria-expanded={menuAberto === 'nova'}
+                    onClick={() => setMenuAberto(menuAberto === 'nova' ? null : 'nova')}
                   >
-                    <Icon id="edit" sm /> Editar código e anotação
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                    <span>Nova intervenção</span>
                   </button>
-                  <hr />
+
+                  <div className={`menu ${menuAberto === 'nova' ? 'open' : ''}`} role="menu" style={{ right: 0, top: '46px' }}>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setMenuAberto(null);
+                        router.push(`/recursos-interativos/dramatizacao?paciente=${encodeURIComponent(pacienteAtual?.codigo || '')}`);
+                      }}
+                    >
+                      <span className="mi t-drama"><Icon id="drama" /></span>
+                      <span>
+                        Dramatização dos dois lados
+                        <small>Debate em rodadas com troca de papéis</small>
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setMenuAberto(null);
+                        router.push(`/recursos-interativos/historias?paciente=${encodeURIComponent(pacienteAtual?.codigo || '')}`);
+                      }}
+                    >
+                      <span className="mi t-hist"><Icon id="book" /></span>
+                      <span>
+                        História clínica estruturada
+                        <small>Caso por faixa etária, em etapas</small>
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setMenuAberto(null);
+                        router.push(`/recursos-interativos/pacientes/evolucoes?paciente=${encodeURIComponent(pacienteAtual?.codigo || '')}`);
+                      }}
+                    >
+                      <span className="mi t-sessao"><Icon id="evo" /></span>
+                      <span>
+                        Histórico completo de evoluções
+                        <small>Linha do tempo e busca textual de sessões</small>
+                      </span>
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  className="btn pri"
+                  onClick={() =>
+                    router.push(`/recursos-interativos/pacientes/evolucao?paciente=${encodeURIComponent(pacienteAtual?.codigo || '')}`)
+                  }
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19h16M6 15l4-4 3 3 5-6"/></svg>
+                  <span>Registrar sessão {sessoesCronologicas.length + 1}</span>
+                </button>
+
+                <div style={{ position: 'relative' }}>
                   <button
                     type="button"
-                    role="menuitem"
-                    className="danger"
-                    onClick={() => {
-                      setMenuAberto(null);
-                      setModal('excluir');
-                    }}
+                    className="btn ic"
+                    aria-label="Mais opções"
+                    aria-haspopup="true"
+                    onClick={() => setMenuAberto(menuAberto === 'mais' ? null : 'mais')}
                   >
-                    <Icon id="trash" sm /> Excluir caso
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>
                   </button>
+
+                  <div className={`menu ${menuAberto === 'mais' ? 'open' : ''}`} role="menu" style={{ right: 0, top: '46px' }}>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setMenuAberto(null);
+                        setFormCodigo(pacienteAtual?.codigo || '');
+                        setFormNota(pacienteAtual?.nota || '');
+                        setModal('editar');
+                      }}
+                    >
+                      <Icon id="edit" sm /> Editar código e anotação
+                    </button>
+                    <hr />
+                    <button
+                      type="button"
+                      role="menuitem"
+                      className="danger"
+                      onClick={() => {
+                        setMenuAberto(null);
+                        setModal('excluir');
+                      }}
+                    >
+                      <Icon id="trash" sm /> Excluir caso
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-          </section>
+
+            {/* ===== Acesso do paciente ===== */}
+            <section className="share" aria-label="Acesso do paciente">
+              <div className="s-ttl">
+                <i aria-hidden="true">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>
+                </i>
+                <div>
+                  <b>Acesso do paciente</b>
+                  <small id="st">Ativo · link de preenchimento</small>
+                </div>
+              </div>
+              <ol className="steps" aria-label="Como compartilhar">
+                <li><em>1</em><span><b>Envie o link</b> ao paciente</span></li>
+                <li><em>2</em><span>Ele registra <b>ansiedade e situações</b> no celular</span></li>
+                <li><em>3</em><span>O que ele compartilhar chega na <b>evolução da sessão</b></span></li>
+              </ol>
+              <div className="s-act">
+                <span className="link" id="link" title="Link de acesso do paciente">
+                  {typeof window !== 'undefined'
+                    ? `${window.location.origin}/recursos-interativos/pacientes/diario?paciente=${encodeURIComponent(pacienteAtual?.codigo || '')}`.replace(/^https?:\/\/(www\.)?/, '')
+                    : `neuroacervo.com.br/recursos-interativos/pacientes/diario?paciente=${encodeURIComponent(pacienteAtual?.codigo || '')}`}
+                </span>
+                <button
+                  className={`sbtn copy ${linkCopiado ? 'ok' : ''}`}
+                  type="button"
+                  id="copy"
+                  onClick={() => {
+                    const linkCompleto = typeof window !== 'undefined'
+                      ? `${window.location.origin}/recursos-interativos/pacientes/diario?paciente=${encodeURIComponent(pacienteAtual?.codigo || '')}`
+                      : `https://www.neuroacervo.com.br/recursos-interativos/pacientes/diario?paciente=${encodeURIComponent(pacienteAtual?.codigo || '')}`;
+                    if (navigator.clipboard) {
+                      navigator.clipboard.writeText(linkCompleto);
+                    }
+                    setLinkCopiado(true);
+                    setTimeout(() => setLinkCopiado(false), 2000);
+                  }}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>
+                  <span>{linkCopiado ? 'Copiado' : 'Copiar link'}</span>
+                </button>
+                <button
+                  className="sbtn wa"
+                  type="button"
+                  id="wa"
+                  aria-label="Enviar pelo WhatsApp"
+                  onClick={() => {
+                    const linkCompleto = typeof window !== 'undefined'
+                      ? `${window.location.origin}/recursos-interativos/pacientes/diario?paciente=${encodeURIComponent(pacienteAtual?.codigo || '')}`
+                      : `https://www.neuroacervo.com.br/recursos-interativos/pacientes/diario?paciente=${encodeURIComponent(pacienteAtual?.codigo || '')}`;
+                    const msg = `Olá! Este é o seu acesso para registrar entre as sessões. Você pode anotar como está se sentindo e situações importantes, e escolher o que compartilhar comigo: ${linkCompleto}`;
+                    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank', 'noopener');
+                  }}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.9 9.9 0 0 0 4.74 1.21c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm5.8 14.08c-.24.68-1.42 1.3-1.95 1.35-.5.05-.97.23-3.27-.68-2.77-1.09-4.52-3.93-4.66-4.11-.13-.18-1.11-1.48-1.11-2.83s.71-2 .96-2.28c.25-.27.55-.34.73-.34l.52.01c.17.01.4-.06.62.48.24.56.8 1.94.87 2.08.07.14.12.3.02.48-.09.18-.14.3-.27.46-.14.16-.29.36-.41.48-.14.14-.28.29-.12.56.16.27.71 1.17 1.52 1.9 1.05.94 1.93 1.23 2.2 1.37.27.14.43.11.59-.07.16-.18.68-.79.86-1.06.18-.27.36-.23.61-.14.25.09 1.59.75 1.86.89.27.14.45.2.52.32.07.11.07.66-.17 1.32Z"/></svg>
+                  WhatsApp
+                </button>
+                <button
+                  className="sbtn"
+                  type="button"
+                  id="qrb"
+                  aria-label="Mostrar QR code"
+                  onClick={() => setQrAberto(true)}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 17h4v4h-4"/></svg>
+                  QR
+                </button>
+              </div>
+            </section>
+          </header>
 
           {/* Estado Vazio Acolhedor (quando o paciente ainda não possui nenhum registro) */}
           {pacienteAtual?.itens.length === 0 ? (
@@ -2034,6 +2133,7 @@ function DossieClinicoInner() {
                       [
                         ['tudo', 'Tudo', contagens.tudo],
                         ['sessao', 'Sessões', contagens.sessao],
+                        ['formulacao', 'Formulação', 'AC'],
                         ['drama', 'Dramatizações', contagens.drama],
                         ['hist', 'Histórias clínicas', contagens.hist]
                       ] as const
@@ -2069,8 +2169,15 @@ function DossieClinicoInner() {
                   </button>
                 </div>
 
-                {/* Lista da Linha do Tempo Agrupada por Dia */}
-                <div className="list" id="list">
+                {/* Se a aba selecionada for Formulação, renderiza o documento vivo com versionamento */}
+                {aba === 'formulacao' ? (
+                  <FormulationWorkspace
+                    patientId={pacienteAtual?.id || pacienteAtualCodigo}
+                    patientCode={pacienteAtual?.codigo || pacienteAtualCodigo}
+                  />
+                ) : (
+                  /* Lista da Linha do Tempo Agrupada por Dia */
+                  <div className="list" id="list">
                   {itensPorDia.length === 0 ? (
                     <div className="card empty">
                       <p>Nada encontrado {busca ? `para “${busca}”` : 'nesta categoria'}.</p>
@@ -2493,7 +2600,8 @@ function DossieClinicoInner() {
                     })
                   )}
                 </div>
-              </main>
+              )}
+            </main>
 
               {/* Coluna Lateral de Análise Clínica (`aside.side`) */}
               <aside className="side">
@@ -2796,6 +2904,43 @@ function DossieClinicoInner() {
             </div>
           </div>
         )}
+
+        {/* Modal de Compartilhamento do Diário */}
+        <PatientDiaryShareModal
+          isOpen={shareDiaryModal}
+          onClose={() => setShareDiaryModal(false)}
+          patientCode={sharePatientCode || pacienteAtual?.codigo || pacienteAtualCodigo || 'Paciente'}
+          patientName={sharePatientCode || pacienteAtual?.codigo || pacienteAtualCodigo}
+        />
+
+        {/* Modal de QR Code do Acesso do Paciente */}
+        <div
+          className={`qr ${qrAberto ? 'on' : ''}`}
+          id="qr"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="qr-t"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setQrAberto(false);
+          }}
+        >
+          <div className="qr-box">
+            <b id="qr-t">Acesso do paciente</b>
+            <p>Peça para o paciente apontar a câmera do celular. O link abre direto na tela de registro.</p>
+            <img
+              id="qr-img"
+              alt="QR code do link de acesso do paciente"
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=440x440&margin=0&data=${encodeURIComponent(
+                typeof window !== 'undefined'
+                  ? `${window.location.origin}/recursos-interativos/pacientes/diario?paciente=${encodeURIComponent(pacienteAtual?.codigo || '')}`
+                  : `https://www.neuroacervo.com.br/recursos-interativos/pacientes/diario?paciente=${encodeURIComponent(pacienteAtual?.codigo || '')}`
+              )}`}
+            />
+            <button className="sbtn" type="button" id="qr-x" onClick={() => setQrAberto(false)}>
+              Fechar
+            </button>
+          </div>
+        </div>
 
         {/* Toast Notificação */}
         <div className={`dossie-toast ${toastMsg ? 'show' : ''}`} role="status" aria-live="polite">

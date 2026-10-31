@@ -1,0 +1,27 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { verifyUserRequest } from '@/lib/serverAuth';
+import { closeFormulationVersion } from '@/lib/clinicalServer';
+
+export const dynamic = 'force-dynamic';
+
+export async function POST(
+  req: NextRequest,
+  context: { params: Promise<{ patientId: string }> }
+) {
+  const auth = await verifyUserRequest(req);
+  if (!auth.authorized || !auth.user) {
+    return auth.errorResponse || NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+  }
+
+  const { patientId } = await context.params;
+  if (!patientId) {
+    return NextResponse.json({ error: 'ID do paciente obrigatório' }, { status: 400 });
+  }
+
+  try {
+    const version = await closeFormulationVersion(auth.user.id, patientId);
+    return NextResponse.json({ success: true, data: version }, { status: 201 });
+  } catch (err: any) {
+    return NextResponse.json({ error: err?.message || 'Erro ao fechar versão da formulação' }, { status: 500 });
+  }
+}
